@@ -1,11 +1,11 @@
 const MongoContext = require('../../config/mongodb');
 
-class OrderModel {
+class CustomerModel {
   #collection;
 
   constructor(context) {
     this.context = context;
-    this.#collection = 'orders';
+    this.#collection = 'customers';
   }
 
   async getInstance() {
@@ -41,4 +41,4 @@ class OrderModel {
   }
 }
 
-module.exports = OrderModel;
+module.exports = CustomerModel;
