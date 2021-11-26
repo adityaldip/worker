@@ -35,7 +35,9 @@ class RequestHelper {
         return payload;
     }
 
-    async requestGet(payload) {
+    async requestGet(data) {
+        const payload = await this.requestPayload(data)
+        payload.method = 'GET';
         return await request(payload)
         .then((body) => {
             return body;
@@ -57,9 +59,10 @@ class RequestHelper {
         });
     }
 
-    async requestDelete(payload) {
-        return await request
-        .delete(payload)
+    async requestDelete(data) {
+        const payload = await this.requestPayload(data)
+        payload.method = 'DELETE';
+        return await request(payload)
         .then((body) => {
             return body;
         })
@@ -68,9 +71,10 @@ class RequestHelper {
         });
     }
 
-    async requestPatch(payload) {
-        return await request
-        .patch(payload)
+    async requestPatch(data) {
+        const payload = await this.requestPayload(data)
+        payload.method = 'PATCH';
+        return await request(payload)
         .then((body) => {
             return body;
         })

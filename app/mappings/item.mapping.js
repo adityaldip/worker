@@ -66,7 +66,7 @@ const itemMapping = (item) => {
         // tax4Name: '',
         // typeAutoNumber: 1,
         // unBilledGlAccountNo: '',
-        // unit1Name: '',
+        unit1Name: 'PCS',
         // unit2Name: '',
         // unit2Price: 1,
         // unit3Name: '',

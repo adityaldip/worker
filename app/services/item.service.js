@@ -20,7 +20,7 @@ const itemService = async (item_lines, seller_id) => {
             await itemModel.insert(item);
             console.log(response.d);
         } else {
-            console.log(response.d[0]);
+            console.error(response.d[0]);
         }
     } catch (error) {
         throw Error(error.message);

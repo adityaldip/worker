@@ -14,11 +14,11 @@ const customerService = async (order) => {
         const requestHelper = new RequestHelper(order.profile_id);
         const response = await requestHelper.requestPost(option);
         if (response.s) {
-            customer.accurate_id = response.id;
             console.log(response.d);
+            customer.accurate_id = response.r.id;
             await customerModel.insert(customer);
         } else {
-            console.log(response.d);
+            console.error(response.d);
         }
     } catch (error) {
         throw Error(error.message);

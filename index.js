@@ -1,5 +1,7 @@
 const amqp = require("amqplib/callback_api")
 const syncOpenOrder = require("./app/services/sync_open_order.service");
+const syncInvoiceOrder = require('./app/services/sync_invoice_order.service');
+
 require('dotenv').config();
 
 // syncOpenOrder(114237811);
@@ -14,6 +16,10 @@ async function receiveMessage(channel, queue) {
     
     if (queue == 'accurate_sales_order') {
       syncOpenOrder(id);
+    }
+
+    if (queue == 'accurate_sales_invoice') {
+      syncInvoiceOrder(id);
     }
 
   }, {
