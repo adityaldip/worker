@@ -1,9 +1,7 @@
 const ItemModel = require("../models/item.model");
-const SellerModel = require('../models/seller.model');
 const itemMapping = require('../mappings/item.mapping');
 const RequestHelper = require("../helpers/request.helper");
 const itemModel = new ItemModel();
-const sellerModel = new SellerModel();
 
 const itemService = async (item_lines, seller_id) => {
     try {

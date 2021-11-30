@@ -1,16 +1,19 @@
 const OrderModel = require("../models/order.model");
-const orderMapping = require('../mappings/order.mapping');
+const InvoiceModel = require('../models/invoice.model');
+const invoiceMapping = require('../mappings/invoice.mapping');
 const RequestHelper = require("../helpers/request.helper");
 const GeneralHelper = require('../helpers/general.helper');
 const orderModel = new OrderModel();
+const invoiceModel = new InvoiceModel();
 const helper = new GeneralHelper();
+
 const maxAttempts = process.env.MAX_ATTEMPT ?? 5
 
-const orderService = async (order) => {
+const invoiceService = async (order) => {
     try {
-        const payload = orderMapping(order); 
+        const payload = invoiceMapping(order); 
         const option = {
-            uri: `api/sales-order/save.do`,
+            uri: `api/sales-invoice/save.do`,
             json: true,
             body: payload
         };
@@ -18,23 +21,19 @@ const orderService = async (order) => {
         const response = await requestHelper.requestPost(option);
         if (response.s) {
             console.log(response.d);
-            await orderModel.update({id: order.id}, {$set: {accurate_id: response.r.id, synced: true}});
-            switch (order.status) {
-                case 'Shipped':
-                    await helper.pubQueue('accurate_sales_invoice', order._id);
-                    console.log(`order ${order._id} sent to accurate_sales_invoice`);
-                    break;
-            
-                default:
-                    break;
-            }
+            payload.accurate_id = response.r.id;
+            payload.order_id = order.id;
+            payload.number = response.r.number;
+            await orderModel.update({id: order.id}, {$set: {synced: true, invoice: payload}});
+            await invoiceModel.insert(payload);
         } else {
+            console.log(response.d);
+
             await helper.errLog(order.id, payload, response.d);
-            console.log(response);
             if (order.attempts < maxAttempts) {
                 await orderModel.update({id: order.id}, {$inc: {attempts: 1}});
-                await helper.pubQueue('accurate_sales_order', order._id);
-                console.log(`order ${order._id} sent to accurate_sales_order to reattempt...`);
+                await helper.pubQueue('accurate_sales_invoice', order._id);
+                console.log(`order ${order._id} sent to accurate_sales_invoice to reattempt...`);
             } else {
                 console.log(`order ${order._id} have reached the maximum sync attempt`);
             }
@@ -42,6 +41,6 @@ const orderService = async (order) => {
     } catch (error) {
         throw Error(error.message);
     }
-};
+}
 
-module.exports = orderService
+module.exports = invoiceService

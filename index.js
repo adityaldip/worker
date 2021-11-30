@@ -1,10 +1,10 @@
 const amqp = require("amqplib/callback_api")
 const syncOpenOrder = require("./app/services/sync_open_order.service");
 const syncInvoiceOrder = require('./app/services/sync_invoice_order.service');
+const syncPaidOrder = require("./app/services/sync_paid_order.service");
 
 require('dotenv').config();
 
-// syncOpenOrder(114237811);
 async function receiveMessage(channel, queue) {
   channel.assertQueue(queue, {
     durable: false
@@ -22,6 +22,10 @@ async function receiveMessage(channel, queue) {
       syncInvoiceOrder(id);
     }
 
+    if (queue == 'accurate_sales_paid') {
+      syncPaidOrder(id);
+    }
+
   }, {
     noAck: true
   })
@@ -36,6 +40,8 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
       throw error1;
     }
     var queue = process.env.QUEUE_NAME || 'accurate_sales_order';
+    // queue = 'accurate_sales_paid';
+    // queue = 'accurate_sales_invoice';
     receiveMessage(channel, queue);
   });
 });

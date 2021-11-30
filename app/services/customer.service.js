@@ -1,7 +1,10 @@
 const CustomerModel = require("../models/customer.model");
 const customerMapping = require('../mappings/customer.mapping');
 const RequestHelper = require("../helpers/request.helper");
+const GeneralHelper = require("../helpers/general.helper");
+
 const customerModel = new CustomerModel();
+const helper = new GeneralHelper();
 
 const customerService = async (order) => {
     try {
@@ -19,6 +22,7 @@ const customerService = async (order) => {
             await customerModel.insert(customer);
         } else {
             console.error(response.d);
+            await helper.errLog(order.store_id, customer, response.d);
         }
     } catch (error) {
         throw Error(error.message);

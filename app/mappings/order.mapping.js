@@ -24,12 +24,27 @@ const orderMapping = (order) => {
         detailItems.push({
             itemNo: item.id, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
-            detailName: item.variant_name, // item_lines.variant_name
+            detailName: `${item.name} ${item.variant_name}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
+            quantity: 1,
         });
         await checkItem(item, order.profile_id);
     });
+    // if (order.channel_rebate > 0) {
+    //     detailItems.push({
+    //         itemNo: 'rebate',
+    //         unitPrice: order.channel_rebate,
+    //         detailName: "Rebate"
+    //     });
+    //     const rebate = {
+    //         name: 'Rebate',
+    //         no: 'rebate',
+    //         price: order.channel_rebate,
+    //         sku: 'rebate',
+    //     };
+    //     await checkItem(rebate, order.profile_id);
+    // }
     return {
         customerNo: order.store_id, // required; customer_info.id
         // detailExpense: [

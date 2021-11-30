@@ -12,7 +12,6 @@ const syncOpenOrder = async (id) => {
         const order = await orderModel.findBy({_id: new mongo.ObjectId(id)});
         let custCheck = await customerModel.findBy({customerNo: order.store_id});
         if (!custCheck) await customerService(order);  
-
         orderService(order);
     } catch (error) {
         throw Error(error.message);
