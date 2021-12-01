@@ -20,9 +20,9 @@ class RequestHelper {
         const sellerModel = new SellerModel();
         const seller = await sellerModel.findBy({seller_id: this.#seller_id});
         if (!seller) throw Error('Seller not found');
-        this.#session = seller.session;
-        this.#token = seller.token;
-        this.#host = seller.host;
+        this.#session = seller.api_db_session;
+        this.#token = seller.api_access_token;
+        this.#host = seller.api_db_url;
     }
 
     async requestPayload(payload) {
