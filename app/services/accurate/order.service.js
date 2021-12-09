@@ -1,9 +1,10 @@
-const OrderModel = require("../models/order.model");
-const orderMapping = require('../mappings/order.mapping');
-const RequestHelper = require("../helpers/request.helper");
-const GeneralHelper = require('../helpers/general.helper');
-const orderModel = new OrderModel();
+const RequestHelper = require("../../helpers/request.helper");
+const GeneralHelper = require('../../helpers/general.helper');
+const OrderModel = require("../../models/order.model");
+const orderMapping = require('../../mappings/order.mapping');
+
 const helper = new GeneralHelper();
+const orderModel = new OrderModel();
 const maxAttempts = process.env.MAX_ATTEMPT ?? 5
 
 const orderService = async (order) => {

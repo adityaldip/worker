@@ -1,6 +1,6 @@
 const GeneralHelper = require("../helpers/general.helper");
-const ItemModel = require('../models/item.model');
-const itemService = require("../services/item.service");
+const { ItemModel } = require('../models/item.model');
+const { itemService } = require("../services/accurate/item.service");
 
 const helper = new GeneralHelper();
 const itemModel = new ItemModel();
@@ -15,7 +15,6 @@ const checkItem = async (item, id) => {
     } catch (error) {
         console.error(error.message)
     }
-    
 }
 
 const orderMapping = (order) => {
@@ -24,7 +23,7 @@ const orderMapping = (order) => {
         detailItems.push({
             itemNo: item.id, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
-            detailName: `${item.name} ${item.variant_name}`, // item_lines.variant_name
+            detailName: `${item.name} ${item.variant_name ?? ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
             quantity: 1,

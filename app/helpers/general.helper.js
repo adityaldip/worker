@@ -24,6 +24,10 @@ class GeneralHelper{
         return _date.getDate() + "/" + (_date.getMonth() + 1) + "/" + _date.getFullYear();
     }
 
+    sanitizeSKU(sku) {
+        return sku.replace('(', ' - ').replace(')', '');
+    }
+
     async errLog(id, params, log) {
         const body = {
             activity: process.env.QUEUE_NAME,

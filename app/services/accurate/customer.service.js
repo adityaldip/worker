@@ -1,10 +1,10 @@
-const CustomerModel = require("../models/customer.model");
-const customerMapping = require('../mappings/customer.mapping');
-const RequestHelper = require("../helpers/request.helper");
-const GeneralHelper = require("../helpers/general.helper");
+const CustomerModel = require("../../models/customer.model");
+const RequestHelper = require("../../helpers/request.helper");
+const GeneralHelper = require("../../helpers/general.helper");
+const customerMapping = require('../../mappings/customer.mapping');
 
-const customerModel = new CustomerModel();
 const helper = new GeneralHelper();
+const customerModel = new CustomerModel();
 
 const customerService = async (order) => {
     try {

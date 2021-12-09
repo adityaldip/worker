@@ -44,7 +44,7 @@ const itemMapping = (item) => {
         // manageSN: false,
         // minimumQuantity: 10,
         // minimumQuantityReorder: 10,
-        no: item.id, // item_lines.id
+        no: item.sku, // item_lines.sku
         // notes: '',
         // percentTaxable: 100,
         // preferedVendorName: '',
@@ -76,7 +76,7 @@ const itemMapping = (item) => {
         // unit5Name: '',
         // unit5Price: 1,
         unitPrice: item.price, // item_lines.price
-        upcNo: item.sku, // item_lines.sku
+        upcNo: item.id, // item_lines.id
         vendorPrice: item.price,
         // vendorUnitName: '',
     }

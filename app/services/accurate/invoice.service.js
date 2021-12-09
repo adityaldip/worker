@@ -1,11 +1,12 @@
-const OrderModel = require("../models/order.model");
-const InvoiceModel = require('../models/invoice.model');
-const invoiceMapping = require('../mappings/invoice.mapping');
-const RequestHelper = require("../helpers/request.helper");
-const GeneralHelper = require('../helpers/general.helper');
+const RequestHelper = require("../../helpers/request.helper");
+const GeneralHelper = require('../../helpers/general.helper');
+const OrderModel = require("../../models/order.model");
+const InvoiceModel = require('../../models/invoice.model');
+const invoiceMapping = require('../../mappings/invoice.mapping');
+
+const helper = new GeneralHelper();
 const orderModel = new OrderModel();
 const invoiceModel = new InvoiceModel();
-const helper = new GeneralHelper();
 
 const maxAttempts = process.env.MAX_ATTEMPT ?? 5
 

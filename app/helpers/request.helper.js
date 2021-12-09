@@ -10,7 +10,7 @@ class RequestHelper {
     #seller_id;
 
     constructor(seller_id) {
-        this.#seller_id = seller_id;
+        this.#seller_id = parseInt(seller_id);
         this.#token = null;
         this.#host = null;
         this.#session = null;

@@ -1,11 +1,12 @@
-const OrderModel = require("../models/order.model");
-const InvoiceModel = require('../models/invoice.model');
-const RequestHelper = require("../helpers/request.helper");
-const GeneralHelper = require('../helpers/general.helper');
-const receiptMapping = require("../mappings/receipt.mapping");
+const RequestHelper = require("../../helpers/request.helper");
+const GeneralHelper = require('../../helpers/general.helper');
+const OrderModel = require("../../models/order.model");
+const InvoiceModel = require('../../models/invoice.model');
+const receiptMapping = require("../../mappings/receipt.mapping");
+
+const helper = new GeneralHelper();
 const orderModel = new OrderModel();
 const invoiceModel = new InvoiceModel();
-const helper = new GeneralHelper();
 
 const receiptService = async (order) => {
     try {

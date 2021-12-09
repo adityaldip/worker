@@ -1,8 +1,8 @@
+const mongo = require('mongodb')
 const OrderModel = require('../models/order.model');
 const CustomerModel = require('../models/customer.model');
-const customerService = require('./customer.service');
-const orderService = require('./order.service');
-const mongo = require('mongodb')
+const customerService = require('./accurate/customer.service');
+const orderService = require('./accurate/order.service');
 
 const orderModel = new OrderModel();
 const customerModel = new CustomerModel();

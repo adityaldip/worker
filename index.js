@@ -2,8 +2,14 @@ const amqp = require("amqplib/callback_api")
 const syncOpenOrder = require("./app/services/sync_open_order.service");
 const syncInvoiceOrder = require('./app/services/sync_invoice_order.service');
 const syncPaidOrder = require("./app/services/sync_paid_order.service");
+const syncFilterItem = require('./app/services/sync_filter_item.service');
+const syncAccurateItem = require("./app/services/sync_accurate_item.service");
 
 require('dotenv').config();
+
+// syncFilterItem(606);
+// syncAccurateItem('606');
+// return;
 
 async function receiveMessage(channel, queue) {
   channel.assertQueue(queue, {
@@ -26,6 +32,14 @@ async function receiveMessage(channel, queue) {
       syncPaidOrder(id);
     }
 
+    if (queue == 'accurate_items_query') {
+      syncFilterItem(id);
+    }
+
+    if (queue == 'accurate_items_import') {
+      syncAccurateItem(id);
+    }
+
   }, {
     noAck: true
   })
@@ -42,6 +56,9 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
     var queue = process.env.QUEUE_NAME || 'accurate_sales_order';
     // queue = 'accurate_sales_paid';
     // queue = 'accurate_sales_invoice';
+
+    queue = 'accurate_items_query';
+    queue = 'accurate_items_import';
     receiveMessage(channel, queue);
   });
 });

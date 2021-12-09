@@ -1,6 +1,6 @@
 const mongo = require('mongodb');
 const OrderModel = require('../models/order.model');
-const invoiceService = require('./invoice.service');
+const invoiceService = require('./accurate/invoice.service');
 
 const orderModel = new OrderModel();
 
