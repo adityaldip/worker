@@ -7,10 +7,6 @@ const syncAccurateItem = require("./app/services/sync_accurate_item.service");
 
 require('dotenv').config();
 
-// syncFilterItem(606);
-// syncAccurateItem('606');
-// return;
-
 async function receiveMessage(channel, queue) {
   channel.assertQueue(queue, {
     durable: false
@@ -57,8 +53,8 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
     // queue = 'accurate_sales_paid';
     // queue = 'accurate_sales_invoice';
 
-    queue = 'accurate_items_query';
-    queue = 'accurate_items_import';
+    // queue = 'accurate_items_query';
+    // queue = 'accurate_items_import';
     receiveMessage(channel, queue);
   });
 });

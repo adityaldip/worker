@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -e
+aws configure set aws_access_key_id ${AWS_KEY}
+aws configure set aws_secret_access_key ${AWS_SECRET}
+aws configure set default.region ${AWS_REGION}
+version=$(cat ".version")
+image="450680964076.dkr.ecr.ap-southeast-1.amazonaws.com/accurate-worker:${version}"
+docker build . -t $image
+$(aws ecr get-login --no-include-email --region ap-southeast-1)
+# docker service update  --image $image --force accurate-middleware_accurate-sales-order --with-registry-auth
+# docker service update  --image $image --force accurate-middleware_accurate-sales-invoice --with-registry-auth
+# docker service update  --image $image --force accurate-middleware_accurate-sales-paid --with-registry-auth
+# docker service update  --image $image --force accurate-middleware_accurate-items-filter --with-registry-auth
+# docker service update  --image $image --force accurate-middleware_accurate-items-import --with-registry-auth
+docker image prune -f
