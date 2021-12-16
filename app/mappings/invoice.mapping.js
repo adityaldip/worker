@@ -13,6 +13,7 @@ const invoiceMapping = (order) => {
             quantity: 1,
             // salesOrderNumber: order.id,
             // salesQuotationNumber: order.id,
+            warehouseName: order.warehouseName,
         });
     });
     return {
