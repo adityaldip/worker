@@ -19,7 +19,7 @@ const orderService = async (order) => {
         const response = await requestHelper.requestPost(option);
         if (response.s) {
             console.log(response.d);
-            await orderModel.update({id: order.id}, {$set: {accurate_id: response.r.id, synced: true}});
+            await orderModel.update({id: order.id}, {$set: { accurate_id: response.r.id, synced: true, accountNo: order.accountNo }});
             switch (order.status) {
                 case 'Shipped':
                     await helper.pubQueue('accurate_sales_invoice', order._id);
@@ -30,10 +30,10 @@ const orderService = async (order) => {
                     break;
             }
         } else {
-            await helper.errLog(order.id, payload, response.d);
             console.log(response);
+            await helper.errLog(order.id, payload, response.d, order.attempts || 1);
+            await orderModel.update({id: order.id}, {$inc: {attempts: 1}, $set: {last_error: response.d}});
             if (order.attempts < maxAttempts) {
-                await orderModel.update({id: order.id}, {$inc: {attempts: 1}});
                 await helper.pubQueue('accurate_sales_order', order._id);
                 console.log(`order ${order._id} sent to accurate_sales_order to reattempt...`);
             } else {

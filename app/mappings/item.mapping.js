@@ -75,9 +75,9 @@ const itemMapping = (item) => {
         // unit4Price: 1,
         // unit5Name: '',
         // unit5Price: 1,
-        unitPrice: item.price, // item_lines.price
+        unitPrice: item.price || item.total_price, // item_lines.price
         upcNo: item.id, // item_lines.id
-        vendorPrice: item.price,
+        vendorPrice: item.price || item.total_price,
         // vendorUnitName: '',
     }
 };

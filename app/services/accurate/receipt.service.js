@@ -7,6 +7,7 @@ const receiptMapping = require("../../mappings/receipt.mapping");
 const helper = new GeneralHelper();
 const orderModel = new OrderModel();
 const invoiceModel = new InvoiceModel();
+const maxAttempts = process.env.MAX_ATTEMPT ?? 5
 
 const receiptService = async (order) => {
     try {
@@ -26,10 +27,14 @@ const receiptService = async (order) => {
             await invoiceModel.update({order_id: order.id}, {$set: {receipt: payload}});
         } else {
             console.log(response.d);
-            await helper.errLog(order.id, payload, response.d);
-            await orderModel.update({id: order.id}, {$inc: {attempts: 1}});
-            await helper.pubQueue('accurate_sales_paid', order._id);
-            console.log(`order ${order._id} sent to accurate_sales_paid to reattempt...`);
+            await helper.errLog(order.id, payload, response.d, order.attempts || 1);
+            await orderModel.update({id: order.id}, {$inc: {attempts: 1}, $set: { last_error: response.d }});
+            if (order.attempts < maxAttempts) {
+                await helper.pubQueue('accurate_sales_paid', order._id);
+                console.log(`order ${order._id} sent to accurate_sales_paid to reattempt...`);
+            } else {
+                console.log(`order ${order._id} have reached the maximum sync attempt`);
+            }
         }
     } catch (error) {
         throw Error(error.message);

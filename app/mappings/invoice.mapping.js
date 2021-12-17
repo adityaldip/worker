@@ -5,7 +5,7 @@ const invoiceMapping = (order) => {
     const detailItems = [];
     order.item_lines.forEach(async item => {
         detailItems.push({
-            itemNo: item.id, // required; item_lines.id
+            itemNo: item.sku, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name ?? ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
@@ -81,7 +81,7 @@ const invoiceMapping = (order) => {
         // taxNumber: "string", // required
         transDate: helper.dateConvert(order.updated_at), // required
         // branchId: 0,
-        // branchName: "string",
+        branchName: "Jakarta",
         // cashDiscPercent: "string",
         // cashDiscount: 0,
         // currencyCode: "string",

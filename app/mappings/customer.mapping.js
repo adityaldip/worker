@@ -3,7 +3,7 @@ const helper = new GeneralHelper();
 
 const customerMapping = (order) => {
     return {
-        name: order.store_name, // required; customer_info.name
+        name: order.store_name || order.channel, // required; customer_info.name
         transDate: helper.dateConvert(order.created_at), // required; customer_info.customer_since
         // billCity: order.address.city, // address.city
         // billCountry: order.address.country, // address.country

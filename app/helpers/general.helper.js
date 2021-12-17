@@ -28,10 +28,11 @@ class GeneralHelper{
         return sku.replace('(', ' - ').replace(')', '');
     }
 
-    async errLog(id, params, log) {
+    async errLog(id, params, log, attempt) {
         const body = {
             activity: process.env.QUEUE_NAME,
             activity_id: id,
+            attempt: attempt,
             params: params, 
             log: log,
             created_at: new Date()

@@ -6,7 +6,7 @@ const itemMapping = require('../../mappings/item.mapping');
 const helper = new GeneralHelper();
 const itemModel = new ItemModel();
 
-const itemService = async (item_lines, seller_id) => {
+const itemService = async (item_lines, profile_id) => {
     try {
         const item = itemMapping(item_lines); 
         const option = {
@@ -14,16 +14,16 @@ const itemService = async (item_lines, seller_id) => {
             json: true,
             body: item
         };
-        const requestHelper = new RequestHelper(seller_id);
+        const requestHelper = new RequestHelper(profile_id);
         const response = await requestHelper.requestPost(option);
         if (response.s) {
             item.accurate_id = response.r.id;
-            item.profile_id = seller_id;
+            item.profile_id = profile_id;
             item.synced = true;
             await itemModel.insert(item);
             console.log(response.d);
         } else {
-            await helper.errLog(order.no, item, response.d);
+            await helper.errLog(order.no, item, response.d, 1);
             console.error(response.d);
         }
     } catch (error) {
@@ -51,8 +51,8 @@ const bulkItemService = async (items, profile_id, skus) => {
                 if (res.s) {
                     await itemModel.update({profile_id: profile_id, no: res.r.no}, {$set: {synced: true}});
                 } else {
-                    await itemModel.update({profile_id: profile_id, no: skus[count]}, {$inc: { attempts: 1 }});
-                    await helper.errLog(profile_id, skus[count], res.d);
+                    await itemModel.update({profile_id: profile_id, no: skus[count]}, {$inc: { attempts: 1 }, $set: {last_error: res.d}});
+                    await helper.errLog(profile_id, skus[count], res.d, 1);
                 }
                 count++;
             }

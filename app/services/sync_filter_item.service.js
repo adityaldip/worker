@@ -6,7 +6,6 @@ const helper = new GeneralHelper();
 const itemForstok = new ItemForstokModel();
 const itemModel = new ItemModel();
 
-
 const syncFilterItem = async (profile_id) => {
     try {
         const items = await itemForstok.find(profile_id);

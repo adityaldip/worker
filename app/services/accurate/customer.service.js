@@ -22,7 +22,7 @@ const customerService = async (order) => {
             await customerModel.insert(customer);
         } else {
             console.error(response.d);
-            await helper.errLog(order.store_id, customer, response.d);
+            await helper.errLog(order.store_id, customer, response.d, 1);
         }
     } catch (error) {
         throw Error(error.message);

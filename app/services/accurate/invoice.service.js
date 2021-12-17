@@ -29,10 +29,9 @@ const invoiceService = async (order) => {
             await invoiceModel.insert(payload);
         } else {
             console.log(response.d);
-
-            await helper.errLog(order.id, payload, response.d);
+            await helper.errLog(order.id, payload, response.d, order.attempts || 1);
+            await orderModel.update({id: order.id}, {$inc: {attempts: 1}, $set: {last_error: response.d}});
             if (order.attempts < maxAttempts) {
-                await orderModel.update({id: order.id}, {$inc: {attempts: 1}});
                 await helper.pubQueue('accurate_sales_invoice', order._id);
                 console.log(`order ${order._id} sent to accurate_sales_invoice to reattempt...`);
             } else {

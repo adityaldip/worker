@@ -3,7 +3,7 @@ const helper = new GeneralHelper();
 
 const receiptMapping = (order) => {
     return {
-        bankNo: "110102", // required
+        bankNo: order.accountNo, // required
         chequeAmount: order.total_price, // required
         customerNo: order.store_id, // required
         detailInvoice: [
@@ -31,7 +31,7 @@ const receiptMapping = (order) => {
         ],
         transDate: helper.dateConvert(order.updated_at), // required
         // "branchId: 0,
-        // "branchName: "string",
+        branchName: "JAKARTA", // Testing purpose
         // "chequeDate: "string",
         // "chequeNo: "string",
         // "currencyCode: "string",

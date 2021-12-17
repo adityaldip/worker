@@ -5,12 +5,12 @@ const { itemService } = require("../services/accurate/item.service");
 const helper = new GeneralHelper();
 const itemModel = new ItemModel();
 
-const checkItem = async (item, id) => {
+const checkItem = async (item, profile_id) => {
     try {
-        itemCheck = await itemModel.findBy({no: item.id});
+        itemCheck = await itemModel.findBy({no: item.sku, profile_id: profile_id});
         if (!itemCheck) {
-            console.log('item doesn\'t exist! creating item...');
-            itemService(item, id);
+            console.log(`item ${item.sku} doesn\'t exist! creating item...`);
+            itemService(item, profile_id);
         }
     } catch (error) {
         console.error(error.message)
@@ -21,7 +21,7 @@ const orderMapping = (order) => {
     let detailItems = [];
     order.item_lines.forEach(async item => {
         detailItems.push({
-            itemNo: item.id, // required; item_lines.id
+            itemNo: item.sku, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name ?? ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
@@ -81,7 +81,7 @@ const orderMapping = (order) => {
         // ],
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
         // branchId: 1,
-        // branchName: '',
+        branchName: 'JAKARTA',
         // cashDiscPercent: '',
         // cashDiscount: 900,
         // currencyCode: 'IDR',
