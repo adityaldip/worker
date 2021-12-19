@@ -1,11 +1,22 @@
-const amqp = require("amqplib/callback_api")
+const amqp = require("amqplib/callback_api");
 const syncOpenOrder = require("./app/services/sync_open_order.service");
 const syncInvoiceOrder = require('./app/services/sync_invoice_order.service');
 const syncPaidOrder = require("./app/services/sync_paid_order.service");
 const syncFilterItem = require('./app/services/sync_filter_item.service');
 const syncAccurateItem = require("./app/services/sync_accurate_item.service");
+const syncTokenRefresh = require("./app/services/sync_token_refresh.service");
 
 require('dotenv').config();
+
+const schedulerRefreshToken = process.env.REFRESH_TOKEN_SCHEDULER
+
+if (schedulerRefreshToken === 'ON') {
+  const cron = require('node-cron');
+  console.log('crob job for token refresh has started...');
+  cron.schedule('* * * * * *', () => {
+    syncTokenRefresh();
+  })
+}
 
 async function receiveMessage(channel, queue) {
   channel.assertQueue(queue, {
@@ -50,11 +61,6 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
       throw error1;
     }
     var queue = process.env.QUEUE_NAME || 'accurate_sales_order';
-    // queue = 'accurate_sales_paid';
-    // queue = 'accurate_sales_invoice';
-
-    // queue = 'accurate_items_query';
-    // queue = 'accurate_items_import';
     receiveMessage(channel, queue);
   });
 });
