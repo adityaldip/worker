@@ -1,31 +1,29 @@
-const MessageBroker = require('../../config/rabbitmq');
-const LogModel = require('../models/log.model');
+const MessageBroker = require('../../config/rabbitmq')
+const LogModel = require('../models/log.model')
 
-const logModel = new LogModel();
+const logModel = new LogModel()
 
-require('dotenv').config();
-class GeneralHelper{
-
-    async pubQueue(queue, message){
+require('dotenv').config()
+class GeneralHelper {
+    async pubQueue(queue, message) {
         try {
-            const broker = await MessageBroker.getInstance();
-            await broker.send(
-                queue,
-                Buffer.from(JSON.stringify(message)),
-            );
-            console.log(`sent to ${queue} channel...`);
+            const broker = await MessageBroker.getInstance()
+            await broker.send(queue, Buffer.from(JSON.stringify(message)))
+            console.log(`sent to ${queue} channel...`)
         } catch (error) {
-            console.error(error.message);
+            console.error(error.message)
         }
     }
 
     dateConvert(date) {
-        const _date = new Date(date);
-        return _date.getDate() + "/" + (_date.getMonth() + 1) + "/" + _date.getFullYear();
+        const _date = new Date(date)
+        return `${_date.getDate()}/${
+            _date.getMonth() + 1
+        }/${_date.getFullYear()}`
     }
 
     sanitizeSKU(sku) {
-        return sku.replace('(', ' - ').replace(')', '');
+        return sku.replace('(', ' - ').replace(')', '')
     }
 
     async errLog(id, params, log, attempt) {
@@ -33,13 +31,12 @@ class GeneralHelper{
             activity: process.env.QUEUE_NAME,
             activity_id: id,
             attempt: attempt,
-            params: params, 
+            params: params,
             log: log,
-            created_at: new Date()
-        };
-        await logModel.insert(body);
+            created_at: new Date(),
+        }
+        await logModel.insert(body)
     }
-
 }
 
-module.exports = GeneralHelper;
+module.exports = GeneralHelper

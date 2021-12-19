@@ -80,6 +80,6 @@ const itemMapping = (item) => {
         vendorPrice: item.price || item.total_price,
         // vendorUnitName: '',
     }
-};
+}
 
-module.exports = itemMapping;
+module.exports = itemMapping

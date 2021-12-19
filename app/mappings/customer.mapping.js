@@ -1,5 +1,5 @@
-const GeneralHelper = require("../helpers/general.helper");
-const helper = new GeneralHelper();
+const GeneralHelper = require('../helpers/general.helper')
+const helper = new GeneralHelper()
 
 const customerMapping = (order) => {
     return {
@@ -27,7 +27,7 @@ const customerMapping = (order) => {
         // detailContact: [
         //     {
         //         bbmPin: '',
-        //         email: '', 
+        //         email: '',
         //         fax: '',
         //         homePhone: '',
         //         id: 1,
@@ -95,6 +95,6 @@ const customerMapping = (order) => {
         // workPhone: '',
         // wpName: ''
     }
-};
+}
 
-module.exports = customerMapping;
+module.exports = customerMapping

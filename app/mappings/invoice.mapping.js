@@ -1,9 +1,9 @@
-const GeneralHelper = require("../helpers/general.helper");
-const helper = new GeneralHelper();
+const GeneralHelper = require('../helpers/general.helper')
+const helper = new GeneralHelper()
 
 const invoiceMapping = (order) => {
-    const detailItems = [];
-    order.item_lines.forEach(async item => {
+    const detailItems = []
+    order.item_lines.forEach(async (item) => {
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
@@ -14,8 +14,8 @@ const invoiceMapping = (order) => {
             // salesOrderNumber: order.id,
             // salesQuotationNumber: order.id,
             warehouseName: order.warehouseName,
-        });
-    });
+        })
+    })
     return {
         customerNo: order.store_id, // required
         // detailDownPayment: [
@@ -81,7 +81,7 @@ const invoiceMapping = (order) => {
         // taxNumber: "string", // required
         transDate: helper.dateConvert(order.updated_at), // required
         // branchId: 0,
-        branchName: "Jakarta",
+        branchName: 'Jakarta',
         // cashDiscPercent: "string",
         // cashDiscount: 0,
         // currencyCode: "string",
@@ -106,7 +106,7 @@ const invoiceMapping = (order) => {
         // taxable: true,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 0
-    };
+    }
 }
 
-module.exports = invoiceMapping;
+module.exports = invoiceMapping

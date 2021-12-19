@@ -1,16 +1,19 @@
-const GeneralHelper = require("../helpers/general.helper");
-const { ItemModel } = require('../models/item.model');
-const { itemService } = require("../services/accurate/item.service");
+const GeneralHelper = require('../helpers/general.helper')
+const { ItemModel } = require('../models/item.model')
+const { itemService } = require('../services/accurate/item.service')
 
-const helper = new GeneralHelper();
-const itemModel = new ItemModel();
+const helper = new GeneralHelper()
+const itemModel = new ItemModel()
 
 const checkItem = async (item, profile_id) => {
     try {
-        itemCheck = await itemModel.findBy({no: item.sku, profile_id: profile_id});
+        const itemCheck = await itemModel.findBy({
+            no: item.sku,
+            profile_id: profile_id,
+        })
         if (!itemCheck) {
-            console.log(`item ${item.sku} doesn\'t exist! creating item...`);
-            itemService(item, profile_id);
+            console.log(`item ${item.sku} doesn't exist! creating item...`)
+            itemService(item, profile_id)
         }
     } catch (error) {
         console.error(error.message)
@@ -18,8 +21,8 @@ const checkItem = async (item, profile_id) => {
 }
 
 const orderMapping = (order) => {
-    let detailItems = [];
-    order.item_lines.forEach(async item => {
+    let detailItems = []
+    order.item_lines.forEach(async (item) => {
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
@@ -27,9 +30,9 @@ const orderMapping = (order) => {
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
             quantity: 1,
-        });
-        await checkItem(item, order.profile_id);
-    });
+        })
+        await checkItem(item, order.profile_id)
+    })
     // if (order.channel_rebate > 0) {
     //     detailItems.push({
     //         itemNo: 'rebate',
@@ -59,25 +62,25 @@ const orderMapping = (order) => {
         //     },
         // ],
         detailItem: detailItems, //[
-            // {
-                // itemNo: '', // required; item_lines.id
-                // unitPrice: 9000, // required; item_lines.total_price
-                // _status: 'delete',
-                // departmentName: '',
-                // detailName: '', // item_lines.variant_name
-                // detailNotes: '', //item_lines.note
-                // id: 1,
-                // itemCashDiscount: 900, // item_lines.voucher_amount
-                // itemDiscPercent: '',
-                // itemUnitName: '',
-                // projectNo: '',
-                // quantity: 1,
-                // salesQuotationNumber: '',
-                // salesmanListNumber: [''],
-                // useTax1: false, // PPN
-                // useTax2: false, // PPNBM
-                // useTax3: false, // PPh23
-            // }
+        // {
+        // itemNo: '', // required; item_lines.id
+        // unitPrice: 9000, // required; item_lines.total_price
+        // _status: 'delete',
+        // departmentName: '',
+        // detailName: '', // item_lines.variant_name
+        // detailNotes: '', //item_lines.note
+        // id: 1,
+        // itemCashDiscount: 900, // item_lines.voucher_amount
+        // itemDiscPercent: '',
+        // itemUnitName: '',
+        // projectNo: '',
+        // quantity: 1,
+        // salesQuotationNumber: '',
+        // salesmanListNumber: [''],
+        // useTax1: false, // PPN
+        // useTax2: false, // PPNBM
+        // useTax3: false, // PPh23
+        // }
         // ],
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
         // branchId: 1,
@@ -91,14 +94,15 @@ const orderMapping = (order) => {
         // inclusiveTax: false
         number: order.id, // id
         // paymentTermName: '',
-        poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
+        poNumber:
+            order.channel == 'tokopedia' ? order.local_name : order.local_id,
         // rate: 0,
         // shipDate: '',
         // shipmentName: '',
         // taxable: false,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 1,
-    };
-};
+    }
+}
 
-module.exports = orderMapping;
+module.exports = orderMapping
