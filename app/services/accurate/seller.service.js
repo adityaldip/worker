@@ -7,6 +7,8 @@ const SellerModel = require('../../models/seller.model')
 const sellerModel = new SellerModel()
 const helper = new GeneralHelper()
 
+const authorization = 'NzMxMzgyMjYtMTFjYy00ZmI0LTg2NjEtYjdhODExYjIxNTI4OmYwODIxY2FmYTgxYjQ1N2NhOGJiMDEzY2QwYjJiN2Ew';
+
 const requestFunc = async (body, seller, uri) => {
     const payload = {
         uri: uri,
@@ -89,12 +91,26 @@ const getOpenDB = async (seller) => {
 const refreshTokenService = async (seller) => {
     try {
         const uri = `https://account.accurate.id/oauth/token`
-        const payload = {
+        const body = {
             grant_type: 'refresh_token',
             refresh_token: seller.api_token_refresh,
         }
-        const response = await requestFunc(payload, seller, uri)
-        console.log(response)
+        const payload = {
+            uri: uri,
+            json: true,
+            form: body,
+            headers: {
+                Authorization: `Basic ${authorization}`,
+            },
+            method: 'POST',
+        }
+        const response = await request(payload)
+            .then((body) => {
+                return body
+            })
+            .catch(function (err) {
+                return err.message
+            })
         if (response.access_token) {
             const today = new Date();
             const expired_at = new Date(today);
