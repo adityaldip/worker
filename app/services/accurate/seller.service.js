@@ -33,10 +33,7 @@ const refreshSessionService = async (seller) => {
         // get database id
         const db_id = seller.open_db_id || (await getOpenDB(seller))
         // database id is not exist
-        if (!db_id) {
-            console.error('database id not found!')
-            return
-        }
+        if (!db_id) return;
 
         const uri = `https://account.accurate.id/api/db-refresh-session.do`
         const payload = {
@@ -45,16 +42,18 @@ const refreshSessionService = async (seller) => {
         }
         const response = await requestFunc(payload, seller, uri)
         if (response.s) {
-            const db_session = response.d.session
-            const message = `seller's db session with profile_id ${seller.profile_id}`
-            if (db_session === seller.api_db_session) {
-                console.log(`${message} doesn't need to be refreshed!`)
-            } else {
-                console.log(`${message} has been refreshed!`)
-                await sellerModel.update(
-                    { seller_id: seller.seller_id },
-                    { $set: { api_db_session: db_session } }
-                )
+            if (typeof response.d === 'object' ) {
+                const db_session = response.d.session
+                const message = `seller's db session with profile_id ${seller.profile_id}`
+                if (db_session === seller.api_db_session) {
+                    console.log(`${message} still works!`)
+                } else {
+                    console.log(`${message} has been refreshed!`)
+                    await sellerModel.update(
+                        { seller_id: seller.seller_id },
+                        { $set: { api_db_session: db_session } }
+                    )
+                }
             }
         } else {
             console.error(response.d)
@@ -62,6 +61,7 @@ const refreshSessionService = async (seller) => {
             await helper.errLog(seller.seller_id, payload, response.d, 1)
         }
     } catch (error) {
+        await helper.errLog(seller.seller_id, null, error.message, 1)
         throw Error(error.message)
     }
 }
@@ -111,6 +111,7 @@ const refreshTokenService = async (seller) => {
             .catch(function (err) {
                 return err.message
             })
+        console.log(response);
         if (response.access_token) {
             const today = new Date();
             const expired_at = new Date(today);
@@ -123,6 +124,7 @@ const refreshTokenService = async (seller) => {
             await helper.errLog(seller.seller_id, payload, response, 1)
         }
     } catch (error) {
+        await helper.errLog(seller.seller_id, null, error.message, 1)
         throw Error(error.message)
     }
 }

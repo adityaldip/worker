@@ -31,7 +31,7 @@ const receiptMapping = (order) => {
         ],
         transDate: helper.dateConvert(order.updated_at), // required
         // "branchId: 0,
-        branchName: 'JAKARTA', // Testing purpose
+        // branchName: 'JAKARTA', // Testing purpose
         // "chequeDate: "string",
         // "chequeNo: "string",
         // "currencyCode: "string",

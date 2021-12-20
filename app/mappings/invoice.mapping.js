@@ -81,7 +81,7 @@ const invoiceMapping = (order) => {
         // taxNumber: "string", // required
         transDate: helper.dateConvert(order.updated_at), // required
         // branchId: 0,
-        branchName: 'Jakarta',
+        // branchName: 'Jakarta',
         // cashDiscPercent: "string",
         // cashDiscount: 0,
         // currencyCode: "string",

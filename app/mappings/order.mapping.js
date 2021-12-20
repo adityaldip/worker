@@ -84,7 +84,7 @@ const orderMapping = (order) => {
         // ],
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
         // branchId: 1,
-        branchName: 'JAKARTA',
+        // branchName: 'JAKARTA',
         // cashDiscPercent: '',
         // cashDiscount: 900,
         // currencyCode: 'IDR',
