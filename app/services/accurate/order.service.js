@@ -35,7 +35,14 @@ const orderService = async (order) => {
                     console.log(
                         `order ${order._id} sent to accurate_sales_invoice`
                     )
-                    break
+                    break;
+                    
+                case 'Delivered':
+                    await helper.pubQueue('accurate_sales_paid', order._id)
+                    console.log(
+                        `order ${order._id} sent to accurate_sales_paid`
+                    )
+                    break;
 
                 default:
                     break

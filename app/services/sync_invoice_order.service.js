@@ -11,7 +11,7 @@ const syncInvoiceOrder = async (id) => {
         const order = await orderModel.findBy({ _id: new mongo.ObjectId(id) })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         order.warehouseName = getWarehouse(order.warehouse_id, seller)
-        invoiceService(order)
+        await invoiceService(order)
     } catch (error) {
         throw Error(error.message)
     }
