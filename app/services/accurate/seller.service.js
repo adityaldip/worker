@@ -98,7 +98,7 @@ const refreshTokenService = async (seller) => {
         if (response.access_token) {
             const today = new Date();
             const expired_at = new Date(today);
-            expired_at.setDate(expired_at.getDate() + 2)
+            expired_at.setDate(expired_at.getDate() + 15)
             await sellerModel.update(
                 { seller_id: seller.seller_id },
                 { $set: { api_access_token: response.access_token, token_expired_at: expired_at } }
