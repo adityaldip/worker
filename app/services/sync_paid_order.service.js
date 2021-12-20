@@ -7,9 +7,10 @@ const orderModel = new OrderModel()
 
 const syncPaidOrder = async (id) => {
     try {
-        const order = await orderModel.findBy({ _id: new mongo.ObjectId(id) });
+        let order = await orderModel.findBy({ _id: new mongo.ObjectId(id) });
         if (!order.invoice?.number) {
             await syncInvoiceOrder(id);
+            order = await orderModel.findBy({ _id: new mongo.ObjectId(id) });
         }
         receiptService(order);
     } catch (error) {
