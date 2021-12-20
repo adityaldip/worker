@@ -19,14 +19,10 @@ const syncTokenRefresh = async () => {
             if (res.length < 1) return
 
             for (const seller of res) {
-                const today = new Date()
-                const tomorrow = new Date(today)
-                tomorrow.setDate(tomorrow.getDate() + 2)
+                const tomorrow = new Date()
+                tomorrow.setDate(tomorrow.getDate() + 1)
                 // check if seller account's token will expire soon; more than today but less then the day after tomorrow
-                if (
-                    seller.token_expired_at > today &&
-                    seller.token_expired_at <= tomorrow
-                ) {
+                if (seller.token_expired_at <= tomorrow) {
                     await refreshTokenService(seller)
                 }
 
