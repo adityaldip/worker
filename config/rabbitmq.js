@@ -15,7 +15,7 @@ class MessageBroker {
         if (!this.connection) {
             await this.init()
         }
-        await this.channel.assertQueue(queue, { durable: false })
+        await this.channel.assertQueue(queue, { durable: true })
         this.channel.sendToQueue(queue, message)
     }
 }

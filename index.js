@@ -4,19 +4,8 @@ const syncInvoiceOrder = require('./app/services/sync_invoice_order.service')
 const syncPaidOrder = require('./app/services/sync_paid_order.service')
 const syncFilterItem = require('./app/services/sync_filter_item.service')
 const syncAccurateItem = require('./app/services/sync_accurate_item.service')
-const syncTokenRefresh = require('./app/services/sync_token_refresh.service')
 
 require('dotenv').config()
-
-const schedulerRefreshToken = process.env.REFRESH_TOKEN_SCHEDULER
-
-if (schedulerRefreshToken === 'ON') {
-    const cron = require('node-cron')
-    console.log('crob job for token refresh has started...')
-    cron.schedule('* * * * * *', () => {
-        syncTokenRefresh()
-    })
-}
 
 async function receiveMessage(channel, queue) {
     channel.assertQueue(queue, {

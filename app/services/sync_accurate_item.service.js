@@ -16,15 +16,15 @@ const syncAccurateItem = async (profile_id) => {
             attempts: { $lt: parseInt(maxAttempts) },
         })
         item.project({ accurate_id: 0, _id: 0, synced: 0 })
-            .limit(10)
+            .limit(100)
             .toArray(async (err, res) => {
-                if (err) throw Error(err.message)
+                if (err) throw Error(err.message);
                 if (res.length > 0) {
-                    const skus = res.map((data) => data.no)
-                    await bulkItemService(res, profile_id, skus)
-                    await helper.pubQueue('accurate_items_import', profile_id)
+                    const skus = res.map((data) => data.no);
+                    await bulkItemService(res, profile_id, skus);
+                    await helper.pubQueue('accurate_items_import', profile_id);
                 } else {
-                    console.log('nothing to do')
+                    console.log('nothing to do');
                 }
             })
     } catch (error) {
