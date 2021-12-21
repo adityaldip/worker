@@ -8,7 +8,7 @@ const orderModel = new OrderModel()
 const syncPaidOrder = async (id) => {
     try {
         let order = await orderModel.findBy({ _id: new mongo.ObjectId(id) });
-        if (!order.invoice?.number) {
+        if (!order.invoice) {
             await syncInvoiceOrder(id);
             order = await orderModel.findBy({ _id: new mongo.ObjectId(id) });
         }
