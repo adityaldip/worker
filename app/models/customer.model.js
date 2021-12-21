@@ -1,9 +1,9 @@
 const MongoContext = require('../../config/mongodb')
 
-class SellerModel {
+class CustomerModel {
     constructor(context) {
         this.context = context
-        this.collection = 'sellers'
+        this.collection = 'customers'
     }
 
     async getInstance() {
@@ -39,4 +39,4 @@ class SellerModel {
     }
 }
 
-module.exports = SellerModel
+module.exports = CustomerModel
