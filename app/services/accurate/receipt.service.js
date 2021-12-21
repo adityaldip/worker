@@ -7,7 +7,7 @@ const receiptMapping = require('../../mappings/receipt.mapping')
 const helper = new GeneralHelper()
 const orderModel = new OrderModel()
 const invoiceModel = new InvoiceModel()
-const maxAttempts = process.env.MAX_ATTEMPT ?? 5
+const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const receiptService = async (order) => {
     try {

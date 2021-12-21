@@ -26,7 +26,7 @@ const orderMapping = (order) => {
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
             unitPrice: item.total_price, // required; item_lines.total_price
-            detailName: `${item.name} ${item.variant_name ?? ''}`, // item_lines.variant_name
+            detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
             quantity: 1,

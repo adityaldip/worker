@@ -5,7 +5,7 @@ const orderMapping = require('../../mappings/order.mapping')
 
 const helper = new GeneralHelper()
 const orderModel = new OrderModel()
-const maxAttempts = process.env.MAX_ATTEMPT ?? 5
+const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const orderService = async (order) => {
     try {
