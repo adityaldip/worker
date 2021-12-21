@@ -5,7 +5,7 @@ const { bulkItemService } = require('./accurate/item.service')
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
 
-const maxAttempts = process.env.MAX_ATTEMPT ?? 5
+const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const syncAccurateItem = async (profile_id) => {
     try {

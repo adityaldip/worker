@@ -8,7 +8,7 @@ const helper = new GeneralHelper()
 const orderModel = new OrderModel()
 const invoiceModel = new InvoiceModel()
 
-const maxAttempts = process.env.MAX_ATTEMPT ?? 5
+const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const invoiceService = async (order) => {
     try {
