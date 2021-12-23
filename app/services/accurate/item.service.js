@@ -26,6 +26,13 @@ const itemService = async (item_lines, profile_id) => {
             await helper.errLog(item.no, item, response.d, 1)
             console.error(response.d)
         }
+        const log = {
+            activity: 'create a new item',
+            profile_id,
+            params: item,
+            log: response,
+        }
+        await helper.accurateLog(log);
     } catch (error) {
         throw Error(error.message)
     }
@@ -66,6 +73,13 @@ const bulkItemService = async (items, profile_id, skus) => {
                 count++
             }
         }
+        const log = {
+            activity: 'sync items to accurate',
+            profile_id,
+            params: payload,
+            log: response,
+        }
+        await helper.accurateLog(log);
     } catch (error) {
         throw Error(error.message)
     }

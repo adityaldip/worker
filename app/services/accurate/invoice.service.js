@@ -53,6 +53,13 @@ const invoiceService = async (order) => {
                 )
             }
         }
+        const log = {
+            activity: 'create an order invoice',
+            profile_id: order.profile_id,
+            params: payload,
+            log: response,
+        }
+        await helper.accurateLog(log);
     } catch (error) {
         throw Error(error.message)
     }

@@ -24,6 +24,13 @@ const customerService = async (order) => {
             console.error(response.d)
             await helper.errLog(order.store_id, customer, response.d, 1)
         }
+        const log = {
+            activity: 'create a new customer',
+            profile_id: order.profile_id,
+            params: customer,
+            log: response,
+        }
+        await helper.accurateLog(log);
     } catch (error) {
         throw Error(error.message)
     }
