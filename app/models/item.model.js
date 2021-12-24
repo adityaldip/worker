@@ -1,9 +1,10 @@
 const MongoContext = require('../../config/mongodb')
+const Mysql = require('../../config/mysql')
 
-class SellerModel {
+class ItemModel {
     constructor(context) {
         this.context = context
-        this.collection = 'sellers'
+        this.collection = 'items'
     }
 
     async getInstance() {
@@ -39,4 +40,15 @@ class SellerModel {
     }
 }
 
-module.exports = SellerModel
+class ItemForstokModel {
+    async find(profile_id) {
+        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode
+                      FROM item_variants
+                      JOIN items ON item_variants.item_id = items.id
+                      WHERE items.profile_id = ? AND item_variants.price IS NOT NULL AND item_variants.removed_at IS NULL;`
+        const [rows] = await Mysql.promise().execute(query, [profile_id])
+        return rows
+    }
+}
+
+module.exports = { ItemModel, ItemForstokModel }

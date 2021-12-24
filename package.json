@@ -1,11 +1,32 @@
 {
-  "name": "accurate-worker",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Rio Riantana",
-  "license": "ISC"
+    "name": "accurate-worker",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+        "test": "nodemon index.js",
+        "start": "node index.js",
+        "format:check": "prettier --check .",
+        "format:write": "prettier --write .",
+        "lint:check": "eslint .",
+        "lint:fix": "eslint --fix ."
+    },
+    "author": "Rio Riantana",
+    "license": "ISC",
+    "dependencies": {
+        "amqplib": "^0.8.0",
+        "dotenv": "^10.0.0",
+        "http-parser-js": "^0.5.2",
+        "mongodb": "^4.2.0",
+        "mysql2": "^2.3.3",
+        "node-cron": "^3.0.0",
+        "request": "^2.88.0",
+        "request-promise": "^4.2.4"
+    },
+    "devDependencies": {
+        "eslint": "^8.5.0",
+        "eslint-config-google": "^0.14.0",
+        "eslint-config-prettier": "^8.3.0",
+        "prettier": "^2.5.1"
+    }
 }
