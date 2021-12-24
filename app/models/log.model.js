@@ -6,6 +6,10 @@ class LogModel {
         this.collection = 'error_logs'
     }
 
+    setCollection(collection) {
+        this.collection = collection;
+    }
+
     async getInstance() {
         if (!this.db) {
             this.db = await MongoContext.getInstance()

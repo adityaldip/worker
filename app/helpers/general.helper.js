@@ -37,6 +37,13 @@ class GeneralHelper {
         }
         await logModel.insert(body)
     }
+
+    async accurateLog(payload) {
+        logModel.setCollection('accurate_logs');
+        payload.worker = process.env.QUEUE_NAME;
+        payload.created_at = new Date();
+        await logModel.insert(payload);
+    }
 }
 
 module.exports = GeneralHelper
