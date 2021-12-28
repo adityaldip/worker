@@ -5,7 +5,7 @@ let instance
 class MessageBroker {
     async init() {
         this.connection = await amqp.connect(
-            process.env.RABBITMQ_URL || 'amqp://localhost:5672'
+            process.env.RABBITMQ_HOST || 'amqp://localhost:5672'
         )
         this.channel = await this.connection.createChannel()
         return this
@@ -15,7 +15,7 @@ class MessageBroker {
         if (!this.connection) {
             await this.init()
         }
-        await this.channel.assertQueue(queue, { durable: true })
+        await this.channel.assertQueue(queue, { durable: false })
         this.channel.sendToQueue(queue, message)
     }
 }
