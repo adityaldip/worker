@@ -9,7 +9,7 @@ const checkItem = async (item, profile_id) => {
     try {
         const itemCheck = await itemModel.findBy({
             no: item.sku,
-            profile_id: profile_id,
+            profile_id: `${profile_id}`,
         })
         if (!itemCheck) {
             console.log(`item ${item.sku} doesn't exist! creating item...`)
