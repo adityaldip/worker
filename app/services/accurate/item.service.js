@@ -18,7 +18,7 @@ const itemService = async (item_lines, profile_id) => {
         const response = await requestHelper.requestPost(option)
         if (response.s) {
             item.accurate_id = response.r.id
-            item.profile_id = profile_id
+            item.profile_id = `${profile_id}`
             item.synced = true
             await itemModel.insert(item)
             console.log(response.d)

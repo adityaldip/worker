@@ -27,6 +27,7 @@ class GeneralHelper {
     }
 
     async errLog(id, params, log, attempt) {
+        logModel.setCollection('error_logs');
         const body = {
             activity: process.env.QUEUE_NAME,
             activity_id: id,
