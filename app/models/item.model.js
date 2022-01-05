@@ -19,6 +19,11 @@ class ItemModel {
         return await db.collection(this.collection).insertOne(data)
     }
 
+    async insertMany(data) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).insertMany(data)
+    }
+
     async find(params) {
         const db = await this.getInstance()
         return await db.collection(this.collection).find(params)
@@ -38,15 +43,26 @@ class ItemModel {
         const db = await this.getInstance()
         return await db.collection(this.collection).updateMany(where, value)
     }
+
+    async distinct(field, where) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).distinct(field, where)
+    }
 }
 
 class ItemForstokModel {
-    async find(profile_id) {
-        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode
+    async find(profile_id, skus) {
+        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode, w.id as warehouse_id, ws.quantity as qty
                       FROM item_variants
-                      JOIN items ON item_variants.item_id = items.id
-                      WHERE items.profile_id = ? AND item_variants.price IS NOT NULL AND item_variants.removed_at IS NULL;`
-        const [rows] = await Mysql.promise().execute(query, [profile_id])
+                        JOIN items ON item_variants.item_id = items.id
+                        JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id
+                        JOIN warehouses w on ws.warehouse_id = w.id
+                      WHERE items.profile_id = ?
+                        AND w.name = 'Primary Warehouse'
+                        AND item_variants.price IS NOT NULL
+                        AND item_variants.removed_at IS NULL
+                        AND item_variants.sku NOT IN (?);`
+        const [rows] = await Mysql.promise().execute(query, [profile_id, skus])
         return rows
     }
 }

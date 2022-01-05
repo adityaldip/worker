@@ -22,26 +22,26 @@ const itemMapping = (item) => {
         //         quantity: 1,
         //     }
         // ],
-        // detailOpenBalance: [
-        //     {
-        //         _status: 'delete',
-        //         asOf: '',
-        //         detailSerialNumber: [
-        //             {
-        //                 _status: 'delete',
-        //                 expiredDate: '',
-        //                 id: 1,
-        //                 quantity: 1,
-        //                 serialNumberNo: '',
-        //             }
-        //         ],
-        //         id: 1,
-        //         itemUnitName: '',
-        //         quantity: 1,
-        //         unitCost: 9000,
-        //         warehouseName: '',
-        //     }
-        // ],
+        detailOpenBalance: [
+            {
+                // _status: 'delete',
+                // asOf: '',
+                // detailSerialNumber: [
+                //     {
+                //         _status: 'delete',
+                //         expiredDate: '',
+                //         id: 1,
+                //         quantity: 1,
+                //         serialNumberNo: '',
+                //     }
+                // ],
+                // id: 1,
+                // itemUnitName: '',
+                quantity: item.qty || 99,
+                unitCost: item.price || item.total_price,
+                warehouseName: item.warehouseName || 'Utama',
+            }
+        ],
         // goodTransitGlAccountNo: '',
         // id: 1,
         // inventoryGlAccountNo: '',
@@ -83,7 +83,7 @@ const itemMapping = (item) => {
         // unit5Price: 1,
         unitPrice: item.price || item.total_price, // item_lines.price
         upcNo: item.id, // item_lines.id
-        vendorPrice: item.price || item.total_price,
+        // vendorPrice: item.price || item.total_price,
         // vendorUnitName: '',
     }
 }

@@ -1,29 +1,10 @@
 const GeneralHelper = require('../helpers/general.helper')
 const { ItemModel } = require('../models/item.model')
-const { itemService } = require('../services/accurate/item.service')
+const { bulkItemService } = require('../services/accurate/item.service')
+const itemMapping = require('./item.mapping')
 
 const helper = new GeneralHelper()
-const itemModel = new ItemModel()
-
-/**
- * Check whether the item is in the Accurate or not
- * @param {Object} item Item lines from order request
- * @param {Number|String} profile_id Seller profile id
- */
-const checkItem = async (item, profile_id) => {
-    try {
-        const itemCheck = await itemModel.findBy({
-            no: item.sku,
-            profile_id: `${profile_id}`,
-        })
-        if (!itemCheck) {
-            console.log(`item ${item.sku} doesn't exist! creating item...`)
-            await itemService(item, profile_id)
-        }
-    } catch (error) {
-        console.error(error.message)
-    }
-}
+const itemModel = new ItemModel();
 
 /**
  * Mapping order for Accurate to receive
@@ -31,7 +12,10 @@ const checkItem = async (item, profile_id) => {
  * @returns {Object}        Mapped order object for Accurate
  */
 const orderMapping = async (order) => {
-    let detailItems = []
+    const detailItems = []
+    const skus = order.skus;
+    const newItem = [];
+
     for (const item of order.item_lines) {
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
@@ -41,21 +25,19 @@ const orderMapping = async (order) => {
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
             quantity: 1, 
         });
-        await checkItem(item, order.profile_id);
+    
+        if (!skus.includes(item.sku)) {
+            const mappedItem = itemMapping(item);
+            mappedItem.profile_id = order.profile_id;
+            newItem.push(mappedItem)
+        };
     }
 
-    // order.item_lines.forEach(async (item) => {
-    //     detailItems.push({
-    //         itemNo: item.sku, // required; item_lines.id
-    //         unitPrice: item.total_price, // required; item_lines.total_price
-    //         detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
-    //         detailNotes: item.note, //item_lines.note
-    //         itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
-    //         quantity: 1,
-    //     })
-    //     await checkItem(item, order.profile_id)
-    // })
-    
+    if (newItem.length) {
+        await itemModel.insertMany(newItem);
+        await bulkItemService(newItem, order.profile_id)
+    }
+
     return {
         customerNo: order.store_id, // required; customer_info.id
         // detailExpense: [
@@ -103,8 +85,7 @@ const orderMapping = async (order) => {
         // inclusiveTax: false
         number: order.id, // id
         // paymentTermName: '',
-        poNumber:
-            order.channel == 'tokopedia' ? order.local_name : order.local_id,
+        poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
         // rate: 0,
         // shipDate: '',
         // shipmentName: '',

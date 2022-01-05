@@ -19,8 +19,8 @@ const syncInvoiceOrder = async (id) => {
 
 const getWarehouse = (warehouse_id, seller) => {
     const warehouses = seller.warehouses
+    if (!warehouse_id || !warehouses) return null
     let warehouseName = null
-    if (!warehouse_id || !warehouses) return warehouseName
     for (const warehouse of warehouses) {
         if (warehouse.forstok_warehouse.id == warehouse_id) {
             warehouseName = warehouse.accurate_warehouse.name
