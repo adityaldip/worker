@@ -11,6 +11,11 @@ const customerModel = new CustomerModel()
 const sellerModel = new SellerModel()
 const helper = new GeneralHelper()
 
+/**
+ * Process a new order from accurate middleware to Accurate
+ * @param {String} id MongoDB Object ID from orders collection
+ * @returns 
+ */
 const syncOpenOrder = async (id) => {
     try {
         const order = await orderModel.findBy({ _id: new mongo.ObjectId(id) })
@@ -28,6 +33,7 @@ const syncOpenOrder = async (id) => {
         }
         if (!foundCoA) {
             const message = `CoA for ${accountName} not found`
+            await orderModel.update({ _id: new mongo.ObjectId(id) }, {$set: {last_error: message}});
             await helper.errLog(order.id, seller.customers, message, 0)
             console.error(message)
             return

@@ -6,6 +6,10 @@ const customerMapping = require('../../mappings/customer.mapping')
 const helper = new GeneralHelper()
 const customerModel = new CustomerModel()
 
+/**
+ * Insert a new customer to Accurate
+ * @param {Object} order Order request fetched from MongoDB
+ */
 const customerService = async (order) => {
     try {
         const customer = customerMapping(order)

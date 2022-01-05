@@ -6,9 +6,14 @@ const itemMapping = require('../../mappings/item.mapping')
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
 
-const itemService = async (item_lines, profile_id) => {
+/**
+ * Import a single item to Accurate
+ * @param {Object} item_line Item line to import to Accurate
+ * @param {Number|String} profile_id Seller profile id
+ */
+const itemService = async (item_line, profile_id) => {
     try {
-        const item = itemMapping(item_lines)
+        const item = itemMapping(item_line)
         const option = {
             uri: `api/item/save.do`,
             json: true,
@@ -38,6 +43,12 @@ const itemService = async (item_lines, profile_id) => {
     }
 }
 
+/**
+ * Bulk item import to Accurate
+ * @param {Array} items Items to import to Accurate
+ * @param {Number|String} profile_id Seller profile id
+ * @param {Array} skus Array of item SKUs
+ */
 const bulkItemService = async (items, profile_id, skus) => {
     try {
         const payload = { data: items }

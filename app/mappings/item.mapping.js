@@ -1,3 +1,9 @@
+
+/**
+ * Mapping item
+ * @param {Object} item Item to map
+ * @returns {Object}    Mapped item object for Accurate
+ */
 const itemMapping = (item) => {
     return {
         itemType: 'INVENTORY', // required; INVENTORY

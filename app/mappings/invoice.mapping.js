@@ -1,6 +1,11 @@
 const GeneralHelper = require('../helpers/general.helper')
 const helper = new GeneralHelper()
 
+/**
+ * Mapping invoice based on order request
+ * @param {Object} order    Order request fetched from MongoDB
+ * @returns {Object}        Mapped invoice object for Accurate
+ */
 const invoiceMapping = (order) => {
     const detailItems = []
     order.item_lines.forEach(async (item) => {
