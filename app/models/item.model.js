@@ -60,6 +60,7 @@ class ItemForstokModel {
                       WHERE items.profile_id = ?
                         AND w.name = 'Primary Warehouse'
                         AND item_variants.price IS NOT NULL
+                        AND item_variants.price > 0
                         AND item_variants.removed_at IS NULL
                         AND item_variants.sku NOT IN (?);`
         const [rows] = await Mysql.promise().execute(query, [profile_id, skus])
