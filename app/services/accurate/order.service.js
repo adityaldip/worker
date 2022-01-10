@@ -9,7 +9,7 @@ const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const orderService = async (order) => {
     try {
-        const payload = orderMapping(order)
+        const payload = await orderMapping(order)
         const option = {
             uri: `api/sales-order/save.do`,
             json: true,

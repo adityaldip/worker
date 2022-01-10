@@ -7,8 +7,9 @@ const itemModel = new ItemModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 
-const syncAccurateItem = async (profile_id) => {
+const syncAccurateItem = async (id) => {
     try {
+        const profile_id = parseInt(id);
         const item = await itemModel.find({
             synced: false,
             upcNo: { $ne: 'rebate' },
@@ -20,11 +21,10 @@ const syncAccurateItem = async (profile_id) => {
             .toArray(async (err, res) => {
                 if (err) throw Error(err.message);
                 if (res.length > 0) {
-                    const skus = res.map((data) => data.no);
-                    await bulkItemService(res, profile_id, skus);
+                    await bulkItemService(res, profile_id);
                     await helper.pubQueue('accurate_items_import', profile_id);
                 } else {
-                    console.log('nothing to do');
+                    console.log('upload items to accurate is done');
                 }
             })
     } catch (error) {

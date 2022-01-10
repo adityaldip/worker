@@ -1,3 +1,9 @@
+
+/**
+ * Mapping item
+ * @param {Object} item Item to map
+ * @returns {Object}    Mapped item object for Accurate
+ */
 const itemMapping = (item) => {
     return {
         itemType: 'INVENTORY', // required; INVENTORY
@@ -16,26 +22,26 @@ const itemMapping = (item) => {
         //         quantity: 1,
         //     }
         // ],
-        // detailOpenBalance: [
-        //     {
-        //         _status: 'delete',
-        //         asOf: '',
-        //         detailSerialNumber: [
-        //             {
-        //                 _status: 'delete',
-        //                 expiredDate: '',
-        //                 id: 1,
-        //                 quantity: 1,
-        //                 serialNumberNo: '',
-        //             }
-        //         ],
-        //         id: 1,
-        //         itemUnitName: '',
-        //         quantity: 1,
-        //         unitCost: 9000,
-        //         warehouseName: '',
-        //     }
-        // ],
+        detailOpenBalance: [
+            {
+                // _status: 'delete',
+                // asOf: '',
+                // detailSerialNumber: [
+                //     {
+                //         _status: 'delete',
+                //         expiredDate: '',
+                //         id: 1,
+                //         quantity: 1,
+                //         serialNumberNo: '',
+                //     }
+                // ],
+                // id: 1,
+                // itemUnitName: '',
+                quantity: item.qty || 99,
+                unitCost: item.price || item.total_price,
+                warehouseName: item.warehouseName || 'Utama',
+            }
+        ],
         // goodTransitGlAccountNo: '',
         // id: 1,
         // inventoryGlAccountNo: '',

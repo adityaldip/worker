@@ -6,9 +6,14 @@ const itemMapping = require('../../mappings/item.mapping')
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
 
-const itemService = async (item_lines, profile_id) => {
+/**
+ * Import a single item to Accurate
+ * @param {Object} item_line Item line to import to Accurate
+ * @param {Number|String} profile_id Seller profile id
+ */
+const itemService = async (item_line, profile_id) => {
     try {
-        const item = itemMapping(item_lines)
+        const item = itemMapping(item_line)
         const option = {
             uri: `api/item/save.do`,
             json: true,
@@ -18,7 +23,7 @@ const itemService = async (item_lines, profile_id) => {
         const response = await requestHelper.requestPost(option)
         if (response.s) {
             item.accurate_id = response.r.id
-            item.profile_id = `${profile_id}`
+            item.profile_id = profile_id
             item.synced = true
             await itemModel.insert(item)
             console.log(response.d)
@@ -38,7 +43,13 @@ const itemService = async (item_lines, profile_id) => {
     }
 }
 
-const bulkItemService = async (items, profile_id, skus) => {
+/**
+ * Bulk item import to Accurate
+ * @param {Array} items Items to import to Accurate
+ * @param {Number|String} profile_id Seller profile id
+ * @param {Array} skus Array of item SKUs
+ */
+const bulkItemService = async (items, profile_id) => {
     try {
         const payload = { data: items }
         const option = {
@@ -48,26 +59,27 @@ const bulkItemService = async (items, profile_id, skus) => {
         }
         const requestHelper = new RequestHelper(profile_id)
         const response = await requestHelper.requestPost(option)
+        const skus = items.map(item => item.no)
         if (response.s) {
             await itemModel.updateMany(
                 { no: { $in: skus }, profile_id: profile_id },
                 { $set: { synced: true } }
             )
-            console.log('Berhasil mengimport ke accurate')
+            console.log('Berhasil mengimport item baru ke accurate')
         } else {
             let count = 0
             for (const res of response.d) {
-                console.log(res.d)
+                console.log(res)
                 if (res.s) {
                     await itemModel.update(
                         { profile_id: profile_id, no: res.r.no },
                         { $set: { synced: true } }
                     )
                 } else {
-                    await itemModel.update(
-                        { profile_id: profile_id, no: skus[count] },
-                        { $inc: { attempts: 1 }, $set: { last_error: res.d } }
-                    )
+                    const updateItem = res.d[0].includes('Sudah ada data lain dengan') ?
+                        { $set: { synced: true } } :
+                        { $inc: { attempts: 1 }, $set: { last_error: res } };
+                    await itemModel.update({ profile_id: profile_id, no: skus[count] }, updateItem);
                     await helper.errLog(profile_id, skus[count], res.d, 1)
                 }
                 count++

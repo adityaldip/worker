@@ -1,6 +1,11 @@
 const GeneralHelper = require('../helpers/general.helper')
 const helper = new GeneralHelper()
 
+/**
+ * Mapping receipt based on order request
+ * @param {Object} order    Order request fetched from MongoDB
+ * @returns {Object}        Mapped receipt object for Accurate
+ */
 const receiptMapping = (order) => {
     return {
         bankNo: order.accountNo, // required
