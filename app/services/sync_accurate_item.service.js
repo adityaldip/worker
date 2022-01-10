@@ -9,6 +9,7 @@ const maxAttempts = process.env.MAX_ATTEMPT || 5
 
 const syncAccurateItem = async (id) => {
     try {
+        console.log(`sync item for profile id ${id}`);
         const profile_id = parseInt(id);
         const item = await itemModel.find({
             synced: false,
