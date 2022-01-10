@@ -10,6 +10,7 @@ const sellerModel = new SellerModel();
 
 const syncFilterItem = async (id) => {
     try {
+        console.log(`fetch item for profile id ${id}`);
         console.time('item pooling took')
         const profile_id = parseInt(id);
         const skus = await itemModel.distinct('no', {profile_id: profile_id });
@@ -26,15 +27,7 @@ const syncFilterItem = async (id) => {
             payload.attempts = 0
             return payload;
         })
-        // for (const item of items) {
-        //     item.warehouseName = warehouseName
-        //     console.log(item.sku, item.qty);
-        //     const payload = itemMapping(item)
-        //     payload.profile_id = profile_id
-        //     payload.synced = false
-        //     payload.attempts = 0
-        //     // await itemModel.insert(payload)
-        // }
+
         await itemModel.insertMany(mappedItems);
         await helper.pubQueue('accurate_items_import', profile_id)
     } catch (error) {
