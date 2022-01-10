@@ -1,6 +1,11 @@
 const GeneralHelper = require('../helpers/general.helper')
 const helper = new GeneralHelper()
 
+/**
+ * Mapping customer based on order request
+ * @param {Object} order    Order request fetched from MongoDB
+ * @returns {Object}        Mapped customer object for Accurate
+ */
 const customerMapping = (order) => {
     return {
         name: order.store_name || order.channel, // required; customer_info.name
