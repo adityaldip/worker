@@ -17,25 +17,10 @@ const invoiceMapping = (order) => {
             itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
             quantity: 1,
         }
-
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName;
-
         detailItems.push(detailItem);
-        
     }
-    // order.item_lines.forEach(async (item) => {
-    //     detailItems.push({
-    //         itemNo: item.sku, // required; item_lines.id
-    //         unitPrice: item.total_price, // required; item_lines.total_price
-    //         detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
-    //         detailNotes: item.note, //item_lines.note
-    //         itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
-    //         quantity: 1,
-    //         // salesOrderNumber: order.id,
-    //         // salesQuotationNumber: order.id,
-    //         warehouseName: order.warehouseName,
-    //     })
-    // })
+    
     return {
         customerNo: order.store_id, // required
         // detailDownPayment: [
