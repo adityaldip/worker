@@ -7,15 +7,30 @@ const helper = new GeneralHelper()
  * @returns {Object}        Mapped invoice object for Accurate
  */
 const invoiceMapping = (order) => {
-    const detailItems = []
+    let detailItems = []
+    const itemQty = {};
+
     for (const item of order.item_lines) {
+        if (itemQty[item.sku]) {
+            detailItems = detailItems.map((obj) => {
+                if (obj.itemNo == item.sku) {
+                    obj.quantity++
+                    obj.itemCashDiscount += item.voucher_amount
+                }
+                return obj
+            })
+            continue;
+        }
+        itemQty[item.sku] = 1
+
         const detailItem = {
             itemNo: item.sku, // required; item_lines.id
-            unitPrice: item.total_price, // required; item_lines.total_price
+            unitPrice: item.price || item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
-            itemCashDiscount: item.voucher_amount, // item_lines.voucher_amount
+            itemCashDiscount: item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
+            salesOrderNumber: order.id,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName;
         detailItems.push(detailItem);
@@ -33,14 +48,14 @@ const invoiceMapping = (order) => {
         // ],
         // detailExpense: [
         //   {
-        //     // accountNo: "string",
-        //     // departmentName: "string",
-        //     // expenseAmount: 0,
-        //     // expenseName: "string",
-        //     // expenseNotes: "string",
-        //     // id: 0,
-        //     salesOrderNumber: order.id,
-        //     salesQuotationNumber: order.id
+            // accountNo: order.accountNo,
+            // departmentName: "string",
+            // expenseAmount: 0,
+            // expenseName: "string",
+            // expenseNotes: "string",
+            // id: 0,
+            // salesOrderNumber: order.id,
+            // salesQuotationNumber: order.id
         //   }
         // ],
         detailItem: detailItems,
@@ -88,7 +103,7 @@ const invoiceMapping = (order) => {
         // branchId: 0,
         // branchName: 'Jakarta',
         // cashDiscPercent: "string",
-        // cashDiscount: 0,
+        cashDiscount: order.discount_amount || 0,
         // currencyCode: "string",
         // description: "string",
         // documentCode: "DIGUNGGUNG",

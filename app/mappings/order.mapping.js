@@ -20,16 +20,19 @@ const orderMapping = async (order) => {
     for (const item of order.item_lines) {
         if (itemQty[item.sku]) {
             detailItems = detailItems.map((obj) => {
-                if (obj.itemNo == item.sku) ++obj.quantity
+                if (obj.itemNo == item.sku) {
+                    obj.quantity++
+                    obj.itemCashDiscount += item.voucher_amount
+                }
                 return obj
             })
             continue;
         }
-        
         itemQty[item.sku] = 1
+        
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
-            unitPrice: item.total_price || 0, // required; item_lines.total_price
+            unitPrice: item.price || item.total_price || 0, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: item.voucher_amount || 0, // item_lines.voucher_amount
