@@ -41,7 +41,9 @@ const syncOpenOrder = async (id) => {
         // check if customer already exist
         const foundCust = await customerModel.findBy({
             customerNo: order.store_id,
+            profile_id: order.profile_id
         })
+        console.log(foundCust);
         if (!foundCust) await customerService(order)
 
         order.skus = await itemModel.distinct('no', {profile_id: order.profile_id });

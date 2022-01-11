@@ -23,6 +23,7 @@ const customerService = async (order) => {
         if (response.s) {
             console.log(response.d)
             customer.accurate_id = response.r.id
+            customer.profile_id = order.profile_id
             await customerModel.insert(customer)
         } else {
             console.error(response.d)

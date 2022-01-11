@@ -70,7 +70,7 @@ const bulkItemService = async (items, profile_id) => {
             let count = 0
             if (Array.isArray(response.d)) {
                 for (const res of response.d) {
-                    console.log(res)
+                    console.log(res.d);
                     if (res.s) {
                         await itemModel.update(
                             { profile_id: profile_id, no: res.r.no },
@@ -86,11 +86,7 @@ const bulkItemService = async (items, profile_id) => {
                     count++
                 }
             } else {
-                const updateItem = response.d.includes('Sudah ada data lain dengan') ?
-                    { $set: { synced: true } } :
-                    { $inc: { attempts: 1 }, $set: { last_error: response } };
-                await itemModel.update({ profile_id: profile_id, no: skus[0] }, updateItem);
-                await helper.errLog(profile_id, skus[0], response.d, 1)
+                console.log(response);
             }
         }
         const log = {
