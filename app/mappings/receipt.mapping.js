@@ -7,7 +7,7 @@ const helper = new GeneralHelper()
  * @returns {Object}        Mapped receipt object for Accurate
  */
 const receiptMapping = (order) => {
-    const total = order.subtotal - order.discount_amount
+    const total = order.subtotal - ( order.discount_amount + ( order.voucher_amount || 0 ) )
     return {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required

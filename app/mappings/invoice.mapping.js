@@ -15,7 +15,7 @@ const invoiceMapping = (order) => {
             detailItems = detailItems.map((obj) => {
                 if (obj.itemNo == item.sku) {
                     obj.quantity++
-                    obj.itemCashDiscount += item.voucher_amount
+                    obj.itemCashDiscount += (item.discount_amount || 0) + item.voucher_amount
                 }
                 return obj
             })
@@ -28,7 +28,7 @@ const invoiceMapping = (order) => {
             unitPrice: item.price || item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
-            itemCashDiscount: item.voucher_amount || 0, // item_lines.voucher_amount
+            itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             salesOrderNumber: order.id,
         }
@@ -103,7 +103,7 @@ const invoiceMapping = (order) => {
         // branchId: 0,
         // branchName: 'Jakarta',
         // cashDiscPercent: "string",
-        cashDiscount: order.discount_amount || 0,
+        cashDiscount: (order.voucher_amount || 0) +  order.discount_amount || 0,
         // currencyCode: "string",
         // description: "string",
         // documentCode: "DIGUNGGUNG",
