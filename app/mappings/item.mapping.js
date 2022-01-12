@@ -37,7 +37,7 @@ const itemMapping = (item) => {
                 // ],
                 // id: 1,
                 // itemUnitName: '',
-                quantity: item.qty || 99,
+                quantity: item.qty || 0,
                 unitCost: item.price || item.total_price || 0,
                 warehouseName: item.warehouseName || 'Utama',
             }

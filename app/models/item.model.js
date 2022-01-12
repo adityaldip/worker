@@ -58,6 +58,7 @@ class ItemForstokModel {
                         JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id
                         JOIN warehouses w on ws.warehouse_id = w.id
                       WHERE items.profile_id = ?
+                        AND w.profile_id = items.profile_id
                         AND w.name = 'Primary Warehouse'
                         AND item_variants.price IS NOT NULL
                         AND item_variants.removed_at IS NULL

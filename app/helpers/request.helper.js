@@ -40,6 +40,16 @@ class RequestHelper {
             })
     }
 
+    async request_get(data) {
+        return await request(data)
+            .then((body) => {
+                return body
+            })
+            .catch(function (err) {
+                return err.message
+            })
+    }
+
     async requestPost(data) {
         const payload = await this.requestPayload(data)
         payload.method = 'POST'
