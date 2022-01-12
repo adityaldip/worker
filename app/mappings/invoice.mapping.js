@@ -25,7 +25,7 @@ const invoiceMapping = (order) => {
 
         const detailItem = {
             itemNo: item.sku, // required; item_lines.id
-            unitPrice: item.price || item.total_price, // required; item_lines.total_price
+            unitPrice: item.sale_price || item.price || item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
