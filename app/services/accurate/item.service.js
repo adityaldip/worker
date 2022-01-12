@@ -2,6 +2,7 @@ const RequestHelper = require('../../helpers/request.helper')
 const GeneralHelper = require('../../helpers/general.helper')
 const { ItemModel } = require('../../models/item.model')
 const itemMapping = require('../../mappings/item.mapping')
+const { refreshSessionService } = require('./seller.service')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
@@ -29,7 +30,11 @@ const itemService = async (item_line, profile_id) => {
             console.log(response.d)
         } else {
             await helper.errLog(item.no, item, response.d, 1)
-            console.error(response.d)
+            const sessionExpiredString = 'Data Session Key tidak tepat';
+            const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
+            if (isSessionExpired) await refreshSessionService(profile_id) 
+
+            console.log(response.d);
         }
         const log = {
             activity: 'create a new item',
@@ -67,6 +72,10 @@ const bulkItemService = async (items, profile_id) => {
             )
             console.log('Berhasil mengimport item baru ke accurate')
         } else {
+            const sessionExpiredString = 'Data Session Key tidak tepat';
+            const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
+            if (isSessionExpired) await refreshSessionService(profile_id) 
+            
             let count = 0
             if (Array.isArray(response.d)) {
                 for (const res of response.d) {

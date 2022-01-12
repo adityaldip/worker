@@ -2,6 +2,7 @@ const CustomerModel = require('../../models/customer.model')
 const RequestHelper = require('../../helpers/request.helper')
 const GeneralHelper = require('../../helpers/general.helper')
 const customerMapping = require('../../mappings/customer.mapping')
+const { refreshSessionService } = require('./seller.service')
 
 const helper = new GeneralHelper()
 const customerModel = new CustomerModel()
@@ -26,7 +27,11 @@ const customerService = async (order) => {
             customer.profile_id = order.profile_id
             await customerModel.insert(customer)
         } else {
-            console.error(response.d)
+            const sessionExpiredString = 'Data Session Key tidak tepat';
+            const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
+            if (isSessionExpired) await refreshSessionService(order.profile_id) 
+
+            console.log(response.d);
             await helper.errLog(order.store_id, customer, response.d, 1)
         }
         const log = {
