@@ -3,6 +3,7 @@ const GeneralHelper = require('../../helpers/general.helper')
 const OrderModel = require('../../models/order.model')
 const InvoiceModel = require('../../models/invoice.model')
 const invoiceMapping = require('../../mappings/invoice.mapping')
+const { refreshSessionService } = require('./seller.service')
 
 const helper = new GeneralHelper()
 const orderModel = new OrderModel()
@@ -31,11 +32,16 @@ const invoiceService = async (order) => {
             )
             await invoiceModel.insert(payload)
         } else {
-            console.log(response.d)
+            const sessionExpiredString = 'Data Session Key tidak tepat';
+            const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
+            if (isSessionExpired) await refreshSessionService(order.profile_id) 
+
+            console.log(response.d);
+
             await helper.errLog(
                 order.id,
                 payload,
-                response.d,
+                response,
                 order.attempts || 1
             )
             await orderModel.update(
