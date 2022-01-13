@@ -31,8 +31,16 @@ const customerService = async (order) => {
             const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
             if (isSessionExpired) await refreshSessionService(order.profile_id) 
 
+            if (Array.isArray(response.d)) {
+                if (response.d[0].includes('Sudah ada data lain dengan')) {
+                    customer.profile_id = order.profile_id
+                    await customerModel.insert(customer)
+                }
+            }
+            
             console.log(response.d);
             await helper.errLog(order.store_id, customer, response.d, 1)
+
         }
         const log = {
             activity: 'create a new customer',

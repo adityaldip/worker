@@ -18,10 +18,10 @@ const refreshSessionService = async (profile_id) => {
             headers: {
                 Authorization: `Bearer ${seller.api_access_token}`,
             },
-            method: 'POST',
+            method: 'GET',
         }
         const requestHelper = new RequestHelper(seller.profile_id)
-        const response = await requestHelper.requestPost(payload);
+        const response = await requestHelper.request_get(payload);
         if (response.s) {
             if (typeof response.d === 'object' ) {
                 const dbSession = response.d.session
