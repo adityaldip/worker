@@ -96,7 +96,7 @@ const bulkItemService = async (items, profile_id) => {
             } else {
                 console.log(response);
                 const sessionExpiredString = 'Data Session Key tidak tepat';
-                const isSessionExpired = typeof response == 'object' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
+                const isSessionExpired = typeof response == 'object' ?  response.d[0].includes(sessionExpiredString) : response.includes(sessionExpiredString)
                 if (isSessionExpired) await refreshSessionService(profile_id)
             }
         }
