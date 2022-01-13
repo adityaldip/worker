@@ -71,11 +71,7 @@ const bulkItemService = async (items, profile_id) => {
                 { $set: { synced: true } }
             )
             console.log('Berhasil mengimport item baru ke accurate')
-        } else {
-            const sessionExpiredString = 'Data Session Key tidak tepat';
-            const isSessionExpired = typeof response == 'string' ? response.includes(sessionExpiredString) : response.d[0].includes(sessionExpiredString)
-            if (isSessionExpired) await refreshSessionService(profile_id) 
-            
+        } else { 
             let count = 0
             if (Array.isArray(response.d)) {
                 for (const res of response.d) {
@@ -86,6 +82,9 @@ const bulkItemService = async (items, profile_id) => {
                             { $set: { synced: true } }
                         )
                     } else {
+                        if (res.d) {
+                            
+                        }
                         const updateItem = res.d[0].includes('Sudah ada data lain dengan') ?
                             { $set: { synced: true } } :
                             { $inc: { attempts: 1 }, $set: { last_error: res } };
@@ -96,6 +95,9 @@ const bulkItemService = async (items, profile_id) => {
                 }
             } else {
                 console.log(response);
+                const sessionExpiredString = 'Data Session Key tidak tepat';
+                const isSessionExpired = typeof response == 'object' ?  response.d[0].includes(sessionExpiredString) : response.includes(sessionExpiredString)
+                if (isSessionExpired) await refreshSessionService(profile_id)
             }
         }
         const log = {
