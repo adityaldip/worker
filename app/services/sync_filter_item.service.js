@@ -18,18 +18,28 @@ const syncFilterItem = async (id) => {
         const { warehouses } = await sellerModel.findBy({seller_id: profile_id});
         const warehouseName = getWarehouse(items[0].warehouse_id, warehouses);
         console.timeEnd('item pooling took')
-        
-        const mappedItems = items.map((item) => {
-            item.warehouseName = warehouseName
-            const payload = itemMapping(item)
-            payload.profile_id = profile_id
-            payload.synced = false
-            payload.attempts = 0
-            return payload;
-        })
 
-        await itemModel.insertMany(mappedItems);
-        await helper.pubQueue('accurate_items_import', profile_id)
+        const mappedItems = [];
+        for (const item of items) {
+            if (!skus.includes(item.sku)) {
+                item.warehouseName = warehouseName
+                const payload = itemMapping(item)
+                if (!(payload.unitPrice > 0)) continue;
+                payload.profile_id = profile_id
+                payload.synced = false
+                payload.attempts = 0
+                console.log(payload);
+                mappedItems.push(payload)
+            }
+        }
+
+        if (mappedItems.length > 0) {
+            await itemModel.insertMany(mappedItems);
+            await helper.pubQueue('accurate_items_import', profile_id)
+        } else {
+            console.log('nothing to sync');
+        }
+
     } catch (error) {
         throw Error(error.message)
     }
