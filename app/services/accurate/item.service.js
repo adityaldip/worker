@@ -82,10 +82,7 @@ const bulkItemService = async (items, profile_id) => {
                             { $set: { synced: true } }
                         )
                     } else {
-                        if (res.d) {
-                            
-                        }
-                        const updateItem = res.d[0].includes('Sudah ada data lain dengan') ?
+                        const updateItem = res.d[0].includes('Sudah ada data lain dengan Kode Barang') ?
                             { $set: { synced: true } } :
                             { $inc: { attempts: 1 }, $set: { last_error: res } };
                         await itemModel.update({ profile_id: profile_id, no: skus[count] }, updateItem);

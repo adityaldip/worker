@@ -52,17 +52,18 @@ class ItemModel {
 
 class ItemForstokModel {
     async find(profile_id, skus) {
-        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode, w.id as warehouse_id, ws.quantity as qty
-                      FROM item_variants
-                        JOIN items ON item_variants.item_id = items.id
-                        JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id
-                        JOIN warehouses w on ws.warehouse_id = w.id
-                      WHERE items.profile_id = ?
-                        AND w.profile_id = items.profile_id
-                        AND w.name = 'Primary Warehouse'
-                        AND item_variants.price IS NOT NULL
-                        AND item_variants.removed_at IS NULL
-                        AND item_variants.sku NOT IN (?);`
+        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode, w.id as warehouse_id, ws.quantity as qty, ic.price as total_price
+                        FROM item_variants
+                            JOIN items ON item_variants.item_id = items.id
+                            JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id
+                            JOIN warehouses w on ws.warehouse_id = w.id
+                            JOIN item_channel_association_variant_associations ic on item_variants.id = ic.variant_id
+                        WHERE items.profile_id = ?
+                            AND w.profile_id = items.profile_id
+                            AND w.name = 'Primary Warehouse'
+                            AND item_variants.removed_at IS NULL
+                            AND item_variants.sku NOT IN (?)
+                        GROUP BY item_variants.sku;`
         const [rows] = await Mysql.promise().execute(query, [profile_id, skus])
         return rows
     }
