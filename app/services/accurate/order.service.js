@@ -27,6 +27,7 @@ const orderService = async (order) => {
                         accurate_id: response.r.id,
                         synced: true,
                         accountNo: order.accountNo,
+                        branchName: order.branchName
                     },
                 }
             )
