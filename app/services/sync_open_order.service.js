@@ -28,9 +28,11 @@ const syncOpenOrder = async (id) => {
         for (const account of seller.customers) {
             if (account.forstok_channel.name == accountName) {
                 order.accountNo = account.account.no
+                order.branchName = account.branch ? account.branch.name : null
                 break
             }
         }
+
         if (!order.accountNo) {
             const message = `CoA for ${accountName} not found`
             await orderModel.update({ _id: new mongo.ObjectId(id) }, {$set: {last_error: message}});
