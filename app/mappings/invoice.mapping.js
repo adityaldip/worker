@@ -36,7 +36,7 @@ const invoiceMapping = (order) => {
         detailItems.push(detailItem);
     }
     
-    return {
+    const mapped = {
         customerNo: order.store_id, // required
         // detailDownPayment: [
         //   {
@@ -127,6 +127,24 @@ const invoiceMapping = (order) => {
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 0
     }
+
+    if (!order.cashless && order.shippingAccountNo) {
+        const providers = order.shipping_courier.providers.length ? order.shipping_courier.providers.join(', ') : order.item_lines[0].shipping_provider;
+        const shipping = order.shipping_provider || providers || '';
+        mapped.detailExpense = [
+            {
+                accountNo: order.shippingAccountNo,
+                //         departmentName: '',
+                expenseAmount: order.shipping_price,
+                expenseName: shipping,
+                //         expenseNotes: '',
+                //         id: 1,
+                //         salesQuotationNumber: '',
+            }
+        ];
+    }
+
+    return mapped;
 }
 
 module.exports = invoiceMapping

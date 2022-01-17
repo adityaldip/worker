@@ -38,6 +38,11 @@ const syncOpenOrder = async (id) => {
             throw Error(message);
         }
 
+        // add shipping account
+        if (seller.shipping) {
+            order.shippingAccountNo = seller.shipping.no;
+        }
+
         // check if customer already exist
         const foundCust = await customerModel.findBy({
             customerNo: order.store_id,
