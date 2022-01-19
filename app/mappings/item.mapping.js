@@ -5,7 +5,7 @@
  * @returns {Object}    Mapped item object for Accurate
  */
 const itemMapping = (item) => {
-    return {
+    const mapped = {
         itemType: 'INVENTORY', // required; INVENTORY
         name: item.name, // required; item_lines.name
         // calculateGroupPrice: false,
@@ -82,10 +82,16 @@ const itemMapping = (item) => {
         // unit5Name: '',
         // unit5Price: 1,
         unitPrice: item.price || item.total_price || 0, // item_lines.price
-        upcNo: item.id, // item_lines.id
+        // upcNo: item.barcode, // item_lines.id
         vendorPrice: item.price || item.total_price || 0,
         // vendorUnitName: '',
     }
+
+    if (item.barcode) {
+        mapped.upcNo = item.barcode;
+    }
+
+    return mapped;
 }
 
 module.exports = itemMapping

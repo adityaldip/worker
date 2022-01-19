@@ -36,7 +36,7 @@ const invoiceMapping = (order) => {
         detailItems.push(detailItem);
     }
     
-    return {
+    const mapped = {
         customerNo: order.store_id, // required
         // detailDownPayment: [
         //   {
@@ -127,6 +127,12 @@ const invoiceMapping = (order) => {
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 0
     }
+
+    if (order.branchName) {
+        mapped.branchName = order.branchName;
+    }
+
+    return mapped;
 }
 
 module.exports = invoiceMapping
