@@ -10,7 +10,7 @@ const receiptMapping = (order) => {
     let total = order.subtotal - ( order.discount_amount + ( order.voucher_amount || 0 ) )
     if (!order.cashless) total += order.shipping_price;
 
-    if(order.totalAmountAccurate) total = order.total_amount_accurate;
+    if(order.total_amount_accurate) total = order.total_amount_accurate;
     
     const mapped = {
         bankNo: order.accountNo, // required
