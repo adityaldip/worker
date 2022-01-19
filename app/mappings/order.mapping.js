@@ -37,6 +37,7 @@ const orderMapping = async (order) => {
             detailNotes: item.note, //item_lines.note
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1, 
+            useTax1: item.tax_price > 0,
         });
     
         if (!skus.includes(item.sku)) {
@@ -102,7 +103,7 @@ const orderMapping = async (order) => {
         // rate: 0,
         // shipDate: '',
         // shipmentName: '',
-        // taxable: false,
+        taxable: order.tax_price > 0,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 1,
     }

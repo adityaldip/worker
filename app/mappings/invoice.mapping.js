@@ -31,6 +31,7 @@ const invoiceMapping = (order) => {
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             salesOrderNumber: order.id,
+            useTax1: item.tax_price > 0,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName;
         detailItems.push(detailItem);
@@ -123,7 +124,7 @@ const invoiceMapping = (order) => {
         // shipmentName: "string",
         // tax1Name: "string",
         // taxType: "BKN_PEMUNGUT_PPN",
-        // taxable: true,
+        taxable: order.tax_price > 0,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 0
     }
