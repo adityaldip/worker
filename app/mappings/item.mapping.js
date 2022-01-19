@@ -87,6 +87,10 @@ const itemMapping = (item) => {
         // vendorUnitName: '',
     }
 
+    if (item.category) {
+        mapped.itemCategoryName = item.category;
+    }
+
     if (item.barcode) {
         mapped.upcNo = item.barcode;
     }
