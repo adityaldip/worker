@@ -52,7 +52,7 @@ const orderMapping = async (order) => {
         await bulkItemService(newItem, order.profile_id)
     }
 
-    return {
+    const mapped = {
         customerNo: order.store_id, // required; customer_info.id
         // detailExpense: [
         //     {
@@ -107,6 +107,12 @@ const orderMapping = async (order) => {
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
         // typeAutoNumber: 1,
     }
+
+    if (order.branchName) {
+        mapped.branchName = order.branchName;
+    }
+
+    return mapped;
 }
 
 module.exports = orderMapping

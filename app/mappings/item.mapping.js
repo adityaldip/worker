@@ -90,6 +90,10 @@ const itemMapping = (item) => {
     if (item.taxName) {
         mapped.tax1Name = item.taxName;
     }
+    
+    if (item.barcode) {
+        mapped.upcNo = item.barcode;
+    }
 
     return mapped;
 }

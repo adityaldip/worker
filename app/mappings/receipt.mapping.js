@@ -15,7 +15,7 @@ const receiptMapping = (order) => {
         }
     }
 
-    return {
+    const mapped = {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required
         customerNo: order.store_id, // required
@@ -54,6 +54,12 @@ const receiptMapping = (order) => {
         // "rate: 0,
         // "typeAutoNumber: 0
     }
+
+    if (order.branchName) {
+        mapped.branchName = order.branchName;
+    }
+
+    return mapped;
 }
 
 module.exports = receiptMapping
