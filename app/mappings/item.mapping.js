@@ -87,6 +87,10 @@ const itemMapping = (item) => {
         // vendorUnitName: '',
     }
 
+    if (item.taxName) {
+        mapped.tax1Name = item.taxName;
+    }
+    
     if (item.category) {
         mapped.itemCategoryName = item.category;
     }

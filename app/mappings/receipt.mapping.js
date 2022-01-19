@@ -8,6 +8,13 @@ const helper = new GeneralHelper()
  */
 const receiptMapping = (order) => {
     let total = order.subtotal - ( order.discount_amount + ( order.voucher_amount || 0 ) )
+
+    if (order.tax_price > 0) {
+        for (const item of order.item_lines) {
+            total += item.tax_price;
+        }
+    }
+
     if (!order.cashless) total += order.shipping_price;
 
     if(order.total_amount_accurate) total = order.total_amount_accurate;
