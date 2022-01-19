@@ -28,14 +28,21 @@ const syncOpenOrder = async (id) => {
         for (const account of seller.customers) {
             if (account.forstok_channel.name == accountName) {
                 order.accountNo = account.account.no
+                order.branchName = account.branch ? account.branch.name : null
                 break
             }
         }
+
         if (!order.accountNo) {
             const message = `CoA for ${accountName} not found`
             await orderModel.update({ _id: new mongo.ObjectId(id) }, {$set: {last_error: message}});
             await helper.errLog(order.id, seller.customers, message, 0)
             throw Error(message);
+        }
+
+        // add shipping account
+        if (seller.shipping) {
+            order.shippingAccountNo = seller.shipping.no;
         }
 
         // check if customer already exist

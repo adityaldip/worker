@@ -26,7 +26,9 @@ const orderService = async (order) => {
                     $set: {
                         accurate_id: response.r.id,
                         synced: true,
+                        shippingAccountNo: order.shippingAccountNo,
                         accountNo: order.accountNo,
+                        branchName: order.branchName
                     },
                 }
             )

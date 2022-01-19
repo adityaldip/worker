@@ -52,7 +52,16 @@ class ItemModel {
 
 class ItemForstokModel {
     async find(profile_id, skus) {
-        const query = `SELECT items.id, item_variants.sku, items.name, item_variants.price, item_variants.barcode, w.id as warehouse_id, ws.quantity as qty, ic.price as total_price
+        const query =  `SELECT
+                            items.id,
+                            item_variants.sku,
+                            items.name,
+                            item_variants.price,
+                            item_variants.barcode,
+                            w.id as warehouse_id,
+                            ws.quantity as qty,
+                            ic.price as total_price,
+                            items.master_category_name as category
                         FROM item_variants
                             JOIN items ON item_variants.item_id = items.id
                             JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id

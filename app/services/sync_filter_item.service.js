@@ -15,14 +15,17 @@ const syncFilterItem = async (id) => {
         const profile_id = parseInt(id);
         const skus = await itemModel.distinct('no', {profile_id: profile_id });
         const items = await itemForstok.find(profile_id, skus);
-        const { warehouses } = await sellerModel.findBy({seller_id: profile_id});
+        const { warehouses, tax } = await sellerModel.findBy({seller_id: profile_id});
         const warehouseName = getWarehouse(items[0].warehouse_id, warehouses);
         console.timeEnd('item pooling took')
+
+        const itemTax = tax ? tax.description : null;
 
         const mappedItems = [];
         for (const item of items) {
             if (!skus.includes(item.sku)) {
                 item.warehouseName = warehouseName
+                item.taxName = itemTax
                 const payload = itemMapping(item)
                 if (!(payload.unitPrice > 0)) continue;
                 payload.profile_id = profile_id
