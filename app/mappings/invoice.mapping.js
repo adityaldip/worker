@@ -27,7 +27,7 @@ const invoiceMapping = (order) => {
             itemNo: item.sku, // required; item_lines.id
             unitPrice: item.sale_price || item.price || item.total_price, // required; item_lines.total_price
             detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
-            detailNotes: item.note, //item_lines.note
+            detailNotes: item.note || '', //item_lines.note
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             salesOrderNumber: order.id,
@@ -129,6 +129,24 @@ const invoiceMapping = (order) => {
         // typeAutoNumber: 0
     }
 
+    if (!order.cashless && order.shippingAccountNo) {
+        const providers = order.shipping_courier.providers.length ? order.shipping_courier.providers.join(', ') : order.item_lines[0].shipping_provider;
+        const awb = order.shipping_courier.awb || order.shipping_courier.booking_code;
+        let shipping = order.shipping_provider || providers || '';
+        if (awb && awb !== '-') shipping = `${shipping} - ${awb}`;
+        mapped.detailExpense = [
+            {
+                accountNo: order.shippingAccountNo,
+                //         departmentName: '',
+                expenseAmount: order.shipping_price,
+                expenseName: shipping,
+                //         expenseNotes: '',
+                //         id: 1,
+                //         salesQuotationNumber: '',
+            }
+        ];
+    }
+    
     if (order.branchName) {
         mapped.branchName = order.branchName;
     }

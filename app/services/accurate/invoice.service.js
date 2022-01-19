@@ -28,7 +28,7 @@ const invoiceService = async (order) => {
             payload.number = response.r.number
             await orderModel.update(
                 { id: order.id },
-                { $set: { synced: true, invoice: payload } }
+                { $set: { synced: true, invoice: payload, total_amount_accurate: response.r.totalAmount } }
             )
             await invoiceModel.insert(payload)
         } else {

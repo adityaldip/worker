@@ -15,6 +15,10 @@ const receiptMapping = (order) => {
         }
     }
 
+    if (!order.cashless) total += order.shipping_price;
+
+    if(order.total_amount_accurate) total = order.total_amount_accurate;
+    
     const mapped = {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required
