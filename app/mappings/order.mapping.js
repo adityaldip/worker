@@ -109,7 +109,9 @@ const orderMapping = async (order) => {
 
     if (!order.cashless && order.shippingAccountNo) {
         const providers = order.shipping_courier.providers.length ? order.shipping_courier.providers.join(', ') : order.item_lines[0].shipping_provider;
-        const shipping = order.shipping_provider || providers || '';
+        const awb = order.shipping_courier.awb || order.shipping_courier.booking_code;
+        let shipping = order.shipping_provider || providers || '';
+        if (awb && awb !== '-') shipping = `${shipping} - ${awb}`;
         mapped.detailExpense = [
             {
                 accountNo: order.shippingAccountNo,
@@ -121,6 +123,10 @@ const orderMapping = async (order) => {
                 //         salesQuotationNumber: '',
             }
         ];
+    }
+    
+    if (order.branchName) {
+        mapped.branchName = order.branchName;
     }
 
     return mapped;

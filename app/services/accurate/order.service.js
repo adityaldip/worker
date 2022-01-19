@@ -28,6 +28,7 @@ const orderService = async (order) => {
                         synced: true,
                         shippingAccountNo: order.shippingAccountNo,
                         accountNo: order.accountNo,
+                        branchName: order.branchName
                     },
                 }
             )

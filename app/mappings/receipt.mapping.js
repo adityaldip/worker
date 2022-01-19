@@ -9,8 +9,8 @@ const helper = new GeneralHelper()
 const receiptMapping = (order) => {
     let total = order.subtotal - ( order.discount_amount + ( order.voucher_amount || 0 ) )
     if (!order.cashless) total += order.shipping_price;
-
-    return {
+    
+    const mapped = {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required
         customerNo: order.store_id, // required
@@ -49,6 +49,12 @@ const receiptMapping = (order) => {
         // "rate: 0,
         // "typeAutoNumber: 0
     }
+
+    if (order.branchName) {
+        mapped.branchName = order.branchName;
+    }
+
+    return mapped;
 }
 
 module.exports = receiptMapping
