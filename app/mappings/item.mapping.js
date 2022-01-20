@@ -83,7 +83,7 @@ const itemMapping = (item) => {
         // unit5Price: 1,
         unitPrice: item.price || item.total_price || 0, // item_lines.price
         // upcNo: item.barcode, // item_lines.id
-        vendorPrice: item.price || item.total_price || 0,
+        vendorPrice: item.cost_price || item.price || item.total_price || 0,
         // vendorUnitName: '',
     }
 
