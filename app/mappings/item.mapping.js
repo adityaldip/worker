@@ -37,7 +37,7 @@ const itemMapping = (item) => {
                 // ],
                 // id: 1,
                 // itemUnitName: '',
-                quantity: item.qty || 0,
+                quantity: parseInt(item.qty || 0),
                 unitCost: item.price || item.total_price || 0,
                 warehouseName: item.warehouseName || 'Utama',
             }
@@ -83,8 +83,12 @@ const itemMapping = (item) => {
         // unit5Price: 1,
         unitPrice: item.price || item.total_price || 0, // item_lines.price
         // upcNo: item.barcode, // item_lines.id
-        vendorPrice: item.price || item.total_price || 0,
+        // vendorPrice: item.cost_price || 0,
         // vendorUnitName: '',
+    }
+
+    if (item.cost_price) {
+        mapped.vendorPrice = item.cost_price;
     }
 
     if (item.taxName) {
