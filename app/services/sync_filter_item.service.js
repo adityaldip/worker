@@ -27,7 +27,6 @@ const syncFilterItem = async (id) => {
                 item.warehouseName = warehouseName
                 item.taxName = itemTax
                 const payload = itemMapping(item)
-                if (!(payload.unitPrice > 0)) continue;
                 payload.profile_id = profile_id
                 payload.synced = false
                 payload.attempts = 0
@@ -37,11 +36,11 @@ const syncFilterItem = async (id) => {
         }
 
         if (mappedItems.length > 0) {
-            await itemModel.insertMany(mappedItems);
+            await itemModel.insertMany(mappedItems)
             await helper.pubQueue('accurate_items_import', profile_id)
-        } else {
-            console.log('nothing to sync');
         }
+        
+        console.log(`sync ${mappedItems.length} items(s).`);
 
     } catch (error) {
         throw Error(error.message)

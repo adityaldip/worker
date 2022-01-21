@@ -52,31 +52,33 @@ class ItemModel {
 
 class ItemForstokModel {
     async find(profile_id, skus) {
-        const query =  `SELECT
-                            items.id,
+        const query =  `SELECT items.id,
                             item_variants.sku,
                             items.name,
-                            item_variants.price,
-                            item_variants.cost_price,
+                            item_variants.id                             as variant_id,
+                            ws.quantity                                  as available_qty, 
+                            IFNULL(hold_items.quantity, 0)               as reserved_qty,  
+                            IFNULL(hold_items.quantity, 0) + ws.quantity as qty,   
+                            IFNULL(item_variants.price, 0)               as price,
+                            IFNULL(item_variants.cost_price, 0)          as cost_price,
                             item_variants.barcode,
-                            w.id as warehouse_id,
-                            ic.price as total_price,
-                            items.master_category_name as category,
-                            IFNULL(hold_items.quantity, 0) + ws.quantity as qty
+                            w.id                                         as warehouse_id,
+                            IFNULL(ic.price, 0)                          as total_price,
+                            items.master_category_name                   as category
                         FROM item_variants
                             JOIN items ON item_variants.item_id = items.id
                             JOIN warehouse_spaces ws on item_variants.id = ws.item_variant_id
                             JOIN warehouses w on ws.warehouse_id = w.id
-                            JOIN item_channel_association_variant_associations ic on item_variants.id = ic.variant_id
-                            JOIN (
+                            LEFT JOIN item_channel_association_variant_associations ic on item_variants.id = ic.variant_id
+                            LEFT JOIN (
                                 SELECT
                                     ws.warehouse_id,
                                     order_item_lines.item_variant_id,
                                     SUM(order_item_lines.quantity) as quantity
                                 FROM order_item_lines
-                                            INNER JOIN warehouse_spaces ws on order_item_lines.warehouse_space_id = ws.id
-                                            INNER JOIN orders o on order_item_lines.order_id = o.id
-                                            INNER JOIN order_payments op on o.id = op.order_id
+                                    INNER JOIN warehouse_spaces ws on order_item_lines.warehouse_space_id = ws.id
+                                    INNER JOIN orders o on order_item_lines.order_id = o.id
+                                    INNER JOIN order_payments op on o.id = op.order_id
                                 WHERE op.status_id != 4
                                     AND (order_item_lines.packed_quantity < order_item_lines.quantity OR order_item_lines.packed_open_quantity > 0)
                                     AND order_item_lines.consignment = 0
@@ -88,7 +90,7 @@ class ItemForstokModel {
                             AND item_variants.removed_at IS NULL
                             AND item_variants.sku NOT IN (?)
                             AND items.config = 'default'
-                            AND hold_items.warehouse_id = ws.warehouse_id
+                            AND (w.id = hold_items.warehouse_id OR hold_items.warehouse_id IS NULL)
                         GROUP BY item_variants.sku;`
         const [rows] = await Mysql.promise().execute(query, [profile_id, skus])
         return rows
