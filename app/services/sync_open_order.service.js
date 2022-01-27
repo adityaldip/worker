@@ -28,7 +28,7 @@ const syncOpenOrder = async (id) => {
         for (const account of seller.customers) {
             if (account.forstok_channel.name == accountName) {
                 order.accountNo = account.account.no
-                order.branchName = account.branch ? account.branch.name : null
+                order.branchId = account.branch ? account.branch.id : null
                 break
             }
         }

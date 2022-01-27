@@ -59,8 +59,8 @@ const receiptMapping = (order) => {
         // "typeAutoNumber: 0
     }
 
-    if (order.branchName) {
-        mapped.branchName = order.branchName;
+    if (order.branchId) {
+        mapped.branchId = order.branchId;
     }
 
     return mapped;
