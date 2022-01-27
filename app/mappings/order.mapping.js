@@ -126,8 +126,8 @@ const orderMapping = async (order) => {
         ];
     }
     
-    if (order.branchName) {
-        mapped.branchName = order.branchName;
+    if (order.branchId) {
+        mapped.branchId = order.branchId;
     }
 
     return mapped;
