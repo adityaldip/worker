@@ -5,7 +5,7 @@ require('dotenv').config()
 
 let mongoClient = null
 let dbName = process.env.DB_NAME
-let mongoUri = process.env.MONGO_URI_PROD
+let mongoUri = process.env.MONGO_URI
 
 exports.ObjectID = mongodb.ObjectID
 

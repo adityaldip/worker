@@ -1,4 +1,5 @@
-const GeneralHelper = require('../helpers/general.helper')
+const GeneralHelper = require("../../helpers/general.helper")
+
 const helper = new GeneralHelper()
 
 /**

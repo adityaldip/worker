@@ -1,17 +1,14 @@
-const GeneralHelper = require('../helpers/general.helper')
-const { ItemModel } = require('../models/item.model')
-const { bulkItemService } = require('../services/accurate/item.service')
+const GeneralHelper = require('../../helpers/general.helper');
 const itemMapping = require('./item.mapping')
 
 const helper = new GeneralHelper()
-const itemModel = new ItemModel();
 
 /**
  * Mapping order for Accurate to receive
  * @param {Object} order    Order request fetched from MongoDB
  * @returns {Object}        Mapped order object for Accurate
  */
-const orderMapping = async (order) => {
+const orderMapping = (order) => {
     let detailItems = []
     const skus = order.skus;
     const newItem = [];
@@ -47,65 +44,15 @@ const orderMapping = async (order) => {
         };
     }
 
-    if (newItem.length) {
-        await itemModel.insertMany(newItem);
-        await bulkItemService(newItem, order.profile_id)
-    }
-
     const mapped = {
-        customerNo: order.store_id, // required; customer_info.id
-        // detailExpense: [
-        //     {
-        //         _status: 'delete',
-        //         accountNo: 1,
-        //         departmentName: '',
-        //         expenseAmount: 0,
-        //         expenseName: '',
-        //         expenseNotes: '',
-        //         id: 1,
-        //         salesQuotationNumber: '',
-        //     },
-        // ],
-        detailItem: detailItems, //[
-        // {
-        // itemNo: '', // required; item_lines.id
-        // unitPrice: 9000, // required; item_lines.total_price
-        // _status: 'delete',
-        // departmentName: '',
-        // detailName: '', // item_lines.variant_name
-        // detailNotes: '', //item_lines.note
-        // id: 1,
-        // itemCashDiscount: 900, // item_lines.voucher_amount
-        // itemDiscPercent: '',
-        // itemUnitName: '',
-        // projectNo: '',
-        // quantity: 1,
-        // salesQuotationNumber: '',
-        // salesmanListNumber: [''],
-        // useTax1: false, // PPN
-        // useTax2: false, // PPNBM
-        // useTax3: false, // PPh23
-        // }
-        // ],
+        customerNo: order.store_id,
+        detailItem: detailItems,
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
-        // branchId: 1,
-        // branchName: 'JAKARTA',
-        // cashDiscPercent: '',
         cashDiscount: (order.voucher_amount || 0) +  order.discount_amount || 0,
-        // currencyCode: 'IDR',
-        // description: '',
-        // fobName: '',
-        // id: 1,
-        // inclusiveTax: false
-        number: order.id, // id
-        // paymentTermName: '',
+        number: order.id, 
         poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
-        // rate: 0,
-        // shipDate: '',
-        // shipmentName: '',
         taxable: order.tax_price > 0,
-        toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
-        // typeAutoNumber: 1,
+        toAddress: `${order.address.name} - ${order.address.address_1}`,
     }
 
     if (!order.cashless && order.shippingAccountNo) {
@@ -116,18 +63,18 @@ const orderMapping = async (order) => {
         mapped.detailExpense = [
             {
                 accountNo: order.shippingAccountNo,
-                //         departmentName: '',
                 expenseAmount: order.shipping_price,
                 expenseName: shipping,
-                //         expenseNotes: '',
-                //         id: 1,
-                //         salesQuotationNumber: '',
             }
         ];
     }
     
     if (order.branchId) {
         mapped.branchId = order.branchId;
+    }
+
+    if (newItem.length) {
+        return { mapped, newItem }
     }
 
     return mapped;
