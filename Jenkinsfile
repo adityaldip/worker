@@ -19,8 +19,6 @@ pipeline{
           TEST_DB_PASSWORD = credentials('DATABASE_PASSWORD_TEST')
           TEST_DB_PORT = credentials('DATABASE_PORT_TEST')
           TEST_DB_HOSTNAME = credentials('DATABASE_HOST_TEST')
-          PORT = credentials('PORT')
-          MONGO_URI_PROD = credentials('MONGO_URI_PROD')
         }
         steps {
           sh 'npm install'
