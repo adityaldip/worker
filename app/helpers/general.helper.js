@@ -7,11 +7,12 @@ require('dotenv').config()
 
 const ACCURATE_RESPONSE_MESSAGE = {
     SESSION: 'Data Session Key tidak tepat',
+    TOKEN: 'invalid_token',
     DATA: 'Sudah ada data lain dengan',
     KODE: 'Sudah ada data lain dengan Kode Barang',
     NILAI: 'Nilai Satuan harus diisi',
     KODE_VALID: 'tidak valid. Karakter yang diperbolehkan untuk',
-    BESAR: 'terlalu besar. Maksimal 30 karakter'
+    BESAR: 'terlalu besar. Maksimal 30 karakter',
 }
 
 class GeneralHelper {
@@ -19,9 +20,9 @@ class GeneralHelper {
         try {
             const broker = await MessageBroker.getInstance()
             await broker.send(queue, Buffer.from(JSON.stringify(message)))
-            console.log(`sent to ${queue} channel...`)
+            console.log(' [-] Queue sent to %s', queue)
         } catch (error) {
-            console.error(error.message)
+            throw new Error(error.message)
         }
     }
 

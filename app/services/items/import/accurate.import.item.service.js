@@ -33,11 +33,11 @@ const importItem = async (id) => {
                     await accurate.storeItemBulk(res)
                     await helper.pubQueue('accurate_items_import', profileId);
                 } else {
-                    console.log('upload items to accurate is done');
+                    console.log(' [✔] Item(s) with Profile ID %s uploaded to Accurate', id)
                 }
             })
     } catch (error) {
-        console.error(error);
+        console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }

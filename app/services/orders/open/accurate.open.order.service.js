@@ -56,9 +56,10 @@ const openOrder = async (id) => {
         order.skus = await itemModel.distinct('no', { profile_id: order.profile_id });
 
         await accurate.storeOrder(order)
-        
+
+        console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
-        console.error(error);
+        console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }

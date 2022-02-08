@@ -16,7 +16,7 @@ async function receiveMessage(channel, queue) {
     channel.consume(
         queue,
         function (msg) {
-            console.log(' [x] Received message on queue %s', queue)
+            console.log(' [+] Received message on queue %s', queue)
             const id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
 
             if (queue == 'accurate_sales_order') {

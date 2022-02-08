@@ -16,13 +16,14 @@ const sellerModel = new SellerModel()
 const filterItem = async (id) => {
     try {
         const profileId = parseInt(id)
+        const seller = await sellerModel.findBy({seller_id: profileId});
+        const { warehouses, tax } = seller;
 
-        console.time('item pooling took')
+        console.time(' [*] Item(s) retrieval took')
         const skus = await itemModel.distinct('no', { profile_id: profileId });
         const items = await itemForstok.find(profileId, skus);
-        const { warehouses, tax } = await sellerModel.findBy({seller_id: profileId});
         const warehouseName = getWarehouse(items[0].warehouse_id, warehouses);
-        console.timeEnd('item pooling took')
+        console.timeEnd(' [*] Item(s) retrieval took')
 
         const itemTax = tax ? tax.description : null;
 
@@ -44,9 +45,9 @@ const filterItem = async (id) => {
             await helper.pubQueue('accurate_items_import', profileId)
         }
         
-        console.log(`sync ${mappedItems.length} items(s).`);
+        console.log(' [✔] %d item(s) retrieved', mappedItems.length)
     } catch (error) {
-        console.error(error);
+        console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }

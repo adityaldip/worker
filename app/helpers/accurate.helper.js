@@ -1,9 +1,9 @@
+const GeneralHelper = require('./general.helper')
 const RequestHelper = require('./request.helper')
 const { accurateMapping } = require('./mapping.helper')
+const { ItemModel } = require("../models/item.model")
 const OrderModel = require("../models/order.model")
 const SellerModel = require("../models/seller.model")
-const { ItemModel } = require("../models/item.model")
-const GeneralHelper = require('./general.helper')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
 
@@ -86,16 +86,16 @@ class AccurateHelper {
                     await helper.pubQueue('accurate_sales_paid', order._id)
                 }
             } else {
-                if ((response.d[0] || response.d || response).includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession() 
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message) 
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response.d } }
+                    { $inc: { attempts: 1 }, $set: { last_error: message } }
                 )
                 if (order.attempts < maxAttempts) {
                     await helper.pubQueue('accurate_sales_order', order._id)
                 }
-                throw new Error(response.d[0] || response.d || response)
+                throw new Error(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -126,8 +126,8 @@ class AccurateHelper {
                 )
                 await invoiceModel.insert(body)
             } else {
-                if ((response.d[0] || response.d || response).includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession()
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: response.d } }
@@ -135,7 +135,7 @@ class AccurateHelper {
                 if (order.attempts < maxAttempts) {
                     await helper.pubQueue('accurate_sales_invoice', order._id)
                 }
-                throw new Error(response.d[0] || response.d || response)
+                throw new Error(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -169,8 +169,8 @@ class AccurateHelper {
                     { $set: { receipt: body } }
                 )
             } else {
-                if ((response.d[0] || response.d || response).includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession()
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: response.d } }
@@ -178,7 +178,7 @@ class AccurateHelper {
                 if (order.attempts < maxAttempts) {
                     await helper.pubQueue('accurate_sales_paid', order._id)
                 }
-                throw new Error(response.d[0] || response.d || response)
+                throw new Error(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -204,10 +204,10 @@ class AccurateHelper {
                 item.synced = true
                 await itemModel.insert(item)
             } else {
-                if ((response.d[0] || response.d || response).includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession()
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message)
 
-                throw new Error(response.d[0] || response.d || response)
+                throw new Error(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -234,8 +234,8 @@ class AccurateHelper {
                     { $set: { synced: true } }
                 )
             } else { 
-                let count = 0
                 if (Array.isArray(response.d)) {
+                    let count = 0
                     for (const res of response.d) {
                         if (res.s) {
                             await itemModel.update(
@@ -257,8 +257,8 @@ class AccurateHelper {
                         count++
                     }
                 }
-                if ((response.d[0].d[0] || response.d[0] || response.d || response).includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession()
+                const message = response.d[0].d[0] || (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -283,9 +283,8 @@ class AccurateHelper {
                 body.profile_id = order.profile_id
                 await customerModel.insert(body)
             } else {
-                const message = response.d[0] || response.d || response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION))
-                    await this.refreshSession()
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                await this.credentialHandle(message)
     
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.DATA)) {
                     body.profile_id = order.profile_id
@@ -293,6 +292,51 @@ class AccurateHelper {
                 }
 
                 throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
+    async refreshToken() {
+        try {
+            const url = `https://account.accurate.id/oauth/token`
+            const headers = {
+                Authorization: `Basic ${process.env.AUTHORIZATION_TOKEN}`,
+            }
+            const form = {
+                grant_type: 'refresh_token',
+                refresh_token: this.account.api_token_refresh,
+            }
+            const payload = {
+                url,
+                headers,
+                form,
+                json: true,
+            }
+            const response = await request.requestPost(payload)
+            await helper.accurateLog({
+                activity: 'refresh access token',
+                profile_id: this.account.profile_id,
+                params: form,
+                log: response,
+            })
+            if (response.access_token) {
+                const today = new Date()
+                const expired_at = new Date(today)
+                expired_at.setDate(expired_at.getDate() + 15)
+                const result = {
+                    api_access_token: response.access_token,
+                    api_token_refresh: response.refresh_token,
+                    token_expired_at: expired_at,
+                }
+                await sellerModel.update(
+                    { seller_id: this.account.seller_id },
+                    { $set: result }
+                )
+                this.account = { ...this.account, ...result }
+            } else {
+                throw new Error(response.d || response)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -321,20 +365,37 @@ class AccurateHelper {
                 log: response
             });
             if (response.s) {
+                let result = {}
                 if (typeof response.d === 'object' ) {
-                    const dbSession = response.d.session
-                    const licenseEnd = response.d.licenseEnd;
-                    const accessibleUntil = response.d.accessibleUntil;
+                    result = {
+                        api_db_session: response.d.session,
+                        api_db_license_end: response.d.licenseEnd,
+                        api_db_accessible_until: response.d.accessibleUntil,
+                    }
                     await sellerModel.update(
                         { seller_id: this.account.seller_id || this.account.profile_id },
-                        { $set: { api_db_session: dbSession, api_db_license_end: licenseEnd, api_db_accessible_until: accessibleUntil } }
+                        { $set: result }
                     )
                 }
+                this.account = { ...this.account, ...result }
             } else {
-                throw new Error(response)
+                if ((response.d || response).includes('invalid_token')) {
+                    await this.refreshToken()
+                    return await this.refreshSession()
+                } else {
+                    throw new Error(response.d || response)
+                }
             }
         } catch (error) {
             throw new Error(error.message)
+        }
+    }
+
+    async credentialHandle(response) {
+        if (response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TOKEN)) {
+            await this.refreshToken()
+        } else if (response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION)) {
+            await this.refreshSession()
         }
     }
 

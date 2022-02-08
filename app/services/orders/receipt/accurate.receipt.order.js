@@ -27,8 +27,9 @@ const deliveredOrder = async (id) => {
         }
 
         await accurate.storeReceipt(order)
+        console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
-        console.error(error);
+        console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }

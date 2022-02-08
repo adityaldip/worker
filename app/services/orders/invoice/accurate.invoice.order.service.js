@@ -22,8 +22,9 @@ const shippedOrder = async (id) => {
         order.warehouseName = getWarehouse(order.warehouse_id, seller)
         accurate.setAccount(seller)
         await accurate.storeInvoice(order)
+        console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
-        console.error(error);
+        console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }
