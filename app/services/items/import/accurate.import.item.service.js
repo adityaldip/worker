@@ -20,7 +20,7 @@ const importItem = async (id) => {
         accurate.setAccount(seller)
 
         const item = await itemModel.find({
-            synced: false,
+            synced: { $in: [ false, null ] },
             upcNo: { $ne: 'rebate' },
             profile_id: profileId,
             attempts: { $lt: accurate.getMaxAttempt() },

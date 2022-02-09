@@ -29,7 +29,7 @@ const openOrder = async (id) => {
         const accountName = order.store_name || order.channel
         for (const account of seller.customers) {
             if (account.forstok_channel.name == accountName) {
-                order.accountNo = account.account.no
+                order.accountNo = account.account.id || account.account.no
                 order.branchId = account.branch ? account.branch.id : null
                 break
             }
@@ -43,7 +43,7 @@ const openOrder = async (id) => {
 
         // add shipping account
         if (seller.shipping) {
-            order.shippingAccountNo = seller.shipping.no;
+            order.shippingAccountNo = seller.shipping.id || seller.shipping.no;
         }
 
         // check if customer already exist

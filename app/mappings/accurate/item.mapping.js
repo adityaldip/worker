@@ -20,6 +20,10 @@ const itemMapping = (item) => {
         unitPrice: item.price || item.total_price || 0, // item_lines.price
     }
 
+    if (item.accurate_id) {
+        mapped.id = item.accurate_id;
+    }
+
     if (item.cost_price) {
         mapped.vendorPrice = item.cost_price;
     }
