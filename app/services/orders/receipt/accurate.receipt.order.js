@@ -17,7 +17,7 @@ const sellerModel = new SellerModel()
  */
 const deliveredOrder = async (id) => {
     try {
-        let order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) })
+        let order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) });
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)
 

@@ -333,13 +333,13 @@ describe('Order mapping testing', () => {
         const mappedItem = result.newItem
         const expectedItem = [
             {
-              itemType: 'INVENTORY',
-              name: 'celana joger xl5 keren pake banget hehe 2',
-              detailOpenBalance: [ { quantity: 0, unitCost: 100000, warehouseName: 'Utama' } ],
-              no: 'sku0002',
-              unit1Name: 'PCS',
-              unitPrice: 100000,
-              profile_id: 81
+                itemType: 'INVENTORY',
+                name: 'celana joger xl5 keren pake banget hehe 2',
+                detailOpenBalance: [ { quantity: 0, unitCost: 100000, warehouseName: 'Utama' } ],
+                no: 'sku0002',
+                unit1Name: 'PCS',
+                unitPrice: 100000,
+                profile_id: 81
             }
         ]
         chai.expect(mappedOrder).to.deep.equal(expectedOrder);
@@ -398,9 +398,9 @@ describe('Order mapping testing', () => {
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
             detailExpense: [
                 {
-                  accountNo: '2022',
-                  expenseAmount: 1200,
-                  expenseName: 'JNT - JT123231'
+                    accountNo: '2022',
+                    expenseAmount: 1200,
+                    expenseName: 'JNT - JT123231'
                 }
             ]
         }
@@ -448,16 +448,16 @@ describe('Invoice mapping testing', () => {
         const expectedInvoice = {
             customerNo: 1009,
             detailItem: [
-              {
-                itemNo: 'sku0002',
-                unitPrice: 100000,
-                detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
-                detailNotes: '',
-                itemCashDiscount: 100,
-                quantity: 1,
-                salesOrderNumber: 35,
-                useTax1: false
-              }
+                {
+                    itemNo: 'sku0002',
+                    unitPrice: 100000,
+                    detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
+                    detailNotes: '',
+                    itemCashDiscount: 100,
+                    quantity: 1,
+                    salesOrderNumber: 35,
+                    useTax1: false
+                }
             ],
             transDate: '7/2/2022',
             cashDiscount: 2400,
@@ -475,16 +475,16 @@ describe('Invoice mapping testing', () => {
         const expectedInvoice = {
             customerNo: 1009,
             detailItem: [
-              {
-                itemNo: 'sku0002',
-                unitPrice: 100000,
-                detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
-                detailNotes: '',
-                itemCashDiscount: 100,
-                quantity: 1,
-                salesOrderNumber: 35,
-                useTax1: false
-              }
+                {
+                    itemNo: 'sku0002',
+                    unitPrice: 100000,
+                    detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
+                    detailNotes: '',
+                    itemCashDiscount: 100,
+                    quantity: 1,
+                    salesOrderNumber: 35,
+                    useTax1: false
+                }
             ],
             transDate: '7/2/2022',
             cashDiscount: 2400,
@@ -492,9 +492,9 @@ describe('Invoice mapping testing', () => {
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
             detailExpense: [
                 {
-                  accountNo: '2022',
-                  expenseAmount: 1200,
-                  expenseName: 'JNT - JT123231'
+                    accountNo: '2022',
+                    expenseAmount: 1200,
+                    expenseName: 'JNT - JT123231'
                 }
             ]
         }
@@ -509,16 +509,16 @@ describe('Invoice mapping testing', () => {
         const expectedInvoice = {
             customerNo: 1009,
             detailItem: [
-              {
-                itemNo: 'sku0002',
-                unitPrice: 100000,
-                detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
-                detailNotes: '',
-                itemCashDiscount: 100,
-                quantity: 1,
-                salesOrderNumber: 35,
-                useTax1: false
-              }
+                {
+                    itemNo: 'sku0002',
+                    unitPrice: 100000,
+                    detailName: 'celana joger xl5 keren pake banget hehe 2 Variant Item',
+                    detailNotes: '',
+                    itemCashDiscount: 100,
+                    quantity: 1,
+                    salesOrderNumber: 35,
+                    useTax1: false
+                }
             ],
             transDate: '7/2/2022',
             cashDiscount: 2400,
