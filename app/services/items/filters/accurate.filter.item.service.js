@@ -25,13 +25,13 @@ const filterItem = async (id) => {
         const warehouseName = getWarehouse(items[0].warehouse_id, warehouses);
         console.timeEnd(' [*] Item(s) retrieval took')
 
-        const itemTax = tax ? tax.description : null;
+        const itemTax = tax ? tax.id : null;
 
         const mappedItems = [];
         for (const item of items) {
             if (!skus.includes(item.sku)) {
                 item.warehouseName = warehouseName
-                item.taxName = itemTax
+                item.taxId = itemTax
                 const payload = accurateMapping.item(item)
                 payload.profile_id = profileId
                 payload.synced = false
@@ -55,14 +55,8 @@ const filterItem = async (id) => {
 const getWarehouse = (warehouseId, account) => {
     const warehouses = account.warehouses
     if (!warehouseId || !warehouses) return null
-    let warehouseName = null
-    for (const warehouse of warehouses) {
-        if (warehouse.forstok_warehouse.id == warehouseId) {
-            warehouseName = warehouse.accurate_warehouse.name
-            break
-        }
-    }
-    return warehouseName
+    const warehouseFind = warehouses.find( warehouse =>  warehouse.forstok_warehouse.id == warehouseId );
+    return warehouseFind ? warehouseFind.accurate_warehouse.name : null;
 }
 
 module.exports = filterItem

@@ -74,7 +74,7 @@ class AccurateHelper {
                         $set: {
                             accurate_id: response.r.id,
                             synced: true,
-                            shippingAccountNo: order.shippingAccountNo,
+                            shippingAccountId: order.shippingAccountId,
                             accountNo: order.accountNo,
                             branchId: order.branchId
                         },

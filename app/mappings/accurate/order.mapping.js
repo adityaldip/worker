@@ -34,7 +34,7 @@ const orderMapping = (order) => {
             detailNotes: item.note || '', //item_lines.note
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1, 
-            useTax1: item.tax_price > 0,
+            useTax1: order.taxable,
         });
     
         if (!skus.includes(item.sku)) {
@@ -50,19 +50,19 @@ const orderMapping = (order) => {
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
         cashDiscount: (order.voucher_amount || 0) +  order.discount_amount || 0,
         number: order.id, 
-        poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
-        taxable: order.tax_price > 0,
+        // poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
+        taxable: order.taxable,
         toAddress: `${order.address.name} - ${order.address.address_1}`,
     }
 
-    if (!order.cashless && order.shippingAccountNo) {
+    if (!order.cashless && order.shippingAccountId) {
         const providers = order.shipping_courier.providers.length ? order.shipping_courier.providers.join(', ') : order.item_lines[0].shipping_provider;
         const awb = order.shipping_courier.awb || order.shipping_courier.booking_code;
         let shipping = order.shipping_provider || providers || '';
         if (awb && awb !== '-') shipping = `${shipping} - ${awb}`;
         mapped.detailExpense = [
             {
-                accountNo: order.shippingAccountNo,
+                accountId: order.shippingAccountId,
                 expenseAmount: order.shipping_price,
                 expenseName: shipping,
             }

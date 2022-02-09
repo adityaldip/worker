@@ -32,7 +32,7 @@ const invoiceMapping = (order) => {
             itemCashDiscount: (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             salesOrderNumber: order.id,
-            useTax1: item.tax_price > 0,
+            useTax1: order.taxable,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName;
         detailItems.push(detailItem);
@@ -43,18 +43,18 @@ const invoiceMapping = (order) => {
         detailItem: detailItems,
         transDate: helper.dateConvert(order.updated_at), // required
         cashDiscount: (order.voucher_amount || 0) +  order.discount_amount || 0,
-        taxable: order.tax_price > 0,
+        taxable: order.taxable,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
     }
 
-    if (!order.cashless && order.shippingAccountNo) {
+    if (!order.cashless && order.shippingAccountId) {
         const providers = order.shipping_courier.providers.length ? order.shipping_courier.providers.join(', ') : order.item_lines[0].shipping_provider;
         const awb = order.shipping_courier.awb || order.shipping_courier.booking_code;
         let shipping = order.shipping_provider || providers || '';
         if (awb && awb !== '-') shipping = `${shipping} - ${awb}`;
         mapped.detailExpense = [
             {
-                accountNo: order.shippingAccountNo,
+                accountId: order.shippingAccountId,
                 expenseAmount: order.shipping_price,
                 expenseName: shipping,
             }

@@ -375,7 +375,7 @@ describe('Order mapping testing', () => {
     it('should return a mapped order when all attributes are exist and shipping isn\'t cashless', () => {
         orderMock.skus = ['sku0002']
         orderMock.cashless = false
-        orderMock.shippingAccountNo = '2022'
+        orderMock.shippingAccountId = '2022'
         const mappedOrder = accurateMapping.order(orderMock)
         const expectedOrder = {
             customerNo: 1009,
@@ -470,7 +470,7 @@ describe('Invoice mapping testing', () => {
     it('should return a mapped invoice when all attributes are exist and shipping isn\'t cashless', () => {
         orderMock.skus = ['sku0002']
         orderMock.cashless = false
-        orderMock.shippingAccountNo = '2022'
+        orderMock.shippingAccountId = '2022'
         const mappedInvoice = accurateMapping.invoice(orderMock)
         const expectedInvoice = {
             customerNo: 1009,
@@ -555,7 +555,7 @@ describe('Receipt mapping testing', () => {
     it('should return a mapped receipt when all attributes are exist and shipping isn\'t cashless', () => {
         orderMock.skus = ['sku0002']
         orderMock.cashless = false
-        orderMock.shippingAccountNo = '2022'
+        orderMock.shippingAccountId = '2022'
         const mappedReceipt = accurateMapping.receipt(orderMock)
         const expectedReceipt = {
             bankNo: '2020',

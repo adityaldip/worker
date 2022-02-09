@@ -28,8 +28,8 @@ const itemMapping = (item) => {
         mapped.vendorPrice = item.cost_price;
     }
 
-    if (item.taxName) {
-        mapped.tax1Name = item.taxName;
+    if (item.taxId) {
+        mapped.tax1Id = item.taxId;
     }
     
     if (item.category) {

@@ -43,7 +43,7 @@ const openOrder = async (id) => {
 
         // add shipping account
         if (seller.shipping) {
-            order.shippingAccountNo = seller.shipping.id || seller.shipping.no;
+            order.shippingAccountId = seller.shipping.id || seller.shipping.no;
         }
 
         // check if customer already exist
@@ -53,6 +53,7 @@ const openOrder = async (id) => {
         })
         if (!foundCust) await accurate.storeCustomer(order)
 
+        order.taxable = seller.tax ? seller.tax.id !== '' : false
         order.skus = await itemModel.distinct('no', { profile_id: order.profile_id });
 
         await accurate.storeOrder(order)

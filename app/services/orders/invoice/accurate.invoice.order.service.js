@@ -19,6 +19,7 @@ const shippedOrder = async (id) => {
     try {
         const order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
+        order.taxable = seller.tax ? seller.tax.id !== '' : false
         order.warehouseName = getWarehouse(order.warehouse_id, seller)
         accurate.setAccount(seller)
         await accurate.storeInvoice(order)
@@ -32,14 +33,8 @@ const shippedOrder = async (id) => {
 const getWarehouse = (warehouseId, account) => {
     const warehouses = account.warehouses
     if (!warehouseId || !warehouses) return null
-    let warehouseName = null
-    for (const warehouse of warehouses) {
-        if (warehouse.forstok_warehouse.id == warehouseId) {
-            warehouseName = warehouse.accurate_warehouse.name
-            break
-        }
-    }
-    return warehouseName
+    const warehouseFind = warehouses.find( warehouse =>  warehouse.forstok_warehouse.id == warehouseId );
+    return warehouseFind ? warehouseFind.accurate_warehouse.name : null;
 }
 
 module.exports = shippedOrder
