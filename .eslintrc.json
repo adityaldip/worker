@@ -7,15 +7,18 @@
     "extends": ["eslint:recommended", "prettier"],
     "env": {
         "es2021": true,
-        "node": true
+        "node": true,
+        "mocha": true
     },
     "rules": {
-        "indent": "off",
+        "indent": "error",
         "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
         "no-console": 0,
         "class-methods-use-this": [0],
         "camelcase": 0,
         "no-underscore-dangle": 0,
-        "no-await-in-loop": 0
+        "no-await-in-loop": 0,
+        "comma-style": "warn",
+        "no-global-assign":"error"
     }
 }

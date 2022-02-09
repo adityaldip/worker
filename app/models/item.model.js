@@ -51,7 +51,7 @@ class ItemModel {
 }
 
 class ItemForstokModel {
-    async find(profile_id, skus) {
+    async find(profileId, skus) {
         const query =  `SELECT items.id,
                             item_variants.sku,
                             items.name,
@@ -92,7 +92,7 @@ class ItemForstokModel {
                             AND items.config = 'default'
                             AND (w.id = hold_items.warehouse_id OR hold_items.warehouse_id IS NULL)
                         GROUP BY item_variants.sku;`
-        const [rows] = await Mysql.promise().execute(query, [profile_id, skus])
+        const [ rows ] = await Mysql.promise().execute(query, [ profileId, skus ])
         return rows
     }
 }
