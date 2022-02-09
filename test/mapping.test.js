@@ -199,10 +199,10 @@ describe('Item mapping testing', () => {
         chai.expect(mappedItem).to.deep.equal(expectedItem);
     })
 
-    it('should return a mapped item when all attributes and taxName are exist', () => {
-        itemMock.taxName = 'tax_name'
+    it('should return a mapped item when all attributes and taxId are exist', () => {
+        itemMock.taxId = 12
         const mappedItem = accurateMapping.item(itemMock)
-        delete itemMock.taxName
+        delete itemMock.taxId
         const expectedItem = {
             itemType: 'INVENTORY',
             name: 'celana joger xl5 keren pake banget hehe 2',
@@ -216,7 +216,7 @@ describe('Item mapping testing', () => {
             no: 'sku0002',
             unit1Name: 'PCS',
             unitPrice: 100000,
-            tax1Name: 'tax_name'
+            tax1Id: 12
         }
         chai.expect(mappedItem).to.deep.equal(expectedItem);
     })
@@ -308,6 +308,7 @@ describe('Item mapping testing', () => {
 describe('Order mapping testing', () => {
     it('should return a mapped order when all attributes are exist and new item exist', () => {
         orderMock.skus = []
+        orderMock.taxable = false
         const result = accurateMapping.order(orderMock)
         const mappedOrder = result.mapped
         const expectedOrder = {
@@ -326,7 +327,6 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
-            poNumber: '4140749258834',
             taxable: false,
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211'
         }
@@ -365,7 +365,6 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
-            poNumber: '4140749258834',
             taxable: false,
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211'
         }
@@ -393,12 +392,11 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
-            poNumber: '4140749258834',
             taxable: false,
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
             detailExpense: [
                 {
-                    accountNo: '2022',
+                    accountId: '2022',
                     expenseAmount: 1200,
                     expenseName: 'JNT - JT123231'
                 }
@@ -428,7 +426,6 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
-            poNumber: '4140749258834',
             taxable: false,
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
             branchId: 50
@@ -492,7 +489,7 @@ describe('Invoice mapping testing', () => {
             toAddress: 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
             detailExpense: [
                 {
-                    accountNo: '2022',
+                    accountId: '2022',
                     expenseAmount: 1200,
                     expenseName: 'JNT - JT123231'
                 }
