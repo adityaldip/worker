@@ -1,9 +1,10 @@
 const amqp = require('amqplib/callback_api')
-const syncOpenOrder = require('./app/services/sync_open_order.service')
-const syncInvoiceOrder = require('./app/services/sync_invoice_order.service')
-const syncPaidOrder = require('./app/services/sync_paid_order.service')
-const syncFilterItem = require('./app/services/sync_filter_item.service')
-const syncAccurateItem = require('./app/services/sync_accurate_item.service')
+
+const accurateOpenOrder = require('./app/services/orders/open/accurate.open.order.service')
+const accurateShippedOrder = require('./app/services/orders/invoice/accurate.invoice.order.service')
+const accurateDeliveredOrder = require('./app/services/orders/receipt/accurate.receipt.order')
+const accurateFilterItem = require('./app/services/items/filters/accurate.filter.item.service')
+const accurateImportItem = require('./app/services/items/import/accurate.import.item.service')
 
 require('dotenv').config()
 
@@ -15,27 +16,27 @@ async function receiveMessage(channel, queue) {
     channel.consume(
         queue,
         function (msg) {
-            console.log(' [x] Received message on queue %s', queue)
+            console.log(' [+] Received message on queue %s', queue)
             const id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
 
             if (queue == 'accurate_sales_order') {
-                syncOpenOrder(id)
+                accurateOpenOrder(id)
             }
 
             if (queue == 'accurate_sales_invoice') {
-                syncInvoiceOrder(id)
+                accurateShippedOrder(id)
             }
 
             if (queue == 'accurate_sales_paid') {
-                syncPaidOrder(id)
+                accurateDeliveredOrder(id)
             }
 
             if (queue == 'accurate_items_query') {
-                syncFilterItem(id)
+                accurateFilterItem(id)
             }
 
             if (queue == 'accurate_items_import') {
-                syncAccurateItem(id)
+                accurateImportItem(id)
             }
         },
         {

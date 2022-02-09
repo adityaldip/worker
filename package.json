@@ -4,12 +4,12 @@
     "description": "",
     "main": "index.js",
     "scripts": {
-        "test": "nodemon index.js",
+        "test": "./node_modules/.bin/mocha test/**.test.js --exit",
         "start": "node index.js",
-        "format:check": "prettier --check .",
-        "format:write": "prettier --write .",
-        "lint:check": "eslint .",
-        "lint:fix": "eslint --fix ."
+        "format:check": "./node_modules/.bin/prettier --check .",
+        "format:write": "./node_modules/.bin/prettier --write .",
+        "lint:check": "./node_modules/.bin/eslint .",
+        "lint:fix": "./node_modules/.bin/eslint --fix ."
     },
     "author": "Rio Riantana",
     "license": "ISC",
