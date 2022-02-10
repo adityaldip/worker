@@ -26,6 +26,7 @@ const orderMapping = (order) => {
             continue;
         }
         itemQty[item.sku] = 1
+        item.taxId = order.taxId
         
         detailItems.push({
             itemNo: item.sku, // required; item_lines.id
