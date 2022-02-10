@@ -19,7 +19,7 @@ const shippedOrder = async (id) => {
     try {
         const order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
-        order.taxable = seller.tax ? seller.tax.id !== '' : false
+        order.taxable = seller.tax ? Boolean(seller.tax.id) : false
         order.warehouseName = getWarehouse(order.warehouse_id, seller)
         accurate.setAccount(seller)
         await accurate.storeInvoice(order)
