@@ -53,7 +53,8 @@ const openOrder = async (id) => {
         })
         if (!foundCust) await accurate.storeCustomer(order)
 
-        order.taxable = seller.tax ? seller.tax.id !== '' : false
+        order.taxId = seller.tax ? seller.tax.id : null
+        order.taxable = Boolean(order.taxId)
         order.skus = await itemModel.distinct('no', { profile_id: order.profile_id });
 
         await accurate.storeOrder(order)
