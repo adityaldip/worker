@@ -41,8 +41,8 @@ const filterItem = async (id) => {
         });
 
         if (mappedItems.length > 0) {
-            // await itemModel.insertMany(mappedItems)
-            // await helper.pubQueue('accurate_items_import', profileId)
+            await itemModel.insertMany(mappedItems)
+            await helper.pubQueue('accurate_items_import', profileId)
         }
 
         console.log(' [✔] %d item(s) retrieved', mappedItems.length)
