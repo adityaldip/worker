@@ -7,7 +7,7 @@ class LogModel {
     }
 
     setCollection(collection) {
-        this.collection = collection;
+        this.collection = collection
     }
 
     async getInstance() {

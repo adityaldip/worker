@@ -1,4 +1,4 @@
-const GeneralHelper = require("../../helpers/general.helper");
+const GeneralHelper = require('../../helpers/general.helper')
 
 const helper = new GeneralHelper()
 
@@ -8,18 +8,19 @@ const helper = new GeneralHelper()
  * @returns {Object}        Mapped receipt object for Accurate
  */
 const receiptMapping = (order) => {
-    let total = order.subtotal - ( order.discount_amount + ( order.voucher_amount || 0 ) )
+    let total =
+        order.subtotal - (order.discount_amount + (order.voucher_amount || 0))
 
     if (order.tax_price > 0) {
         for (const item of order.item_lines) {
-            total += item.tax_price;
+            total += item.tax_price
         }
     }
 
-    if (!order.cashless) total += order.shipping_price;
+    if (!order.cashless) total += order.shipping_price
 
-    if (order.total_amount_accurate) total = order.total_amount_accurate;
-    
+    if (order.total_amount_accurate) total = order.total_amount_accurate
+
     const mapped = {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required
@@ -34,10 +35,10 @@ const receiptMapping = (order) => {
     }
 
     if (order.branchId) {
-        mapped.branchId = order.branchId;
+        mapped.branchId = order.branchId
     }
 
-    return mapped;
+    return mapped
 }
 
 module.exports = receiptMapping

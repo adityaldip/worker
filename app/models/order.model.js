@@ -37,6 +37,11 @@ class OrderModel {
         const db = await this.getInstance()
         return await db.collection(this.collection).updateMany(where, value)
     }
+
+    async delete(where) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).deleteOne(where)
+    }
 }
 
 module.exports = OrderModel

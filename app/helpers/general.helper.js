@@ -27,22 +27,22 @@ class GeneralHelper {
     }
 
     async errorLog(activity_id, log, object = {}) {
-        logModel.setCollection('error_logs');
+        logModel.setCollection('error_logs')
         const body = {
             activity: process.env.QUEUE_NAME,
             activity_id,
             created_at: new Date(),
             log,
-            ...object
+            ...object,
         }
         await logModel.insert(body)
     }
 
     async accurateLog(payload) {
-        logModel.setCollection('accurate_logs');
-        payload.worker = process.env.QUEUE_NAME;
-        payload.created_at = new Date();
-        await logModel.insert(payload);
+        logModel.setCollection('accurate_logs')
+        payload.worker = process.env.QUEUE_NAME
+        payload.created_at = new Date()
+        await logModel.insert(payload)
     }
 
     dateConvert(date) {

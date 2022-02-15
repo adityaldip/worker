@@ -5,6 +5,7 @@ const accurateShippedOrder = require('./app/services/orders/invoice/accurate.inv
 const accurateDeliveredOrder = require('./app/services/orders/receipt/accurate.receipt.order')
 const accurateFilterItem = require('./app/services/items/filters/accurate.filter.item.service')
 const accurateImportItem = require('./app/services/items/import/accurate.import.item.service')
+const accurateCancelledOrder = require('./app/services/orders/cancel/accurate.cancel.order.service')
 
 require('dotenv').config()
 
@@ -21,6 +22,10 @@ async function receiveMessage(channel, queue) {
 
             if (queue == 'accurate_sales_order') {
                 accurateOpenOrder(id)
+            }
+
+            if (queue == 'accurate_sales_cancelled') {
+                accurateCancelledOrder(id)
             }
 
             if (queue == 'accurate_sales_invoice') {
@@ -53,7 +58,7 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
         if (error1) {
             throw error1
         }
-        var queue = process.env.QUEUE_NAME || 'accurate_sales_order'
+        const queue = process.env.QUEUE_NAME || 'accurate_sales_order'
         receiveMessage(channel, queue)
     })
 })
