@@ -305,7 +305,7 @@ describe('Item mapping testing', () => {
 
 describe('Order mapping testing', () => {
     it('should return a mapped order when all attributes are exist and new item exist', () => {
-        orderMock.skus = ['sku0001']
+        orderMock.skus = ['sku0001', 'sku0003']
         orderMock.taxable = false
         const result = accurateMapping.order(orderMock)
         const mappedOrder = result.mapped
