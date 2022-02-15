@@ -14,11 +14,20 @@
         "indent": "error",
         "no-unused-vars": ["error", { "argsIgnorePattern": "next" }],
         "no-console": 0,
-        "class-methods-use-this": [0],
+        "class-methods-use-this": 0,
         "camelcase": 0,
         "no-underscore-dangle": 0,
         "no-await-in-loop": 0,
-        "comma-style": "warn",
-        "no-global-assign":"error"
+        "comma-style": "error",
+        "no-global-assign": "error",
+        "arrow-body-style":"error",
+        "no-confusing-arrow":"error",
+        "no-extra-boolean-cast":"error",
+        "no-extra-semi":"error",
+        "no-var":"error",
+        "prefer-const":"error",
+        "array-bracket-newline":"error",
+        "array-bracket-spacing":"error",
+        "linebreak-style":"error"
     }
 }
