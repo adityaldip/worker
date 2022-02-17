@@ -14,16 +14,19 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const shippedOrder = async (id) => {
+const cancelledOrder = async (id) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
         })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
-        order.taxable = seller.tax ? Boolean(seller.tax.id) : false
-        order.warehouseName = getWarehouse(order.warehouse_id, seller)
         accurate.setAccount(seller)
-        await accurate.storeInvoice(order)
+
+        order.taxId = seller.tax ? seller.tax.id : null
+        order.taxable = Boolean(order.taxId)
+
+        await accurate.deleteOrder(order)
+
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
@@ -31,13 +34,4 @@ const shippedOrder = async (id) => {
     }
 }
 
-const getWarehouse = (warehouseId, account) => {
-    const { warehouses } = account
-    if (!warehouseId || !warehouses) return null
-    const warehouseFind = warehouses.find(
-        (warehouse) => warehouse.forstok_warehouse.id == warehouseId
-    )
-    return warehouseFind ? warehouseFind.accurate_warehouse.name : null
-}
-
-module.exports = shippedOrder
+module.exports = cancelledOrder

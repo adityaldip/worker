@@ -1,9 +1,8 @@
-const { ObjectId } = require('mongodb');
-const AccurateHelper = require('../../../helpers/accurate.helper');
-const GeneralHelper = require('../../../helpers/general.helper');
-const OrderModel = require('../../../models/order.model');
-const SellerModel = require('../../../models/seller.model');
-
+const { ObjectId } = require('mongodb')
+const AccurateHelper = require('../../../helpers/accurate.helper')
+const GeneralHelper = require('../../../helpers/general.helper')
+const OrderModel = require('../../../models/order.model')
+const SellerModel = require('../../../models/seller.model')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
@@ -13,17 +12,21 @@ const sellerModel = new SellerModel()
 /**
  * Process a new order from accurate middleware to Accurate
  * @param {String} id MongoDB Object ID from orders collection
- * @returns 
+ * @returns
  */
 const deliveredOrder = async (id) => {
     try {
-        let order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) });
+        let order = await orderModel.findBy({
+            _id: ObjectId.createFromHexString(id),
+        })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)
 
         if (!order.invoice) {
             await accurate.storeInvoice(order)
-            order = await orderModel.findBy({ _id: ObjectId.createFromHexString(id) })
+            order = await orderModel.findBy({
+                _id: ObjectId.createFromHexString(id),
+            })
         }
 
         await accurate.storeReceipt(order)

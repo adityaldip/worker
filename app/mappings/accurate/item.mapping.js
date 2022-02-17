@@ -1,4 +1,3 @@
-
 /**
  * Mapping item
  * @param {Object} item Item to map
@@ -13,7 +12,7 @@ const itemMapping = (item) => {
                 quantity: parseInt(item.qty || 0),
                 unitCost: item.price || item.total_price || 0,
                 warehouseName: item.warehouseName || 'Utama',
-            }
+            },
         ],
         no: item.sku, // item_lines.sku
         unit1Name: 'PCS',
@@ -21,26 +20,26 @@ const itemMapping = (item) => {
     }
 
     if (item.accurate_id) {
-        mapped.id = item.accurate_id;
+        mapped.id = item.accurate_id
     }
 
     if (item.cost_price) {
-        mapped.vendorPrice = item.cost_price;
+        mapped.vendorPrice = item.cost_price
     }
 
     if (item.taxId) {
-        mapped.tax1Id = item.taxId;
+        mapped.tax1Id = item.taxId
     }
-    
+
     if (item.category) {
-        mapped.itemCategoryName = item.category;
+        mapped.itemCategoryName = item.category
     }
 
     if (item.barcode) {
-        mapped.upcNo = item.barcode;
+        mapped.upcNo = item.barcode
     }
 
-    return mapped;
+    return mapped
 }
 
 module.exports = itemMapping
