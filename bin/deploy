@@ -9,6 +9,7 @@ image="450680964076.dkr.ecr.ap-southeast-1.amazonaws.com/accurate-worker:${versi
 docker build . -t $image
 $(aws ecr get-login --no-include-email --region ap-southeast-1)
 docker service update  --image $image --force accurate-middleware_sales_order --with-registry-auth
+docker service update  --image $image --force accurate-middleware_sales_cancelled --with-registry-auth
 docker service update  --image $image --force accurate-middleware_sales_invoice --with-registry-auth
 docker service update  --image $image --force accurate-middleware_sales_receipt --with-registry-auth
 docker service update  --image $image --force accurate-middleware_items_query --with-registry-auth
