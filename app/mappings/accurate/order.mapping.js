@@ -74,7 +74,8 @@ const orderMapping = (order) => {
     }
 
     if (!order.cashless && order.shippingAccountId) {
-        const providers = order.shipping_courier.providers.length
+        const shippingCouriers = order.shipping_courier.providers || []
+        const providers = shippingCouriers.length
             ? order.shipping_courier.providers.join(', ')
             : order.item_lines[0].shipping_provider
         const awb =
