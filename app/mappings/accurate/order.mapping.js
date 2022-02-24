@@ -43,11 +43,6 @@ const orderMapping = (order) => {
             useTax1: order.taxable,
         }
 
-        if (isCancelled) {
-            detailItem.id = order.accurate_id
-            detailItem.manualClosed = isCancelled
-        }
-
         detailItems.push(detailItem)
 
         if (!skus.includes(item.sku) && skus.length > 0) {
@@ -70,7 +65,7 @@ const orderMapping = (order) => {
 
     if (isCancelled) {
         mapped.id = order.accurate_id
-        mapped.manualClosed = isCancelled
+        mapped.orderClosed = isCancelled
     }
 
     if (!order.cashless && order.shippingAccountId) {
@@ -89,11 +84,6 @@ const orderMapping = (order) => {
                 expenseName: shipping,
             },
         ]
-
-        if (isCancelled) {
-            mapped.detailExpense[0].id = order.accurate_id
-            mapped.detailExpense[0].manualClosed = isCancelled
-        }
     }
 
     if (order.taxable) {

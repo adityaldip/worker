@@ -52,7 +52,7 @@ pipeline{
     stage("build"){
       agent { label "slave" }
       when {
-        branch 'develop'
+        branch 'master'
       }
       environment {
           AWS_KEY = credentials('AWS_KEY')
