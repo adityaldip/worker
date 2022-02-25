@@ -16,6 +16,7 @@ const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
+const queue = process.env.DELAYED_QUEUE || 'worker-delayed-jobs'
 
 class AccurateHelper {
     constructor(account = null) {
@@ -91,13 +92,11 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message)
+                await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: message } }
                 )
-                if (order.attempts < maxAttempts) {
-                    await helper.pubQueue('accurate_sales_order', order._id)
-                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -139,13 +138,11 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message)
+                await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: response.d } }
                 )
-                if (order.attempts < maxAttempts) {
-                    await helper.pubQueue('accurate_sales_invoice', order._id)
-                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -184,13 +181,11 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message)
+                await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: response.d } }
                 )
-                if (order.attempts < maxAttempts) {
-                    await helper.pubQueue('accurate_sales_paid', order._id)
-                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -364,13 +359,11 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message)
+                await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
                 await orderModel.update(
                     { id: order.id },
                     { $inc: { attempts: 1 }, $set: { last_error: message } }
                 )
-                if (order.attempts < maxAttempts) {
-                    await helper.pubQueue('accurate_sales_cancelled', order._id)
-                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -401,7 +394,7 @@ class AccurateHelper {
                 params: form,
                 log: response,
             })
-            if (response.access_token) {
+            if (response.access_token && response.refresh_token) {
                 const today = new Date()
                 const expired_at = new Date(today)
                 expired_at.setDate(expired_at.getDate() + 15)
@@ -446,7 +439,7 @@ class AccurateHelper {
             })
             if (response.s) {
                 let result = {}
-                if (typeof response.d === 'object') {
+                if (typeof response.d === 'object' && response.d.session) {
                     result = {
                         api_db_session: response.d.session,
                         api_db_license_end: response.d.licenseEnd,
@@ -482,6 +475,21 @@ class AccurateHelper {
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION)
         ) {
             await this.refreshSession()
+        }
+    }
+
+    async delayedQueue(attempt, directedQueue, message) {
+        if (attempt < maxAttempts) {
+            const delayTime = new Date()
+            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 0))
+            const payload = {
+                data: message,
+                queue: directedQueue,
+                execution: delayTime
+            }
+            helper.pubQueue(queue, payload)
+        } else {
+            throw new Error('Max attempt has been exceeded')
         }
     }
 }
