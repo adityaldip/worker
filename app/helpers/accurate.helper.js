@@ -16,7 +16,7 @@ const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
-const queue = process.env.DELAYED_QUEUE || 'worker-delayed-jobs'
+const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
 
 class AccurateHelper {
     constructor(account = null) {
@@ -259,7 +259,7 @@ class AccurateHelper {
                             const message = res.d[0]
                             const expected =
                                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE
-                            const condition =
+                            const rejectedItem =
                                 message.includes(expected.KODE_VALID) ||
                                 message.includes(expected.NILAI) ||
                                 message.includes(expected.BESAR)
@@ -269,7 +269,7 @@ class AccurateHelper {
                                     $inc: { attempts: 1 },
                                     $set: { last_error: res },
                                 }
-                            if (condition) {
+                            if (rejectedItem) {
                                 updateItem = {
                                     $set: { attempts: 5, last_error: res },
                                 }
@@ -481,7 +481,7 @@ class AccurateHelper {
     async delayedQueue(attempt, directedQueue, message) {
         if (attempt < maxAttempts) {
             const delayTime = new Date()
-            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 0))
+            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
             const payload = {
                 data: message,
                 queue: directedQueue,
