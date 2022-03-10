@@ -444,6 +444,27 @@ describe('Order mapping testing', () => {
     })
 })
 
+describe('Closed Order mapping testing', () => {
+    it('should return a mapped closed order when status is CANCELLED', () => {
+        orderMock.status = 'Cancelled'
+        const mappedClosedOrder = accurateMapping.orderClosed(orderMock)
+        const expectedClosedOrder = {
+            number: 35,
+            orderClosed: true
+        }
+        chai.expect(mappedClosedOrder).to.deep.equal(expectedClosedOrder)
+    })
+
+    it('should return an undefined mapped closed order when empty object', () => {
+        const mappedClosedOrder = accurateMapping.orderClosed({})
+        const expectedClosedOrder = {
+            number: undefined,
+            orderClosed: true
+        }
+        chai.expect(mappedClosedOrder).to.deep.equal(expectedClosedOrder)
+    })
+})
+
 describe('Invoice mapping testing', () => {
     it('should return a mapped invoice when all attributes are exist', () => {
         delete orderMock.branchId
