@@ -15,17 +15,16 @@ const sellerModel = new SellerModel()
  */
 const filterItem = async (id) => {
     try {
-        console.log(`profile id`, id);
         const profileId = parseInt(id)
         const seller = await sellerModel.findBy({ seller_id: profileId })
         const { warehouses, tax } = seller
 
-        console.time(` [*] Item(s) retrieval took (profile_id: ${id})`)
+        const startTime = performance.now()
         const skus = await itemModel.distinct('no', { profile_id: profileId })
         const existedSkus = skus.length ? skus : ['']
         const items = await itemForstok.find(profileId, existedSkus)
         const warehouseName = items.length ? getWarehouse(items[0].warehouse_id, warehouses) : null
-        console.timeEnd(` [*] Item(s) retrieval took (profile_id: ${id})`)
+        const endTime = performance.now()
 
         const itemTax = tax ? tax.id : null
 
@@ -36,7 +35,6 @@ const filterItem = async (id) => {
             payload.profile_id = profileId
             payload.synced = false
             payload.attempts = 0
-            console.log(payload);
             return payload;
         });
 
@@ -45,7 +43,7 @@ const filterItem = async (id) => {
             await helper.pubQueue('accurate_items_import', profileId)
         }
 
-        console.log(' [✔] %d item(s) retrieved', mappedItems.length)
+        console.log(` [✔] %d item(s) from profile %s retrieved, took: ${parseInt(endTime-startTime)/1000} s`, mappedItems.length, id)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message, { profile_id: id })

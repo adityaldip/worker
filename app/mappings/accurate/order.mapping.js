@@ -10,9 +10,7 @@ const helper = new GeneralHelper()
  */
 const orderMapping = (order) => {
     let detailItems = []
-    const isCancelled = Boolean(
-        order.status === 'Cancelled' && order.accurate_id
-    )
+
     const skus = order.skus || []
     const newItem = []
     const itemQty = {}
@@ -61,11 +59,6 @@ const orderMapping = (order) => {
         // poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
         taxable: order.taxable,
         toAddress: `${order.address.name} - ${order.address.address_1}`,
-    }
-
-    if (isCancelled) {
-        mapped.id = order.accurate_id
-        mapped.orderClosed = isCancelled
     }
 
     if (!order.cashless && order.shippingAccountId) {

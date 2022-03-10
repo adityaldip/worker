@@ -284,12 +284,12 @@ class AccurateHelper {
                         }
                         count++
                     }
+                } else {
+                    const message =
+                        (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                        response
+                    await this.credentialHandle(message)
                 }
-                const message =
-                    response.d[0].d[0] ||
-                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
-                    response
-                await this.credentialHandle(message)
             }
         } catch (error) {
             throw new Error(error.message)
@@ -337,9 +337,9 @@ class AccurateHelper {
 
     async deleteOrder(order) {
         try {
-            const endpoint = `api/sales-order/save.do`
+            const endpoint = `api/sales-order/manual-close-order.do`
 
-            const body = accurateMapping.order(order)
+            const body = accurateMapping.orderClosed(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
