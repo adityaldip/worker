@@ -50,8 +50,7 @@ const filterItem = async (id) => {
     }
 }
 
-const getWarehouse = (warehouseId, account) => {
-    const { warehouses } = account
+const getWarehouse = (warehouseId, warehouses) => {
     if (!warehouseId || !warehouses) return null
     const warehouseFind = warehouses.find(
         (warehouse) => warehouse.forstok_warehouse.id == warehouseId
