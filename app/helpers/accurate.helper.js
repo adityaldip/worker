@@ -61,10 +61,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create a new order',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id
             })
 
             if (response.s) {
@@ -95,7 +98,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: message } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response } }
                 )
                 throw new Error(message)
             }
@@ -112,10 +115,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create an order invoice',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id
             })
 
             if (response.s) {
@@ -141,7 +147,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response.d } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response } }
                 )
                 throw new Error(message)
             }
@@ -158,10 +164,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create an order receipt payment',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id
             })
 
             if (response.s) {
@@ -184,7 +193,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response.d } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response } }
                 )
                 throw new Error(message)
             }
@@ -201,6 +210,8 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ITEM',
                 activity: 'create a new item',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -233,6 +244,8 @@ class AccurateHelper {
             const response = await request.requestPost(payload)
             const skus = items.map((item) => item.no)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ITEM',
                 activity: 'sync items to accurate',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -256,7 +269,7 @@ class AccurateHelper {
                                 { $set: { synced: true } }
                             )
                         } else {
-                            const message = res.d[0]
+                            const message = res.d ? res.d[0] : res
                             const expected =
                                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE
                             const rejectedItem =
@@ -264,7 +277,7 @@ class AccurateHelper {
                                 message.includes(expected.NILAI) ||
                                 message.includes(expected.BESAR)
                             let updateItem = message.includes(expected.KODE)
-                                ? { $set: { synced: true } }
+                                ? { $set: { synced: true, attempts: 5 } }
                                 : {
                                     $inc: { attempts: 1 },
                                     $set: { last_error: res },
@@ -304,6 +317,8 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'CUSTOMER',
                 activity: 'create a new customer',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -343,6 +358,8 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'delete an order',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -389,6 +406,7 @@ class AccurateHelper {
             }
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
                 activity: 'refresh access token',
                 profile_id: this.account.profile_id,
                 params: form,
@@ -432,6 +450,7 @@ class AccurateHelper {
             }
             const response = await request.requestGet(payload)
             await helper.accurateLog({
+                created_at: new Date(),
                 activity: 'refresh db session',
                 profile_id: this.account.profile_id || this.account.seller_id,
                 params: payload,
