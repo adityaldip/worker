@@ -13,6 +13,9 @@ const ACCURATE_RESPONSE_MESSAGE = {
     NILAI: 'Nilai Satuan harus diisi',
     KODE_VALID: 'tidak valid. Karakter yang diperbolehkan untuk',
     BESAR: 'terlalu besar. Maksimal 30 karakter',
+    PELANGGAN : 'Pelanggan',
+    TIDAK_DITEMUKAN : 'tidak ditemukan atau sudah dihapus',
+    ITEM : 'Barang & Jasa'
 }
 
 class GeneralHelper {

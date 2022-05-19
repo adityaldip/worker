@@ -91,7 +91,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
                 await orderModel.update(
                     { id: order.id },
@@ -137,7 +137,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
                 await orderModel.update(
                     { id: order.id },
@@ -180,7 +180,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
                 await orderModel.update(
                     { id: order.id },
@@ -215,7 +215,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, '')
 
                 throw new Error(message)
             }
@@ -288,7 +288,7 @@ class AccurateHelper {
                     const message =
                         (Array.isArray(response.d) ? response.d[0] : response.d) ||
                         response
-                    await this.credentialHandle(message)
+                    await this.credentialHandle(message, '')
                 }
             }
         } catch (error) {
@@ -317,7 +317,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, order)
 
                 if (
                     message.includes(
@@ -358,7 +358,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message)
+                await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
                 await orderModel.update(
                     { id: order.id },
@@ -468,13 +468,22 @@ class AccurateHelper {
         }
     }
 
-    async credentialHandle(response) {
+    async credentialHandle(response, order = '') {
         if (response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TOKEN)) {
             await this.refreshToken()
         } else if (
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION)
         ) {
             await this.refreshSession()
+        } else if (
+            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+        ) {
+            await this.storeCustomer(order)
+        } else if (
+            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+        ) {
+            const mappedOrder = accurateMapping.order(order)
+            await this.storeItemBulk(mappedOrder.detailItems)
         }
     }
 
