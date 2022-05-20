@@ -98,7 +98,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
                 )
                 throw new Error(message)
             }
@@ -147,7 +147,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
                 )
                 throw new Error(message)
             }
@@ -193,7 +193,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response } }
+                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
                 )
                 throw new Error(message)
             }
@@ -269,7 +269,7 @@ class AccurateHelper {
                                 { $set: { synced: true } }
                             )
                         } else {
-                            const message = res.d ? res.d[0] : res
+                            const message = (Array.isArray(res.d) ? res.d[0] : res.d) || res // res.d ? res.d[0] : res
                             const expected =
                                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE
                             const rejectedItem =
@@ -280,11 +280,11 @@ class AccurateHelper {
                                 ? { $set: { synced: true, attempts: 5 } }
                                 : {
                                     $inc: { attempts: 1 },
-                                    $set: { last_error: res },
+                                    $set: { last_error: res, synced: false },
                                 }
                             if (rejectedItem) {
                                 updateItem = {
-                                    $set: { attempts: 5, last_error: res },
+                                    $set: { attempts: 5, last_error: res, synced: false },
                                 }
                             }
                             await itemModel.update(
@@ -364,6 +364,7 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id
             })
 
             if (response.s) {
@@ -379,7 +380,7 @@ class AccurateHelper {
                 await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: message } }
+                    { $inc: { attempts: 1 }, $set: { last_error: message, synced: false } }
                 )
                 throw new Error(message)
             }
