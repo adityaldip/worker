@@ -25,7 +25,7 @@ const importItem = async (id) => {
             profile_id: profileId,
             attempts: { $lt: accurate.getMaxAttempt() },
         })
-        item.project({ accurate_id: 0, _id: 0, synced: 0 })
+        item.project({ accurate_id: 0, _id: 0, synced: 0, synced_at: 0 })
             .limit(100)
             .toArray(async (err, res) => {
                 if (err) throw new Error(err.message)

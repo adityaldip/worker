@@ -15,7 +15,9 @@ const ACCURATE_RESPONSE_MESSAGE = {
     BESAR: 'terlalu besar. Maksimal 30 karakter',
     PELANGGAN : 'Pelanggan',
     TIDAK_DITEMUKAN : 'tidak ditemukan atau sudah dihapus',
-    ITEM : 'Barang & Jasa'
+    ITEM : 'Barang & Jasa',
+    PESANAN_ADA: 'Sudah ada data lain dengan No Pesanan',
+    PROSES_DUA_KALI: 'terdeteksi terproses dua kali. Mohon cek transaksi yang memproses pesanan tersebut'
 }
 
 class GeneralHelper {

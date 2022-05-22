@@ -94,6 +94,22 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
+                    if (order.status === 'Ready to Ship') {
+                        await helper.pubQueue('accurate_sales_invoice', order._id)
+                    } else if (order.status === 'Delivered') {
+                        await helper.pubQueue('accurate_sales_paid', order._id)
+                    } else if (order.status === 'Cancelled') {
+                        await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    } else {
+                        await orderModel.update(
+                            { id: order.id },
+                            { $set: { last_error: response, synced: true } }
+                        );
+                    }
+                    return;
+                }
+
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
                 await orderModel.update(
@@ -143,6 +159,14 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    );
+                    return;
+                }
+
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
                 await orderModel.update(
@@ -221,6 +245,7 @@ class AccurateHelper {
                 item.accurate_id = response.r.id
                 item.profile_id = this.account.profile_id
                 item.synced = true
+                item.synced_at = new Date()
                 await itemModel.insert(item)
             } else {
                 const message =
@@ -254,7 +279,7 @@ class AccurateHelper {
             if (response.s) {
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
-                    { $set: { synced: true } }
+                    { $set: { synced: true, synced_at: new Date() } }
                 )
             } else {
                 if (Array.isArray(response.d)) {
@@ -266,7 +291,7 @@ class AccurateHelper {
                                     profile_id: this.account.profile_id,
                                     no: res.r.no,
                                 },
-                                { $set: { synced: true } }
+                                { $set: { synced: true, synced_at: new Date() } }
                             )
                         } else {
                             const message = (Array.isArray(res.d) ? res.d[0] : res.d) || res // res.d ? res.d[0] : res
@@ -277,7 +302,7 @@ class AccurateHelper {
                                 message.includes(expected.NILAI) ||
                                 message.includes(expected.BESAR)
                             let updateItem = message.includes(expected.KODE)
-                                ? { $set: { synced: true, attempts: 5 } }
+                                ? { $set: { synced: true, attempts: 5, synced_at: new Date() } }
                                 : {
                                     $inc: { attempts: 1 },
                                     $set: { last_error: res, synced: false },
@@ -327,7 +352,7 @@ class AccurateHelper {
             if (response.s) {
                 body.accurate_id = response.r.id
                 body.profile_id = order.profile_id
-                await customerModel.insert(body)
+                await customerModel.update({ customerNo: body.customerNo, profile_id: body.profileId }, { $set: body });
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -503,7 +528,7 @@ class AccurateHelper {
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
         ) {
             const mappedOrder = accurateMapping.order(order)
-            await this.storeItemBulk(mappedOrder.detailItems)
+            await this.storeItemBulk(mappedOrder.detailItem)
         }
     }
 
@@ -517,8 +542,6 @@ class AccurateHelper {
                 execution: delayTime
             }
             helper.pubQueue(queue, payload)
-        } else {
-            throw new Error('Max attempt has been exceeded')
         }
     }
 }
