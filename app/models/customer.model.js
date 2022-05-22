@@ -30,7 +30,7 @@ class CustomerModel {
 
     async update(where, value) {
         const db = await this.getInstance()
-        return await db.collection(this.collection).updateOne(where, value)
+        return await db.collection(this.collection).updateOne(where, value, { upsert: true })
     }
 
     async updateMany(where, value) {
