@@ -48,6 +48,11 @@ class ItemModel {
         const db = await this.getInstance()
         return await db.collection(this.collection).distinct(field, where)
     }
+
+    async deleteMany(where) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).deleteMany(where);
+    }
 }
 
 class ItemForstokModel {

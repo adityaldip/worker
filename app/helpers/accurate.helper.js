@@ -331,6 +331,9 @@ class AccurateHelper {
             }
         } catch (error) {
             throw new Error(error.message)
+        } finally {
+            // DELETE ITEM WITH MAX ATTEMPTS AND NOT SYNCED
+            await itemModel.deleteMany({attempts: { $gte: maxAttempts }, synced: false});
         }
     }
 
