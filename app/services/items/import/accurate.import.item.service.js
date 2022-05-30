@@ -19,9 +19,6 @@ const importItem = async (id) => {
         const seller = await sellerModel.findBy({ seller_id: profileId })
         accurate.setAccount(seller)
 
-        // DELETE ITEM WITH MAX ATTEMPTS AND NOT SYNCED
-        await itemModel.deleteMany({attempts: { $gte: accurate.getMaxAttempt() }, synced: false});
-
         const item = await itemModel.find({
             synced: { $in: [false, null] },
             upcNo: { $ne: 'rebate' },
