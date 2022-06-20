@@ -404,6 +404,15 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP)) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    );
+
+                    return;
+                }
+
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
                 await orderModel.update(
@@ -523,6 +532,10 @@ class AccurateHelper {
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION)
         ) {
             await this.refreshSession()
+        } else if (
+            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_PENJUALAN) && response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+        ) {
+            await this.storeOrder(order)
         } else if (
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
         ) {
