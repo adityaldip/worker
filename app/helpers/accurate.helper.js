@@ -628,10 +628,13 @@ class AccurateHelper {
         }
     }
 
-    async delayedQueue(attempt, directedQueue, message) {
+    async delayedQueue(attempt, directedQueue, message, inSeconds = false) {
         if (attempt < maxAttempts) {
             const delayTime = new Date()
-            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            if (!inSeconds)
+                delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            else delayTime.setSeconds(delayTime.getSeconds() + (attempt || 1))
+
             const payload = {
                 data: message,
                 queue: directedQueue,
