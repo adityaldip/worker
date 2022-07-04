@@ -21,7 +21,7 @@ const getItemForstok = async (id) => {
             profile_id: profileId,
             synced: true
         })
-        const loopitem = await item.limit(3).toArray();
+        const loopitem = await item.toArray();
         const event = await eventModel.findBy({
             profile_id: profileId
         });
