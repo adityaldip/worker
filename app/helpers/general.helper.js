@@ -21,6 +21,7 @@ const ACCURATE_RESPONSE_MESSAGE = {
         'terdeteksi terproses dua kali. Mohon cek transaksi yang memproses pesanan tersebut',
     SUDAH_TUTUP: 'sudah ditutup, tidak dapat diproses lagi',
     PESANAN_PENJUALAN: 'Pesanan Penjualan',
+    RATE_LIMIT: 'request per detik',
 }
 
 class GeneralHelper {
