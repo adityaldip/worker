@@ -2,26 +2,23 @@ const CHUNK_SIZE = parseInt(process.env.QUANTITY_CHUNK_SIZE) || 20
 
 const { ObjectID } = require('bson')
 const AccurateHelper = require('../../../helpers/accurate.helper')
-const ItemJobModel = require('../../../models/item.job.model')
 const { ItemSyncModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 const GeneralHelper = require('../../../helpers/general.helper')
 
-const itemJobModel = new ItemJobModel()
 const itemSyncModel = new ItemSyncModel()
 const sellerModel = new SellerModel()
 const accurate = new AccurateHelper()
 const helper = new GeneralHelper()
 
-const fetchItemStock = async (id) => {
+const fetchItemStock = async (itemJob) => {
     try {
-        // Get item job from forstok_delayed.delayed_jobs
-        const itemJob = await itemJobModel.findBy({ _id: ObjectID(id) })
-        if (!itemJob) throw new Error('delayed job item cannot be found')
+        if (!itemJob.eventID || !itemJob.sku) throw new Error('Item job is invalid')
+        if (!itemJob.warehouseName) itemJob.warehouseName = 'Utama' 
 
         // Get item sync
         let itemSync = await itemSyncModel.findBy({
-            _id: ObjectID(itemJob.data.eventID),
+            _id: ObjectID(itemJob.eventID),
         })
         if (!itemSync)
             throw new Error('event item quantity sync cannot be found')
@@ -72,7 +69,10 @@ const fetchItemStock = async (id) => {
                 ' [✔] Max Chunk size has reached, sending queue to accurate_quantity_sync'
             )
             const chunkJob = await itemJobModel.insert({
-                data: chunkItems,
+                data: {
+                    item_sync_id: itemSync._id.toString(),
+                    items: chunkItems,
+                },
                 queue: 'accurate_quantity_sync',
                 execution: null,
                 createdAt: new Date(),

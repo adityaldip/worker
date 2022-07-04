@@ -6,7 +6,6 @@ const OrderModel = require('../models/order.model')
 const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
-const ItemJobModel = require('../models/item.job.model')
 const { ObjectID } = require('bson')
 
 const helper = new GeneralHelper()
@@ -17,7 +16,6 @@ const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
 const itemSyncModel = new ItemSyncModel()
-const itemJobModel = new ItemJobModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -398,8 +396,8 @@ class AccurateHelper {
         try {
             const endpoint = 'api/item/get-stock.do'
             const body = {
-                warehouseName: itemJob.data.warehouseName || 'Utama',
-                no: itemJob.data.sku,
+                warehouseName: itemJob.warehouseName || 'Utama',
+                no: itemJob.sku,
             }
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestGet(payload)
@@ -411,8 +409,8 @@ class AccurateHelper {
                         $push: {
                             item_accurate_quantity: {
                                 _id: new ObjectID(),
-                                sku: itemJob.data.sku,
-                                warehouseName: itemJob.data.warehouseName,
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
                                 quantity: response.d.availableStock,
                             },
                         },
@@ -436,8 +434,8 @@ class AccurateHelper {
                             $push: {
                                 item_accurate_quantity: {
                                     _id: new ObjectID(),
-                                    sku: itemJob.data.sku,
-                                    warehouseName: itemJob.data.warehouseName,
+                                    sku: itemJob.sku,
+                                    warehouseName: itemJob.warehouseName,
                                     notFound: true,
                                 },
                             },
@@ -469,8 +467,8 @@ class AccurateHelper {
                             $push: {
                                 item_accurate_quantity: {
                                     _id: new ObjectID(),
-                                    sku: itemJob.data.sku,
-                                    warehouseName: itemJob.data.warehouseName,
+                                    sku: itemJob.sku,
+                                    warehouseName: itemJob.warehouseName,
                                     error: true,
                                 },
                             },
