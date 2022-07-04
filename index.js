@@ -19,7 +19,8 @@ async function receiveMessage(channel, queue) {
         queue,
         function (msg) {
             console.log(' [+] Received message on queue %s', queue)
-            const id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
+            let id = parseJson(msg.content.toString())
+            if (!id) id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
 
             if (queue == 'accurate_sales_order') {
                 accurateOpenOrder(id)
@@ -53,6 +54,14 @@ async function receiveMessage(channel, queue) {
             noAck: true,
         }
     )
+}
+
+const parseJson = (str) => {
+    try {
+        return JSON.parse(str)
+    } catch (error) {
+        return false
+    }
 }
 
 amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
