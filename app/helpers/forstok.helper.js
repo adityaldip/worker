@@ -10,7 +10,7 @@ class ForstokHelper {
         const payload = {
             url,
             body,
-            json: true
+            json: true,
         }
         return payload
     }
@@ -21,11 +21,11 @@ class ForstokHelper {
             const key = dataSeller.api_key_forstok
             const url = `${FORSTOK_INTEGRATION_URL}?id=${id}&secret_key=${key}&type=seller`
             const payload = this.payload(url, {})
-            const response = await request.request_post(payload)
+            const response = await request.requestPost(payload)
 
             return response.data.token
         } catch (error) {
-            return error.message
+            throw new Error(error.message)
         }
     }
 
@@ -37,10 +37,9 @@ class ForstokHelper {
             const token = await this.getSellerToken(dataSeller)
             const headers = { Authorization: `bearer ${token}` }
             const response = await Axios.patch(url, data, { headers })
-
             return response.data
         } catch (error) {
-            return error.message
+            throw new Error(error.message)
         }
     }
 }
