@@ -1,11 +1,13 @@
 const GeneralHelper = require('./general.helper')
 const RequestHelper = require('./request.helper')
 const { accurateMapping } = require('./mapping.helper')
-const { ItemModel } = require('../models/item.model')
+const { ItemModel, ItemSyncModel } = require('../models/item.model')
 const OrderModel = require('../models/order.model')
 const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
+const ItemJobModel = require('../models/item.job.model')
+const { ObjectID } = require('bson')
 
 const helper = new GeneralHelper()
 const request = new RequestHelper()
@@ -14,6 +16,8 @@ const sellerModel = new SellerModel()
 const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
+const itemSyncModel = new ItemSyncModel()
+const itemJobModel = new ItemJobModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -389,6 +393,117 @@ class AccurateHelper {
                 attempts: { $gte: maxAttempts },
                 synced: false,
             })
+        }
+    }
+
+    async getStockItem(itemJob, itemSync) {
+        try {
+            const endpoint = 'api/item/get-stock.do'
+            const body = {
+                warehouseName: itemJob.data.warehouseName || 'Utama',
+                no: itemJob.data.sku,
+            }
+            console.log(body)
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestGet(payload)
+            if (response.s) {
+                // SKU found on accurate
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.data.sku,
+                                warehouseName: itemJob.data.warehouseName,
+                                quantity: response.d.availableStock,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+                await itemJobModel.delete({ _id: itemJob._id })
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM
+                    )
+                ) {
+                    // SKU not found on accurate
+                    await itemSyncModel.update(
+                        { _id: itemSync._id },
+                        {
+                            $push: {
+                                item_accurate_quantity: {
+                                    _id: new ObjectID(),
+                                    sku: itemJob.data.sku,
+                                    warehouseName: itemJob.data.warehouseName,
+                                    notFound: true,
+                                },
+                            },
+                            $inc: { item_accurate_count: 1 },
+                        }
+                    )
+                    itemJobModel.delete({ _id: itemJob._id })
+                    return
+                }
+                // Error due to rate limiting or something else
+                if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
+                    await itemJobModel.update(
+                        { _id: itemJob._id },
+                        {
+                            $inc: { attempt: 1 },
+                        }
+                    )
+                    await this.delayedQueue(
+                        itemJob.attempt || 1,
+                        'accurate_items_fetch',
+                        itemJob._id.toString(),
+                        true
+                    )
+                } else {
+                    // SKU failed to fetch
+                    await itemSyncModel.update(
+                        { _id: itemSync._id },
+                        {
+                            $push: {
+                                item_accurate_quantity: {
+                                    _id: new ObjectID(),
+                                    sku: itemJob.data.sku,
+                                    warehouseName: itemJob.data.warehouseName,
+                                    error: true,
+                                },
+                            },
+                            $inc: { item_accurate_count: 1 },
+                        }
+                    )
+                    itemJobModel.delete({ _id: itemJob._id })
+                    return
+                }
+                throw new Error(message)
+            }
+        } catch (error) {
+            // SKU failed to fetch
+            await itemSyncModel.update(
+                { _id: itemSync._id },
+                {
+                    $push: {
+                        item_accurate_quantity: {
+                            _id: new ObjectID(),
+                            sku: itemJob.data.sku,
+                            warehouseName: itemJob.data.warehouseName,
+                            error: true,
+                        },
+                    },
+                    $inc: { item_accurate_count: 1 },
+                }
+            )
+            itemJobModel.delete({ _id: itemJob._id })
+
+            throw new Error(error.message)
         }
     }
 
