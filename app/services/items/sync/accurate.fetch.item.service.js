@@ -3,7 +3,7 @@ const CHUNK_SIZE = parseInt(process.env.QUANTITY_CHUNK_SIZE) || 20
 const { ObjectID } = require('bson')
 const AccurateHelper = require('../../../helpers/accurate.helper')
 const ItemJobModel = require('../../../models/item.job.model')
-const { ItemSyncModel, ItemModel } = require('../../../models/item.model')
+const { ItemSyncModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 const GeneralHelper = require('../../../helpers/general.helper')
 
@@ -90,7 +90,7 @@ const fetchItemStock = async (id) => {
                     { status: 'fetching' },
                     {
                         $expr: {
-                            $eq: [
+                            $gte: [
                                 '$item_accurate_count',
                                 '$item_forstok_count',
                             ],
@@ -122,7 +122,6 @@ const fetchItemStock = async (id) => {
                     $push: {
                         response_sync: { $each: chunkItems },
                     },
-                    // $set: { status: 'syncing' },
                 }
             )
             const chunkJob = await itemJobModel.insert({
