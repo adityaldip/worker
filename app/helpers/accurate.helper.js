@@ -417,7 +417,6 @@ class AccurateHelper {
                         $inc: { item_accurate_count: 1 },
                     }
                 )
-                await itemJobModel.delete({ _id: itemJob._id })
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -442,45 +441,42 @@ class AccurateHelper {
                             $inc: { item_accurate_count: 1 },
                         }
                     )
-                    itemJobModel.delete({ _id: itemJob._id })
                     return
                 }
-                // Error due to rate limiting or something else
-                if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
-                    await itemJobModel.update(
-                        { _id: itemJob._id },
-                        {
-                            $inc: { attempt: 1 },
-                        }
-                    )
-                    await this.delayedQueue(
-                        itemJob.attempt || 1,
-                        'accurate_items_fetch',
-                        itemJob._id.toString(),
-                        true
-                    )
-                } else {
-                    // SKU failed to fetch
-                    await itemSyncModel.update(
-                        { _id: itemSync._id },
-                        {
-                            $push: {
-                                item_accurate_quantity: {
-                                    _id: new ObjectID(),
-                                    sku: itemJob.sku,
-                                    warehouseName: itemJob.warehouseName,
-                                    error: true,
-                                },
-                            },
-                            $inc: { item_accurate_count: 1 },
-                        }
-                    )
-                    itemJobModel.delete({ _id: itemJob._id })
-                    return
-                }
+                
                 throw new Error(message)
             }
         } catch (error) {
+            // Error due to rate limiting or something else
+            if (!itemJob.attempt) itemJob.attempt = 0
+            itemJob.attempt = parseInt(itemJob.attempt) + 1
+            console.log(itemJob)
+            if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
+                await this.delayedQueue(
+                    itemJob.attempt,
+                    'accurate_items_fetch',
+                    itemJob,
+                    true
+                )
+            } else {
+                // SKU failed to fetch
+                console.log('Fetch failed')
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
+                                error: true,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+                return
+            }
             throw new Error(error.message)
         }
     }
