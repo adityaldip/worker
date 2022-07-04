@@ -1,6 +1,5 @@
 const GeneralHelper = require('../../helpers/general.helper')
-const { ItemModel} = require('../../models/item.model')
-const SellerModel = require('../../models/seller.model')
+const { ItemModel } = require('../../models/item.model')
 const EventModel = require('../../models/event.model')
 const DelayedModel = require('../../models/delayed.model')
 
@@ -22,7 +21,7 @@ const accurateitemFetch = async (id) => {
             profile_id: profileId,
             synced: true
         })
-        const loopitem = await item.toArray();
+        const loopitem = await item.limit(2).toArray();
         const event = await eventModel.findBy({ profile_id:profileId });
         if (loopitem.length > 0) {
              //Update event item_forstok_count
