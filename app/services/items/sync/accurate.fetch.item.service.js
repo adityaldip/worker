@@ -2,10 +2,12 @@ const CHUNK_SIZE = parseInt(process.env.QUANTITY_CHUNK_SIZE) || 20
 
 const { ObjectID } = require('bson')
 const AccurateHelper = require('../../../helpers/accurate.helper')
-const { ItemSyncModel, ItemSyncBulkModel } = require('../../../models/item.model')
+const {
+    ItemSyncModel,
+    ItemSyncBulkModel,
+} = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 const GeneralHelper = require('../../../helpers/general.helper')
-
 
 const itemSyncModel = new ItemSyncModel()
 const sellerModel = new SellerModel()
@@ -14,8 +16,9 @@ const helper = new GeneralHelper()
 const itemSyncBulkModel = new ItemSyncBulkModel()
 const fetchItemStock = async (itemJob) => {
     try {
-        if (!itemJob.eventID || !itemJob.sku) throw new Error('Item job is invalid')
-        if (!itemJob.warehouseName) itemJob.warehouseName = 'Utama' 
+        if (!itemJob.eventID || !itemJob.sku)
+            throw new Error('Item job is invalid')
+        if (!itemJob.warehouseName) itemJob.warehouseName = 'Utama'
 
         // Get item sync
         let itemSync = await itemSyncModel.findBy({
@@ -69,13 +72,14 @@ const fetchItemStock = async (itemJob) => {
             console.log(
                 ' [✔] Max Chunk size has reached, sending queue to accurate_quantity_sync'
             )
-            chunkItems = chunkItems.map(item => {
-                return {
-                    sku: item.sku,
-                    warehouse_id: getForstokWarehouse(item.warehouseName, seller.warehouses),
-                    quantity: item.quantity
-                }
-            })
+            chunkItems = chunkItems.map((item) => ({
+                sku: item.sku,
+                warehouse_id: getForstokWarehouse(
+                    item.warehouseName,
+                    seller.warehouses
+                ),
+                quantity: item.quantity,
+            }))
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
@@ -131,13 +135,14 @@ const fetchItemStock = async (itemJob) => {
                     },
                 }
             )
-            chunkItems = chunkItems.map(item => {
-                return {
-                    sku: item.sku,
-                    warehouse_id: getForstokWarehouse(item.warehouseName, seller.warehouses),
-                    quantity: item.quantity
-                }
-            })
+            chunkItems = chunkItems.map((item) => ({
+                sku: item.sku,
+                warehouse_id: getForstokWarehouse(
+                    item.warehouseName,
+                    seller.warehouses
+                ),
+                quantity: item.quantity,
+            }))
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
