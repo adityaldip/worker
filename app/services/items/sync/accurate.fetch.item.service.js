@@ -2,15 +2,16 @@ const CHUNK_SIZE = parseInt(process.env.QUANTITY_CHUNK_SIZE) || 20
 
 const { ObjectID } = require('bson')
 const AccurateHelper = require('../../../helpers/accurate.helper')
-const { ItemSyncModel } = require('../../../models/item.model')
+const { ItemSyncModel, ItemSyncBulkModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 const GeneralHelper = require('../../../helpers/general.helper')
+
 
 const itemSyncModel = new ItemSyncModel()
 const sellerModel = new SellerModel()
 const accurate = new AccurateHelper()
 const helper = new GeneralHelper()
-
+const itemSyncBulkModel = new ItemSyncBulkModel()
 const fetchItemStock = async (itemJob) => {
     try {
         if (!itemJob.eventID || !itemJob.sku) throw new Error('Item job is invalid')
@@ -68,13 +69,12 @@ const fetchItemStock = async (itemJob) => {
             console.log(
                 ' [✔] Max Chunk size has reached, sending queue to accurate_quantity_sync'
             )
-            const chunkJob = await itemJobModel.insert({
+            const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
                     items: chunkItems,
                 },
                 queue: 'accurate_quantity_sync',
-                execution: null,
                 createdAt: new Date(),
             })
             helper.pubQueue(
@@ -87,7 +87,7 @@ const fetchItemStock = async (itemJob) => {
             {
                 $and: [
                     { _id: itemSync._id },
-                    { status: 'fetching' },
+                    { status: 'running' },
                     {
                         $expr: {
                             $gte: [
@@ -124,13 +124,12 @@ const fetchItemStock = async (itemJob) => {
                     },
                 }
             )
-            const chunkJob = await itemJobModel.insert({
+            const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
                     items: chunkItems,
                 },
                 queue: 'accurate_quantity_sync',
-                execution: null,
                 createdAt: new Date(),
             })
             helper.pubQueue(
