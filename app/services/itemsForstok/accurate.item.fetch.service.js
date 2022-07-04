@@ -1,5 +1,4 @@
 const GeneralHelper = require('../../helpers/general.helper')
-const { accurateMapping } = require('../../helpers/mapping.helper')
 const { ItemModel, ItemForstokModel } = require('../../models/item.model')
 const SellerModel = require('../../models/seller.model')
 const EventModel = require('../../models/event.model')
@@ -7,7 +6,6 @@ const DelayedModel = require('../../models/delayed.model')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
-const itemForstok = new ItemForstokModel()
 const sellerModel = new SellerModel()
 const eventModel = new EventModel()
 const delayedModel = new DelayedModel()
@@ -21,9 +19,6 @@ const accurateitemFetch = async (id) => {
     try {
         const profileId = parseInt(id)
         const seller = await sellerModel.findBy({ seller_id: profileId })
-        const { warehouses, tax } = seller
-        const startTime = performance.now()
-        const endTime = performance.now()
 
         const item = await itemModel.find({
             profile_id: profileId,
@@ -67,7 +62,7 @@ const accurateitemFetch = async (id) => {
             }
         } else {
             console.log(
-                ' [✔] Item(s) with Profile ID %s uploaded to Accurate',
+                ' [✔] Item(s) with Profile ID %s fetch to Accurate',
                 id
             )
         }
