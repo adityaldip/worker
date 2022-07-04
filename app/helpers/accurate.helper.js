@@ -346,18 +346,16 @@ class AccurateHelper {
                                 message.includes(expected.KODE_VALID) ||
                                 message.includes(expected.NILAI) ||
                                 message.includes(expected.BESAR)
-                            let updateItem = message.includes(expected.KODE)
-                                ? {
-                                      $set: {
-                                          synced: true,
-                                          attempts: 5,
-                                          synced_at: new Date(),
-                                      },
-                                  }
-                                : {
-                                      $inc: { attempts: 1 },
-                                      $set: { last_error: res, synced: false },
-                                  }
+                            let updateItem = message.includes(expected.KODE) ? {
+                                $set: {
+                                    synced: true,
+                                    attempts: 5,
+                                    synced_at: new Date(),
+                                },
+                            } : {
+                                $inc: { attempts: 1 },
+                                $set: { last_error: res, synced: false },
+                            }
                             if (rejectedItem) {
                                 updateItem = {
                                     $set: {
@@ -403,7 +401,6 @@ class AccurateHelper {
                 warehouseName: itemJob.data.warehouseName || 'Utama',
                 no: itemJob.data.sku,
             }
-            console.log(body)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestGet(payload)
             if (response.s) {
@@ -486,23 +483,6 @@ class AccurateHelper {
                 throw new Error(message)
             }
         } catch (error) {
-            // SKU failed to fetch
-            await itemSyncModel.update(
-                { _id: itemSync._id },
-                {
-                    $push: {
-                        item_accurate_quantity: {
-                            _id: new ObjectID(),
-                            sku: itemJob.data.sku,
-                            warehouseName: itemJob.data.warehouseName,
-                            error: true,
-                        },
-                    },
-                    $inc: { item_accurate_count: 1 },
-                }
-            )
-            itemJobModel.delete({ _id: itemJob._id })
-
             throw new Error(error.message)
         }
     }
