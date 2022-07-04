@@ -37,7 +37,7 @@ const fetchItemStock = async (itemJob) => {
 
         // calculate chunk
         itemSync = await itemSyncModel.findBy({ _id: itemSync._id })
-        const chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
+        let chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
         const chunkIds = []
         chunkItems.forEach((item) => chunkIds.push(item._id))
         let tx = await itemSyncModel.findOneAndUpdate(
@@ -69,6 +69,13 @@ const fetchItemStock = async (itemJob) => {
             console.log(
                 ' [✔] Max Chunk size has reached, sending queue to accurate_quantity_sync'
             )
+            chunkItems = chunkItems.map(item => {
+                return {
+                    sku: item.sku,
+                    warehouse_id: getForstokWarehouse(item.warehouseName, seller.warehouses),
+                    quantity: item.quantity
+                }
+            })
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
@@ -108,7 +115,7 @@ const fetchItemStock = async (itemJob) => {
             console.log(
                 ' [✔] Fetch item sync is completed, sending last queue to accurate_quantity_sync'
             )
-            const chunkItems = tx.value.item_accurate_quantity
+            let chunkItems = tx.value.item_accurate_quantity
             const chunkIds = []
             chunkItems.forEach((item) => chunkIds.push(item._id))
             await itemSyncModel.update(
@@ -124,6 +131,13 @@ const fetchItemStock = async (itemJob) => {
                     },
                 }
             )
+            chunkItems = chunkItems.map(item => {
+                return {
+                    sku: item.sku,
+                    warehouse_id: getForstokWarehouse(item.warehouseName, seller.warehouses),
+                    quantity: item.quantity
+                }
+            })
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
@@ -140,6 +154,14 @@ const fetchItemStock = async (itemJob) => {
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
     }
+}
+
+const getForstokWarehouse = (warehouseName, warehouses) => {
+    if (!warehouseName || !warehouses) return null
+    const warehouseFind = warehouses.find(
+        (warehouse) => warehouse.accurate_warehouse.name == warehouseName
+    )
+    return warehouseFind ? warehouseFind.forstok_warehouse.id : false
 }
 
 module.exports = fetchItemStock
