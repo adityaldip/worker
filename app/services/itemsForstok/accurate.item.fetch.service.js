@@ -1,12 +1,11 @@
 const GeneralHelper = require('../../helpers/general.helper')
-const { ItemModel, ItemForstokModel } = require('../../models/item.model')
+const { ItemModel} = require('../../models/item.model')
 const SellerModel = require('../../models/seller.model')
 const EventModel = require('../../models/event.model')
 const DelayedModel = require('../../models/delayed.model')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
-const sellerModel = new SellerModel()
 const eventModel = new EventModel()
 const delayedModel = new DelayedModel()
 
@@ -18,7 +17,6 @@ const delayedModel = new DelayedModel()
 const accurateitemFetch = async (id) => {
     try {
         const profileId = parseInt(id)
-        const seller = await sellerModel.findBy({ seller_id: profileId })
 
         const item = await itemModel.find({
             profile_id: profileId,
