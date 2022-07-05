@@ -443,14 +443,13 @@ class AccurateHelper {
                     )
                     return
                 }
-                
+
                 throw new Error(message)
             }
         } catch (error) {
             // Error due to rate limiting or something else
             if (!itemJob.attempt) itemJob.attempt = 0
             itemJob.attempt = parseInt(itemJob.attempt) + 1
-            console.log(itemJob)
             if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
                 await this.delayedQueue(
                     itemJob.attempt,
@@ -460,7 +459,6 @@ class AccurateHelper {
                 )
             } else {
                 // SKU failed to fetch
-                console.log('Fetch failed')
                 await itemSyncModel.update(
                     { _id: itemSync._id },
                     {
