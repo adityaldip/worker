@@ -45,7 +45,10 @@ const syncQuantity = async (id) => {
             itemSyncBulkModel.update(
                 { _id: itemSyncBulk._id },
                 {
-                    $set: { status: 'success' },
+                    $set: {
+                        status: 'success',
+                        response: response,
+                    },
                 }
             )
             itemSyncModel.update(
