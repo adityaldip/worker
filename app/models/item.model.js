@@ -169,4 +169,13 @@ class ItemSyncBulkModel {
     }
 }
 
+<<<<<<< HEAD
 module.exports = { ItemModel, ItemForstokModel, ItemSyncModel, ItemSyncBulkModel }
+=======
+module.exports = {
+    ItemModel,
+    ItemForstokModel,
+    ItemSyncModel,
+    ItemSyncBulkModel,
+}
+>>>>>>> feature/av-65

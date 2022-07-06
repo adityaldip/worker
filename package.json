@@ -16,12 +16,14 @@
         "dev:delivered": "QUEUE_NAME=accurate_sales_paid node index.js",
         "dev:filter": "QUEUE_NAME=accurate_items_query node index.js",
         "dev:import": "QUEUE_NAME=accurate_items_import node index.js",
-        "dev:fetch": "QUEUE_NAME=accurate_items_fetch node index.js"
+        "dev:fetch": "QUEUE_NAME=accurate_items_fetch node index.js",
+        "dev:sync": "QUEUE_NAME=accurate_quantity_sync node index.js"
     },
     "author": "Rio Riantana",
     "license": "ISC",
     "dependencies": {
         "amqplib": "^0.8.0",
+        "axios": "^0.27.2",
         "dotenv": "^10.0.0",
         "http-parser-js": "^0.5.2",
         "mongodb": "^4.2.0",
