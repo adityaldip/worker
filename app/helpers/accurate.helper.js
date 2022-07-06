@@ -1,11 +1,12 @@
 const GeneralHelper = require('./general.helper')
 const RequestHelper = require('./request.helper')
 const { accurateMapping } = require('./mapping.helper')
-const { ItemModel } = require('../models/item.model')
+const { ItemModel, ItemSyncModel } = require('../models/item.model')
 const OrderModel = require('../models/order.model')
 const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
+const { ObjectID } = require('bson')
 
 const helper = new GeneralHelper()
 const request = new RequestHelper()
@@ -14,6 +15,7 @@ const sellerModel = new SellerModel()
 const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
+const itemSyncModel = new ItemSyncModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -67,7 +69,7 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
-                order_id: order.id
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -94,27 +96,44 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA
+                    )
+                ) {
                     if (order.status === 'Ready to Ship') {
-                        await helper.pubQueue('accurate_sales_invoice', order._id)
+                        await helper.pubQueue(
+                            'accurate_sales_invoice',
+                            order._id
+                        )
                     } else if (order.status === 'Delivered') {
                         await helper.pubQueue('accurate_sales_paid', order._id)
                     } else if (order.status === 'Cancelled') {
-                        await helper.pubQueue('accurate_sales_cancelled', order._id)
+                        await helper.pubQueue(
+                            'accurate_sales_cancelled',
+                            order._id
+                        )
                     } else {
                         await orderModel.update(
                             { id: order.id },
                             { $set: { last_error: response, synced: true } }
-                        );
+                        )
                     }
-                    return;
+                    return
                 }
 
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_order',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -137,7 +156,7 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
-                order_id: order.id
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -159,19 +178,30 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI
+                    )
+                ) {
                     await orderModel.update(
                         { id: order.id },
                         { $set: { last_error: response, synced: true } }
-                    );
-                    return;
+                    )
+                    return
                 }
 
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_invoice',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -194,7 +224,7 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
-                order_id: order.id
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -214,10 +244,17 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_paid',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response, synced: false } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -291,25 +328,39 @@ class AccurateHelper {
                                     profile_id: this.account.profile_id,
                                     no: res.r.no,
                                 },
-                                { $set: { synced: true, synced_at: new Date() } }
+                                {
+                                    $set: {
+                                        synced: true,
+                                        synced_at: new Date(),
+                                    },
+                                }
                             )
                         } else {
-                            const message = (Array.isArray(res.d) ? res.d[0] : res.d) || res // res.d ? res.d[0] : res
+                            const message =
+                                (Array.isArray(res.d) ? res.d[0] : res.d) || res // res.d ? res.d[0] : res
                             const expected =
                                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE
                             const rejectedItem =
                                 message.includes(expected.KODE_VALID) ||
                                 message.includes(expected.NILAI) ||
                                 message.includes(expected.BESAR)
-                            let updateItem = message.includes(expected.KODE)
-                                ? { $set: { synced: true, attempts: 5, synced_at: new Date() } }
-                                : {
-                                    $inc: { attempts: 1 },
-                                    $set: { last_error: res, synced: false },
-                                }
+                            let updateItem = message.includes(expected.KODE) ? {
+                                $set: {
+                                    synced: true,
+                                    attempts: 5,
+                                    synced_at: new Date(),
+                                },
+                            } : {
+                                $inc: { attempts: 1 },
+                                $set: { last_error: res, synced: false },
+                            }
                             if (rejectedItem) {
                                 updateItem = {
-                                    $set: { attempts: 5, last_error: res, synced: false },
+                                    $set: {
+                                        attempts: 5,
+                                        last_error: res,
+                                        synced: false,
+                                    },
                                 }
                             }
                             await itemModel.update(
@@ -324,8 +375,9 @@ class AccurateHelper {
                     }
                 } else {
                     const message =
-                        (Array.isArray(response.d) ? response.d[0] : response.d) ||
-                        response
+                        (Array.isArray(response.d)
+                            ? response.d[0]
+                            : response.d) || response
                     await this.credentialHandle(message, '')
                 }
             }
@@ -333,7 +385,97 @@ class AccurateHelper {
             throw new Error(error.message)
         } finally {
             // DELETE ITEM WITH MAX ATTEMPTS AND NOT SYNCED
-            await itemModel.deleteMany({attempts: { $gte: maxAttempts }, synced: false});
+            await itemModel.deleteMany({
+                attempts: { $gte: maxAttempts },
+                synced: false,
+            })
+        }
+    }
+
+    async getStockItem(itemJob, itemSync) {
+        try {
+            const endpoint = 'api/item/get-stock.do'
+            const body = {
+                warehouseName: itemJob.warehouseName || 'Utama',
+                no: itemJob.sku,
+            }
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestGet(payload)
+            if (response.s) {
+                // SKU found on accurate
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
+                                quantity: response.d.availableStock,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM
+                    )
+                ) {
+                    // SKU not found on accurate
+                    await itemSyncModel.update(
+                        { _id: itemSync._id },
+                        {
+                            $push: {
+                                item_accurate_quantity: {
+                                    _id: new ObjectID(),
+                                    sku: itemJob.sku,
+                                    warehouseName: itemJob.warehouseName,
+                                    notFound: true,
+                                },
+                            },
+                            $inc: { item_accurate_count: 1 },
+                        }
+                    )
+                    return
+                }
+
+                throw new Error(message)
+            }
+        } catch (error) {
+            // Error due to rate limiting or something else
+            if (!itemJob.attempt) itemJob.attempt = 0
+            itemJob.attempt = parseInt(itemJob.attempt) + 1
+            if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
+                await this.delayedQueue(
+                    itemJob.attempt,
+                    'accurate_items_fetch',
+                    itemJob,
+                    true
+                )
+            } else {
+                // SKU failed to fetch
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
+                                error: true,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+                return
+            }
+            throw new Error(error.message)
         }
     }
 
@@ -355,7 +497,10 @@ class AccurateHelper {
             if (response.s) {
                 body.accurate_id = response.r.id
                 body.profile_id = order.profile_id
-                await customerModel.update({ customerNo: body.customerNo, profile_id: body.profileId }, { $set: body });
+                await customerModel.update(
+                    { customerNo: body.customerNo, profile_id: body.profileId },
+                    { $set: body }
+                )
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -392,32 +537,43 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
-                order_id: order.id
+                order_id: order.id,
             })
 
             if (response.s) {
                 await orderModel.update(
                     { id: order.id },
                     { $set: { synced: true } }
-                );
+                )
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP)) {
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP
+                    )
+                ) {
                     await orderModel.update(
                         { id: order.id },
                         { $set: { last_error: response, synced: true } }
-                    );
+                    )
 
-                    return;
+                    return
                 }
 
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_cancelled',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: message, synced: false } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: message, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -533,29 +689,43 @@ class AccurateHelper {
         ) {
             await this.refreshSession()
         } else if (
-            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_PENJUALAN) && response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_PENJUALAN
+            ) &&
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
         ) {
             await this.storeOrder(order)
         } else if (
-            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN,
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
         ) {
             await this.storeCustomer(order)
         } else if (
-            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM,
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
         ) {
             const mappedOrder = accurateMapping.order(order)
             await this.storeItemBulk(mappedOrder.detailItem)
         }
     }
 
-    async delayedQueue(attempt, directedQueue, message) {
+    async delayedQueue(attempt, directedQueue, message, inSeconds = false) {
         if (attempt < maxAttempts) {
             const delayTime = new Date()
-            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            if (!inSeconds)
+                delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            else delayTime.setSeconds(delayTime.getSeconds() + (attempt || 1))
+
             const payload = {
                 data: message,
                 queue: directedQueue,
-                execution: delayTime
+                execution: delayTime,
             }
             helper.pubQueue(queue, payload)
         }
