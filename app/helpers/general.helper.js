@@ -13,13 +13,15 @@ const ACCURATE_RESPONSE_MESSAGE = {
     NILAI: 'Nilai Satuan harus diisi',
     KODE_VALID: 'tidak valid. Karakter yang diperbolehkan untuk',
     BESAR: 'terlalu besar. Maksimal 30 karakter',
-    PELANGGAN : 'Pelanggan',
-    TIDAK_DITEMUKAN : 'tidak ditemukan atau sudah dihapus',
-    ITEM : 'Barang & Jasa',
+    PELANGGAN: 'Pelanggan',
+    TIDAK_DITEMUKAN: 'tidak ditemukan atau sudah dihapus',
+    ITEM: 'Barang & Jasa',
     PESANAN_ADA: 'Sudah ada data lain dengan No Pesanan',
-    PROSES_DUA_KALI: 'terdeteksi terproses dua kali. Mohon cek transaksi yang memproses pesanan tersebut',
+    PROSES_DUA_KALI:
+        'terdeteksi terproses dua kali. Mohon cek transaksi yang memproses pesanan tersebut',
     SUDAH_TUTUP: 'sudah ditutup, tidak dapat diproses lagi',
-    PESANAN_PENJUALAN: 'Pesanan Penjualan'
+    PESANAN_PENJUALAN: 'Pesanan Penjualan',
+    RATE_LIMIT: 'request per detik',
 }
 
 class GeneralHelper {
