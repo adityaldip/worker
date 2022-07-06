@@ -169,9 +169,4 @@ class ItemSyncBulkModel {
     }
 }
 
-module.exports = {
-    ItemModel,
-    ItemForstokModel,
-    ItemSyncModel,
-    ItemSyncBulkModel,
-}
+module.exports = { ItemModel, ItemForstokModel, ItemSyncModel, ItemSyncBulkModel }
