@@ -8,6 +8,7 @@ const accurateImportItem = require('./app/services/items/import/accurate.import.
 const accurateCancelledOrder = require('./app/services/orders/cancel/accurate.cancel.order.service')
 const accurateFetchItemStock = require('./app/services/items/sync/accurate.fetch.item.service')
 const forstokSyncQuantity = require('./app/services/items/sync/forstok.sync.quantity.service')
+const getItemForstok = require('./app/services/itemsForstok/accurate.item.get.service')
 
 require('dotenv').config()
 
@@ -46,6 +47,9 @@ async function receiveMessage(channel, queue) {
             if (queue == 'accurate_items_import') {
                 accurateImportItem(id)
             }
+            if(queue == 'accurate_items_get'){
+                getItemForstok(id)
+            }   
 
             if (queue == 'accurate_items_fetch') {
                 accurateFetchItemStock(id)
