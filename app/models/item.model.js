@@ -51,7 +51,7 @@ class ItemModel {
 
     async deleteMany(where) {
         const db = await this.getInstance()
-        return await db.collection(this.collection).deleteMany(where);
+        return await db.collection(this.collection).deleteMany(where)
     }
 }
 
@@ -102,4 +102,76 @@ class ItemForstokModel {
     }
 }
 
-module.exports = { ItemModel, ItemForstokModel }
+class ItemSyncModel {
+    constructor(context) {
+        this.context = context
+        this.collection = 'item_sync'
+    }
+
+    async getInstance() {
+        if (!this.db) {
+            this.db = await MongoContext.getInstance()
+        }
+        return this.db
+    }
+
+    async findBy(filter) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).findOne(filter)
+    }
+
+    async findOneAndUpdate(filter, data) {
+        const db = await this.getInstance()
+        return await db
+            .collection(this.collection)
+            .findOneAndUpdate(filter, data)
+    }
+
+    async update(filter, data) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).updateOne(filter, data)
+    }
+}
+
+class ItemSyncBulkModel {
+    constructor(context) {
+        this.context = context
+        this.collection = 'item_sync_bulk'
+    }
+
+    async getInstance() {
+        if (!this.db) {
+            this.db = await MongoContext.getInstance()
+        }
+        return this.db
+    }
+
+    async findBy(filter) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).findOne(filter)
+    }
+
+    async findOneAndUpdate(filter, data) {
+        const db = await this.getInstance()
+        return await db
+            .collection(this.collection)
+            .findOneAndUpdate(filter, data)
+    }
+
+    async insert(data) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).insertOne(data)
+    }
+
+    async update(filter, data) {
+        const db = await this.getInstance()
+        return await db.collection(this.collection).updateOne(filter, data)
+    }
+}
+
+module.exports = {
+    ItemModel,
+    ItemForstokModel,
+    ItemSyncModel,
+    ItemSyncBulkModel,
+}
