@@ -39,19 +39,18 @@ const getItemForstok = async (id) => {
             if (!updateEvent) {
                 throw Error('Event tidak terupdate!')
             } else {
-                loopitem.forEach((element,e) => {
+                loopitem.forEach((element, e) => {
                     setTimeout(async () => {
-                            const {
-                                detailOpenBalance
-                            } = element
-                            const dataDelayed = {
-                                eventID: event._id.toString(),
-                                sku: element.no,
-                                warehouseName: detailOpenBalance[0].warehouseName
-                            };
-                            await helper.pubQueue('accurate_items_fetch',dataDelayed)
-                        }
-                    , e * 300);
+                        const {
+                            detailOpenBalance
+                        } = element
+                        const dataDelayed = {
+                            eventID: event._id.toString(),
+                            sku: element.no,
+                            warehouseName: detailOpenBalance[0].warehouseName
+                        };
+                        await helper.pubQueue('accurate_items_fetch', dataDelayed)
+                    }, e * 300);
                 });
             }
         } else {
