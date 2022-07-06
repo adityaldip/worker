@@ -98,6 +98,7 @@ const syncQuantity = async (id) => {
         }
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
+        helper.errorLog(id, error.message, { item_sync_bulk_id: id })
     }
 }
 
