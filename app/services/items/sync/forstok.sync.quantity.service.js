@@ -22,21 +22,21 @@ const syncQuantity = async (id) => {
             _id: ObjectID(id),
         })
         if (!itemSyncBulk)
-            throw new Error('bulk item quantity job cannot be found ')
-
-        const itemSyncEvent = await itemSyncModel.findBy({
-            _id: ObjectID(itemSyncBulk.data.item_sync_id),
-        })
-        if (!itemSyncEvent) throw new Error('item sync event cannot be found')
-
-        const seller = await sellerModel.findBy({
-            profile_id: itemSyncEvent.profile_id,
-        })
-        if (!seller)
-            throw new Error('seller data cannot be found in this sync event')
-
+        throw new Error('bulk item quantity job cannot be found ')
+        
         // Forstok API request
         try {
+            const itemSyncEvent = await itemSyncModel.findBy({
+                _id: ObjectID(itemSyncBulk.data.item_sync_id),
+            })
+            if (!itemSyncEvent) throw new Error('item sync event cannot be found')
+
+            const seller = await sellerModel.findBy({
+                profile_id: itemSyncEvent.profile_id,
+            })
+            if (!seller)
+                throw new Error('seller data cannot be found in this sync event')
+
             const response = await forstok.updateItemQuantity(seller, {
                 variants: itemSyncBulk.data.items,
             })

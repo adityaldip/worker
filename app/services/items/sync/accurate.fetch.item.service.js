@@ -43,7 +43,7 @@ const fetchItemStock = async (itemJob) => {
             {
                 $and: [
                     { _id: itemSync._id },
-                    { status: 'running' },
+                    { 'item_accurate_quantity.1': { $exists: true } },
                     {
                         $expr: {
                             $gte: [
@@ -105,6 +105,7 @@ const fetchItemStock = async (itemJob) => {
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
+                    profile_id: itemSync.profile_id,
                     items: payloads.items,
                     error_items: payloads.errors
                 },
@@ -177,6 +178,7 @@ const fetchItemStock = async (itemJob) => {
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
+                    profile_id: itemSync.profile_id,
                     items: payloads.items,
                     error_items: payloads.errors
                 },
