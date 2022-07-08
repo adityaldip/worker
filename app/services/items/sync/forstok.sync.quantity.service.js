@@ -32,7 +32,7 @@ const syncQuantity = async (id) => {
             })
             if (!itemSyncEvent) throw new Error('item sync event cannot be found')
 
-            if (itemSyncBulk.data.item.length < 1) {
+            if (itemSyncBulk.data.items.length < 1) {
                 throw new Error('no item on payload data')
             }
 
