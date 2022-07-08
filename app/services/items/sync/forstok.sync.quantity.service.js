@@ -31,6 +31,10 @@ const syncQuantity = async (id) => {
             })
             if (!itemSyncEvent) throw new Error('item sync event cannot be found')
 
+            if (itemSyncBulk.data.item.length < 1) {
+                throw new Error('no item on payload data')
+            }
+
             const seller = await sellerModel.findBy({
                 profile_id: itemSyncEvent.profile_id,
             })
