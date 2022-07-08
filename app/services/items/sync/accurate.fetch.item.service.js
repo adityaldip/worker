@@ -64,7 +64,7 @@ const fetchItemStock = async (itemJob) => {
             console.log(
                 ' [✔] Fetch item sync is completed, sending last queue to accurate_quantity_sync'
             )
-            let chunkItems = tx.value.item_accurate_quantity
+            const chunkItems = tx.value.item_accurate_quantity
             const chunkIds = []
             chunkItems.forEach((item) => chunkIds.push(item._id))
             await itemSyncModel.update(
@@ -121,7 +121,7 @@ const fetchItemStock = async (itemJob) => {
 
         // calculate chunk
         itemSync = await itemSyncModel.findBy({ _id: itemSync._id })
-        let chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
+        const chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
         const chunkIds = []
         chunkItems.forEach((item) => chunkIds.push(item._id))
         tx = await itemSyncModel.findOneAndUpdate(
