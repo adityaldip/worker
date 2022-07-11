@@ -96,11 +96,7 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                if (
-                    message.includes(
-                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA
-                    )
-                ) {
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
                     if (order.status === 'Ready to Ship') {
                         await helper.pubQueue(
                             'accurate_sales_invoice',
@@ -120,6 +116,43 @@ class AccurateHelper {
                         )
                     }
                     return
+                } else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                    // Get accurate's missing sku items from order data
+                    const missingItemSkus = []
+                    for (const item of order.item_lines) {
+                        missingItemSkus.push(item.sku)
+
+                        // get items from order's bundle if available
+                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                            for (const bundle of item.bundle_info) {
+                                missingItemSkus.push(bundle.sku)
+                            }
+                        }
+                    }
+                    // Get missing accurate items data from item collections
+                    const missingItems = await itemModel.find({
+                        profile_id: order.profile_id,
+                        synced: false,
+                        no: { $in: missingItemSkus }
+                    })
+                    try {
+                        await this.storeItemBulk(await missingItems.toArray())
+                    } catch (error) {
+                        console.log(error.stack)
+                    }
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_order',
+                        order._id
+                    )
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error("items order not found on accurate")
                 }
 
                 await this.credentialHandle(message, order)
