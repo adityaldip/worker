@@ -22,6 +22,8 @@ const ACCURATE_RESPONSE_MESSAGE = {
     SUDAH_TUTUP: 'sudah ditutup, tidak dapat diproses lagi',
     PESANAN_PENJUALAN: 'Pesanan Penjualan',
     RATE_LIMIT: 'request per detik',
+    TANGGAL_MULAI_PERUSAHAAN: 'Tanggal transaksi tidak dapat lebih kecil',
+    CABANG: 'lebih dari satu cabang'
 }
 
 class GeneralHelper {
