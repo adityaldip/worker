@@ -55,13 +55,15 @@ class AccurateHelper {
             const endpoint = `api/sales-order/save.do`
 
             const mappedOrder = accurateMapping.order(order)
-            if (mappedOrder.newItem) {
-                await itemModel.insertMany(mappedOrder.newItem)
-                await this.storeItemBulk(mappedOrder.newItem)
-            }
+            // if (mappedOrder.newItem) {
+            //     await itemModel.insertMany(mappedOrder.newItem)
+            //     await this.storeItemBulk(mappedOrder.newItem)
+            // }
             const body = mappedOrder.newItem ? mappedOrder.mapped : mappedOrder
+            console.log(JSON.stringify(body))
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
+            console.log(JSON.stringify(response))
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
