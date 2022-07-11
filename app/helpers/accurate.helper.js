@@ -153,6 +153,23 @@ class AccurateHelper {
                         }
                     )
                     throw new Error("items order not found on accurate")
+                } else if (
+                    message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.CABANG) || 
+                    message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TANGGAL_MULAI_PERUSAHAAN)
+                ) {
+                    helper.accurateLog({
+                        activity: 'open accurate order',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error(message)
                 }
 
                 await this.credentialHandle(message, order)
