@@ -275,6 +275,14 @@ class AccurateHelper {
                         $set: { last_error: response, synced: false },
                     }
                 )
+                if (order.attempts >= maxAttempts) {
+                    helper.accurateLog({
+                        activity: 'create order invoice',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                }
                 throw new Error(message)
             }
         } catch (error) {
