@@ -23,7 +23,8 @@ const getItemForstok = async (id) => {
         })
         const loopitem = await item.toArray();
         const event = await eventModel.findBy({
-            profile_id: profileId
+            profile_id: profileId,
+            status: { $ne: 'completed' }
         });
         if (loopitem.length > 0) {
             //Update event item_forstok_count

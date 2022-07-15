@@ -16,7 +16,8 @@
         "dev:delivered": "QUEUE_NAME=accurate_sales_paid node index.js",
         "dev:filter": "QUEUE_NAME=accurate_items_query node index.js",
         "dev:get": "QUEUE_NAME=accurate_items_get node index.js",
-        "dev:sync": "QUEUE_NAME=accurate_quantity_sync node index.js"
+        "dev:sync": "QUEUE_NAME=accurate_quantity_sync node index.js",
+        "dev:fetch": "QUEUE_NAME=accurate_items_fetch node index.js"
     },
     "author": "Rio Riantana",
     "license": "ISC",
