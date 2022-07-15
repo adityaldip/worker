@@ -38,12 +38,93 @@ const fetchItemStock = async (itemJob) => {
         await accurate.getStockItem(itemJob, itemSync)
         console.log(' [✔] Success fetching item stock from accurate')
 
+        // check if all item is fetched
+        let tx = await itemSyncModel.findOneAndUpdate(
+            {
+                $and: [
+                    { _id: itemSync._id },
+                    { 'item_accurate_quantity.1': { $exists: true } },
+                    {
+                        $expr: {
+                            $gte: [
+                                '$item_accurate_count',
+                                '$item_forstok_count',
+                            ],
+                        },
+                    },
+                ],
+            },
+            {
+                $set: {
+                    status: 'syncing',
+                },
+            }
+        )
+        if (tx.value) {
+            console.log(
+                ' [✔] Fetch item sync is completed, sending last queue to accurate_quantity_sync'
+            )
+            const chunkItems = tx.value.item_accurate_quantity
+            const chunkIds = []
+            chunkItems.forEach((item) => chunkIds.push(item._id))
+            await itemSyncModel.update(
+                { _id: itemSync._id },
+                {
+                    $pull: {
+                        item_accurate_quantity: {
+                            _id: { $in: chunkIds },
+                        },
+                    },
+                    $push: {
+                        response_sync: { $each: chunkItems },
+                    },
+                }
+            )
+            // remapping items for payload
+            const payloads = chunkItems.reduce((bucket, item) => {
+                if (typeof item.quantity !== 'undefined') 
+                    bucket.items.push({
+                        sku: item.sku,
+                        warehouse_id: getForstokWarehouse(
+                            item.warehouseName,
+                            seller.warehouses
+                        ),
+                        quantity: item.quantity,
+                    })
+                else bucket.errors.push({
+                    sku: item.sku,
+                    warehouse_id: getForstokWarehouse(
+                        item.warehouseName,
+                        seller.warehouses
+                    ),
+                    error: item.error,
+                })
+                return bucket
+            }, ({ items: [], errors: [] }))
+
+            const chunkJob = await itemSyncBulkModel.insert({
+                data: {
+                    item_sync_id: itemSync._id.toString(),
+                    profile_id: itemSync.profile_id,
+                    items: payloads.items,
+                    error_items: payloads.errors
+                },
+                queue: 'accurate_quantity_sync',
+                createdAt: new Date(),
+            })
+            helper.pubQueue(
+                'accurate_quantity_sync',
+                chunkJob.insertedId.toString()
+            )
+            return
+        }
+
         // calculate chunk
         itemSync = await itemSyncModel.findBy({ _id: itemSync._id })
-        let chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
+        const chunkItems = itemSync.item_accurate_quantity.slice(0, CHUNK_SIZE)
         const chunkIds = []
         chunkItems.forEach((item) => chunkIds.push(item._id))
-        let tx = await itemSyncModel.findOneAndUpdate(
+        tx = await itemSyncModel.findOneAndUpdate(
             {
                 $and: [
                     { _id: itemSync._id },
@@ -69,84 +150,37 @@ const fetchItemStock = async (itemJob) => {
             }
         )
         if (tx.value) {
+            // Send chunk data to forstok quantity sync worker
             console.log(
                 ' [✔] Max Chunk size has reached, sending queue to accurate_quantity_sync'
             )
-            chunkItems = chunkItems.map((item) => ({
-                sku: item.sku,
-                warehouse_id: getForstokWarehouse(
-                    item.warehouseName,
-                    seller.warehouses
-                ),
-                quantity: item.quantity,
-            }))
-            const chunkJob = await itemSyncBulkModel.insert({
-                data: {
-                    item_sync_id: itemSync._id.toString(),
-                    items: chunkItems,
-                },
-                queue: 'accurate_quantity_sync',
-                createdAt: new Date(),
-            })
-            helper.pubQueue(
-                'accurate_quantity_sync',
-                chunkJob.insertedId.toString()
-            )
-        }
+            const payloads = chunkItems.reduce((bucket, item) => {
+                if (typeof item.quantity !== 'undefined') 
+                    bucket.items.push({
+                        sku: item.sku,
+                        warehouse_id: getForstokWarehouse(
+                            item.warehouseName,
+                            seller.warehouses
+                        ),
+                        quantity: item.quantity,
+                    })
+                else bucket.errors.push({
+                    sku: item.sku,
+                    warehouse_id: getForstokWarehouse(
+                        item.warehouseName,
+                        seller.warehouses
+                    ),
+                    error: item.error
+                })
+                return bucket
+            }, ({ items: [], errors: [] }))
 
-        tx = await itemSyncModel.findOneAndUpdate(
-            {
-                $and: [
-                    { _id: itemSync._id },
-                    { status: 'running' },
-                    {
-                        $expr: {
-                            $gte: [
-                                '$item_accurate_count',
-                                '$item_forstok_count',
-                            ],
-                        },
-                    },
-                ],
-            },
-            {
-                $set: {
-                    status: 'syncing',
-                },
-            }
-        )
-        if (tx.value) {
-            console.log(
-                ' [✔] Fetch item sync is completed, sending last queue to accurate_quantity_sync'
-            )
-            let chunkItems = tx.value.item_accurate_quantity
-            const chunkIds = []
-            chunkItems.forEach((item) => chunkIds.push(item._id))
-            await itemSyncModel.update(
-                { _id: itemSync._id },
-                {
-                    $pull: {
-                        item_accurate_quantity: {
-                            _id: { $in: chunkIds },
-                        },
-                    },
-                    $push: {
-                        response_sync: { $each: chunkItems },
-                    },
-                }
-            )
-            chunkItems = chunkItems.map((item) => ({
-                sku: item.sku,
-                warehouse_id: getForstokWarehouse(
-                    item.warehouseName,
-                    seller.warehouses
-                ),
-                quantity: item.quantity,
-            }))
             const chunkJob = await itemSyncBulkModel.insert({
                 data: {
                     item_sync_id: itemSync._id.toString(),
-                    items: chunkItems,
+                    profile_id: itemSync.profile_id,
+                    items: payloads.items,
+                    error_items: payloads.errors
                 },
                 queue: 'accurate_quantity_sync',
                 createdAt: new Date(),
