@@ -266,7 +266,7 @@ class AccurateHelper {
                     }
                     await this.delayedQueue(
                         order.attempts,
-                        'accurate_sales_order',
+                        'accurate_sales_invoice',
                         order._id
                     )
                     await orderModel.update(
