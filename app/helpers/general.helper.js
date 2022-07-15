@@ -10,6 +10,7 @@ const ACCURATE_RESPONSE_MESSAGE = {
     TOKEN: 'invalid_token',
     DATA: 'Sudah ada data lain dengan',
     KODE: 'Sudah ada data lain dengan Kode Barang',
+    BARCODE: 'Sudah ada data lain dengan UPC/Barcode',
     NILAI: 'Nilai Satuan harus diisi',
     KODE_VALID: 'tidak valid. Karakter yang diperbolehkan untuk',
     BESAR: 'terlalu besar. Maksimal 30 karakter',
@@ -22,6 +23,7 @@ const ACCURATE_RESPONSE_MESSAGE = {
     SUDAH_TUTUP: 'sudah ditutup, tidak dapat diproses lagi',
     PESANAN_PENJUALAN: 'Pesanan Penjualan',
     RATE_LIMIT: 'request per detik',
+    SALDO_AWAL: 'Kuantitas saldo awal harus lebih besar dari 0',
 }
 
 class GeneralHelper {

@@ -343,7 +343,9 @@ class AccurateHelper {
                             const rejectedItem =
                                 message.includes(expected.KODE_VALID) ||
                                 message.includes(expected.NILAI) ||
-                                message.includes(expected.BESAR)
+                                message.includes(expected.BESAR) ||
+                                message.includes(expected.BARCODE) ||
+                                message.includes(expected.SALDO_AWAL)
                             let updateItem = message.includes(expected.KODE) ? {
                                 $set: {
                                     synced: true,
