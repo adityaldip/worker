@@ -24,6 +24,8 @@ const ACCURATE_RESPONSE_MESSAGE = {
     PESANAN_PENJUALAN: 'Pesanan Penjualan',
     RATE_LIMIT: 'request per detik',
     SALDO_AWAL: 'Kuantitas saldo awal harus lebih besar dari 0',
+    TANGGAL_MULAI_PERUSAHAAN: 'Tanggal transaksi tidak dapat lebih kecil',
+    CABANG: 'lebih dari satu cabang'
 }
 
 class GeneralHelper {
