@@ -18,8 +18,7 @@ const getItemForstok = async (id) => {
         const profileId = parseInt(id)
 
         const item = await itemModel.find({
-            profile_id: profileId,
-            synced: true
+            profile_id: profileId
         })
         const loopitem = await item.toArray();
         const event = await eventModel.findBy({
