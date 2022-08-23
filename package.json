@@ -9,17 +9,27 @@
         "format:check": "prettier --check .",
         "format:write": "prettier --write .",
         "lint:check": "eslint .",
-        "lint:fix": "eslint --fix ."
+        "lint:fix": "eslint --fix .",
+        "dev:open": "QUEUE_NAME=accurate_sales_order node index.js",
+        "dev:cancel": "QUEUE_NAME=accurate_sales_cancelled node index.js",
+        "dev:rts": "QUEUE_NAME=accurate_sales_invoice node index.js",
+        "dev:delivered": "QUEUE_NAME=accurate_sales_paid node index.js",
+        "dev:filter": "QUEUE_NAME=accurate_items_query node index.js",
+        "dev:get": "QUEUE_NAME=accurate_items_get node index.js",
+        "dev:sync": "QUEUE_NAME=accurate_quantity_sync node index.js",
+        "dev:fetch": "QUEUE_NAME=accurate_items_fetch node index.js"
     },
     "author": "Rio Riantana",
     "license": "ISC",
     "dependencies": {
         "amqplib": "^0.8.0",
+        "axios": "^0.27.2",
         "dotenv": "^10.0.0",
         "http-parser-js": "^0.5.2",
         "mongodb": "^4.2.0",
         "mysql2": "^2.3.3",
         "node-cron": "^3.0.0",
+        "prisma": "^3.15.2",
         "request": "^2.88.0",
         "request-promise": "^4.2.4"
     },

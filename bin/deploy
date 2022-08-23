@@ -13,4 +13,7 @@ docker service update  --image $image --force accurate-middleware_sales_invoice 
 docker service update  --image $image --force accurate-middleware_sales_receipt --with-registry-auth
 docker service update  --image $image --force accurate-middleware_items_query --with-registry-auth
 docker service update  --image $image --force accurate-middleware_items_import --with-registry-auth
+docker service update  --image $image --force accurate-middleware_items_get --with-registry-auth
+docker service update  --image $image --force accurate-middleware_items_fetch --with-registry-auth
+docker service update  --image $image --force accurate-middleware_items_quantity_sync --with-registry-auth
 docker image prune -f

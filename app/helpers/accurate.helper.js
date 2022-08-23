@@ -1,11 +1,12 @@
 const GeneralHelper = require('./general.helper')
 const RequestHelper = require('./request.helper')
 const { accurateMapping } = require('./mapping.helper')
-const { ItemModel } = require('../models/item.model')
+const { ItemModel, ItemSyncModel } = require('../models/item.model')
 const OrderModel = require('../models/order.model')
 const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
+const { ObjectID } = require('bson')
 
 const helper = new GeneralHelper()
 const request = new RequestHelper()
@@ -14,6 +15,7 @@ const sellerModel = new SellerModel()
 const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
+const itemSyncModel = new ItemSyncModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -61,10 +63,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create a new order',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -91,12 +96,103 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
+                    if (order.status === 'Ready to Ship') {
+                        await helper.pubQueue(
+                            'accurate_sales_invoice',
+                            order._id
+                        )
+                    } else if (order.status === 'Delivered') {
+                        await helper.pubQueue('accurate_sales_paid', order._id)
+                    } else if (order.status === 'Cancelled') {
+                        await helper.pubQueue(
+                            'accurate_sales_cancelled',
+                            order._id
+                        )
+                    } else {
+                        await orderModel.update(
+                            { id: order.id },
+                            { $set: { last_error: response, synced: true } }
+                        )
+                    }
+                    return
+                } else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                    // Get accurate's missing sku items from order data
+                    const missingItemSkus = []
+                    for (const item of order.item_lines) {
+                        missingItemSkus.push(item.sku)
+
+                        // get items from order's bundle if available
+                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                            for (const bundle of item.bundle_info) {
+                                missingItemSkus.push(bundle.sku)
+                            }
+                        }
+                    }
+                    // Get missing accurate items data from item collections
+                    const missingItems = await itemModel.find({
+                        profile_id: order.profile_id,
+                        synced: false,
+                        no: { $in: missingItemSkus }
+                    })
+                    try {
+                        await this.storeItemBulk(await missingItems.toArray())
+                    } catch (error) {
+                        console.log(error.stack)
+                    }
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_order',
+                        order._id
+                    )
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error("items order not found on accurate")
+                } else if (
+                    message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.CABANG) || 
+                    message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TANGGAL_MULAI_PERUSAHAAN)
+                ) {
+                    helper.accurateLog({
+                        activity: 'open accurate order',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error(message)
+                }
+
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_order', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_order',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: message } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
+                if (order.attempts >= maxAttempts) {
+                    helper.accurateLog({
+                        activity: 'open accurate order',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -112,10 +208,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create an order invoice',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -134,15 +233,73 @@ class AccurateHelper {
                 )
                 await invoiceModel.insert(body)
             } else {
-                const message =
-                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
-                    response
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+                    return
+                }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                    // Get accurate's missing sku items from order data
+                    const missingItemSkus = []
+                    for (const item of order.item_lines) {
+                        missingItemSkus.push(item.sku)
+
+                        // get items from order's bundle if available
+                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                            for (const bundle of item.bundle_info) {
+                                missingItemSkus.push(bundle.sku)
+                            }
+                        }
+                    }
+                    // Get missing accurate items data from item collections
+                    const missingItems = await itemModel.find({
+                        profile_id: order.profile_id,
+                        synced: false,
+                        no: { $in: missingItemSkus }
+                    })
+                    try {
+                        await this.storeItemBulk(await missingItems.toArray())
+                    } catch (error) {
+                        console.log(error.stack)
+                    }
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_invoice',
+                        order._id
+                    )
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error("items order not found on accurate")
+                }
+
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_invoice', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_invoice',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response.d } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
+                if (order.attempts >= maxAttempts) {
+                    helper.accurateLog({
+                        activity: 'create order invoice',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                }
                 throw new Error(message)
             }
         } catch (error) {
@@ -158,10 +315,13 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'create an order receipt payment',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id,
             })
 
             if (response.s) {
@@ -181,10 +341,17 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_paid', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_paid',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: response.d } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -201,6 +368,8 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ITEM',
                 activity: 'create a new item',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -210,6 +379,7 @@ class AccurateHelper {
                 item.accurate_id = response.r.id
                 item.profile_id = this.account.profile_id
                 item.synced = true
+                item.synced_at = new Date()
                 await itemModel.insert(item)
             } else {
                 const message =
@@ -233,6 +403,8 @@ class AccurateHelper {
             const response = await request.requestPost(payload)
             const skus = items.map((item) => item.no)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ITEM',
                 activity: 'sync items to accurate',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -241,7 +413,7 @@ class AccurateHelper {
             if (response.s) {
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
-                    { $set: { synced: true } }
+                    { $set: { synced: true, synced_at: new Date() } }
                 )
             } else {
                 if (Array.isArray(response.d)) {
@@ -253,25 +425,41 @@ class AccurateHelper {
                                     profile_id: this.account.profile_id,
                                     no: res.r.no,
                                 },
-                                { $set: { synced: true } }
+                                {
+                                    $set: {
+                                        synced: true,
+                                        synced_at: new Date(),
+                                    },
+                                }
                             )
                         } else {
-                            const message = res.d[0]
+                            const message =
+                                (Array.isArray(res.d) ? res.d[0] : res.d) || res // res.d ? res.d[0] : res
                             const expected =
                                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE
                             const rejectedItem =
                                 message.includes(expected.KODE_VALID) ||
                                 message.includes(expected.NILAI) ||
-                                message.includes(expected.BESAR)
-                            let updateItem = message.includes(expected.KODE)
-                                ? { $set: { synced: true } }
-                                : {
-                                    $inc: { attempts: 1 },
-                                    $set: { last_error: res },
-                                }
+                                message.includes(expected.BESAR) ||
+                                message.includes(expected.BARCODE) ||
+                                message.includes(expected.SALDO_AWAL)
+                            let updateItem = message.includes(expected.KODE) ? {
+                                $set: {
+                                    synced: true,
+                                    attempts: 5,
+                                    synced_at: new Date(),
+                                },
+                            } : {
+                                $inc: { attempts: 1 },
+                                $set: { last_error: res, synced: false },
+                            }
                             if (rejectedItem) {
                                 updateItem = {
-                                    $set: { attempts: 5, last_error: res },
+                                    $set: {
+                                        attempts: 5,
+                                        last_error: res,
+                                        synced: false,
+                                    },
                                 }
                             }
                             await itemModel.update(
@@ -286,12 +474,106 @@ class AccurateHelper {
                     }
                 } else {
                     const message =
-                        (Array.isArray(response.d) ? response.d[0] : response.d) ||
-                        response
+                        (Array.isArray(response.d)
+                            ? response.d[0]
+                            : response.d) || response
                     await this.credentialHandle(message, '')
                 }
             }
         } catch (error) {
+            throw new Error(error.message)
+        } finally {
+            // DELETE ITEM WITH MAX ATTEMPTS AND NOT SYNCED
+            await itemModel.deleteMany({
+                attempts: { $gte: maxAttempts },
+                synced: false,
+            })
+        }
+    }
+
+    async getStockItem(itemJob, itemSync) {
+        try {
+            const endpoint = 'api/item/get-stock.do'
+            const body = {
+                warehouseName: itemJob.warehouseName || 'Utama',
+                no: itemJob.sku,
+            }
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestGet(payload)
+            if (response.s) {
+                // SKU found on accurate
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
+                                quantity: response.d.availableStock,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM
+                    )
+                ) {
+                    // SKU not found on accurate
+                    await itemSyncModel.update(
+                        { _id: itemSync._id },
+                        {
+                            $push: {
+                                item_accurate_quantity: {
+                                    _id: new ObjectID(),
+                                    sku: itemJob.sku,
+                                    warehouseName: itemJob.warehouseName,
+                                    error: message,
+                                },
+                            },
+                            $inc: { item_accurate_count: 1 },
+                        }
+                    )
+                    return
+                }
+
+                throw new Error(message)
+            }
+        } catch (error) {
+            // Error due to rate limiting or something else
+            if (!itemJob.attempt) itemJob.attempt = 0
+            itemJob.attempt = parseInt(itemJob.attempt) + 1
+            if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
+                await this.delayedQueue(
+                    itemJob.attempt,
+                    'accurate_items_fetch',
+                    itemJob,
+                    true
+                )
+            } else {
+                // SKU failed to fetch
+                await itemSyncModel.update(
+                    { _id: itemSync._id },
+                    {
+                        $push: {
+                            item_accurate_quantity: {
+                                _id: new ObjectID(),
+                                sku: itemJob.sku,
+                                warehouseName: itemJob.warehouseName,
+                                error: error.message,
+                            },
+                        },
+                        $inc: { item_accurate_count: 1 },
+                    }
+                )
+                return
+            }
             throw new Error(error.message)
         }
     }
@@ -304,6 +586,8 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'CUSTOMER',
                 activity: 'create a new customer',
                 profile_id: this.account.profile_id,
                 params: body,
@@ -312,7 +596,10 @@ class AccurateHelper {
             if (response.s) {
                 body.accurate_id = response.r.id
                 body.profile_id = order.profile_id
-                await customerModel.insert(body)
+                await customerModel.update(
+                    { customerNo: body.customerNo, profile_id: body.profileId },
+                    { $set: body }
+                )
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -343,26 +630,49 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
                 activity: 'delete an order',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
+                order_id: order.id,
             })
 
             if (response.s) {
                 await orderModel.update(
                     { id: order.id },
                     { $set: { synced: true } }
-                );
+                )
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP
+                    )
+                ) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+
+                    return
+                }
+
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(order.attempts, 'accurate_sales_cancelled', order._id)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_cancelled',
+                    order._id
+                )
                 await orderModel.update(
                     { id: order.id },
-                    { $inc: { attempts: 1 }, $set: { last_error: message } }
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: message, synced: false },
+                    }
                 )
                 throw new Error(message)
             }
@@ -389,6 +699,7 @@ class AccurateHelper {
             }
             const response = await request.requestPost(payload)
             await helper.accurateLog({
+                created_at: new Date(),
                 activity: 'refresh access token',
                 profile_id: this.account.profile_id,
                 params: form,
@@ -432,6 +743,7 @@ class AccurateHelper {
             }
             const response = await request.requestGet(payload)
             await helper.accurateLog({
+                created_at: new Date(),
                 activity: 'refresh db session',
                 profile_id: this.account.profile_id || this.account.seller_id,
                 params: payload,
@@ -476,29 +788,45 @@ class AccurateHelper {
         ) {
             await this.refreshSession()
         } else if (
-            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_PENJUALAN
+            ) &&
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
+        ) {
+            await this.storeOrder(order)
+        } else if (
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PELANGGAN,
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
         ) {
             await this.storeCustomer(order)
         } else if (
-            response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM, GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN)
+            response.includes(
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM,
+                GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TIDAK_DITEMUKAN
+            )
         ) {
             const mappedOrder = accurateMapping.order(order)
-            await this.storeItemBulk(mappedOrder.detailItems)
+            await this.storeItemBulk(mappedOrder.detailItem)
         }
     }
 
-    async delayedQueue(attempt, directedQueue, message) {
+    async delayedQueue(attempt, directedQueue, message, inSeconds = false) {
         if (attempt < maxAttempts) {
             const delayTime = new Date()
-            delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            if (!inSeconds)
+                delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
+            else delayTime.setSeconds(delayTime.getSeconds() + (attempt || 1))
+
             const payload = {
                 data: message,
                 queue: directedQueue,
-                execution: delayTime
+                execution: delayTime,
             }
             helper.pubQueue(queue, payload)
-        } else {
-            throw new Error('Max attempt has been exceeded')
         }
     }
 }

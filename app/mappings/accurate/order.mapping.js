@@ -40,10 +40,12 @@ const orderMapping = (order) => {
             quantity: 1,
             useTax1: order.taxable,
         }
+        
+        if (item.name !== 'Rebate' && item.id !== 'rebate' && item.sku !== 'rebate') {
+            detailItems.push(detailItem)
+        }
 
-        detailItems.push(detailItem)
-
-        if (!skus.includes(item.sku) && skus.length > 0) {
+        if (!skus.includes(item.sku) && skus.length > 0 && item.name !== 'Rebate') {
             const mappedItem = itemMapping(item)
             mappedItem.profile_id = order.profile_id
             newItem.push(mappedItem)

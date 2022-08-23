@@ -1,9 +1,9 @@
 const MongoContext = require('../../config/mongodb')
 
-class CustomerModel {
+class EventModel {
     constructor(context) {
         this.context = context
-        this.collection = 'customers'
+        this.collection = 'item_sync'
     }
 
     async getInstance() {
@@ -30,7 +30,7 @@ class CustomerModel {
 
     async update(where, value) {
         const db = await this.getInstance()
-        return await db.collection(this.collection).updateOne(where, value, { upsert: true })
+        return await db.collection(this.collection).updateOne(where, value)
     }
 
     async updateMany(where, value) {
@@ -39,4 +39,4 @@ class CustomerModel {
     }
 }
 
-module.exports = CustomerModel
+module.exports = EventModel
