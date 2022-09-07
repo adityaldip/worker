@@ -37,7 +37,11 @@ const invoiceMapping = (order) => {
             useTax1: order.taxable,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName
-        detailItems.push(detailItem)
+        
+        if (item.name !== 'Rebate' && item.id !== 'rebate' && item.sku !== 'rebate') {
+            detailItems.push(detailItem)
+        }
+
     }
 
     const mapped = {
