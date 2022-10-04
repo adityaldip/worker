@@ -9,6 +9,7 @@ const accurateCancelledOrder = require('./app/services/orders/cancel/accurate.ca
 const accurateFetchItemStock = require('./app/services/items/sync/accurate.fetch.item.service')
 const forstokSyncQuantity = require('./app/services/items/sync/forstok.sync.quantity.service')
 const getItemForstok = require('./app/services/itemsForstok/accurate.item.get.service')
+const insertOrder = require('./app/services/orders/create/create.order.service')
 
 require('dotenv').config()
 
@@ -26,6 +27,9 @@ async function receiveMessage(channel, queue) {
 
             if (queue == 'accurate_sales_order') {
                 accurateOpenOrder(id)
+            }
+            if (queue == 'accurate_insert_order') {
+                insertOrder(id)
             }
 
             if (queue == 'accurate_sales_cancelled') {
