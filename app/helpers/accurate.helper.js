@@ -715,7 +715,7 @@ class AccurateHelper {
                     token_expired_at: expired_at,
                 }
                 await sellerModel.update(
-                    { seller_id: this.account.seller_id },
+                    this.sellerUpdateCondition(this.account),
                     { $set: result }
                 )
                 this.account = { ...this.account, ...result }
@@ -758,11 +758,7 @@ class AccurateHelper {
                         api_db_accessible_until: response.d.accessibleUntil,
                     }
                     await sellerModel.update(
-                        {
-                            seller_id:
-                                this.account.seller_id ||
-                                this.account.profile_id,
-                        },
+                        this.sellerUpdateCondition(this.account),
                         { $set: result }
                     )
                 }
@@ -778,6 +774,14 @@ class AccurateHelper {
         } catch (error) {
             throw new Error(error.message)
         }
+    }
+
+    sellerUpdateCondition(dataSeller) {
+        if (dataSeller.accurate_email != null && dataSeller.accurate_email != undefined && dataSeller.accurate_email != '' && dataSeller.accurate_email) {
+            return { accurate_email: dataSeller.accurate_email };
+        }
+        const profileId = dataSeller.seller_id || dataSeller.profile_id;
+        return { seller_id: profileId };
     }
 
     async credentialHandle(response, order = '') {
