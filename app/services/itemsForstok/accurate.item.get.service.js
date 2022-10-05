@@ -25,7 +25,6 @@ const getItemForstok = async (id) => {
             profile_id: profileId,
             status: { $ne: 'completed' }
         });
-        console.log(profileId,item,loopitem)
         if (loopitem.length > 0) {
             //Update event item_forstok_count
             const updateEvent = await eventModel.update({
