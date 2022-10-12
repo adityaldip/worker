@@ -15,7 +15,7 @@ require('dotenv').config()
 
 async function receiveMessage(channel, queue) {
     channel.assertQueue(queue, {
-        durable: false,
+        durable: true,
     })
     console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queue)
     channel.consume(
