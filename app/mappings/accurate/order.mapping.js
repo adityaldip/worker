@@ -58,7 +58,7 @@ const orderMapping = (order) => {
         transDate: helper.dateConvert(order.ordered_at), // ordered_at
         cashDiscount: (order.voucher_amount || 0) + order.discount_amount || 0,
         number: order.id,
-        // poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
+        poNumber: order.channel == 'tokopedia' ? order.local_name : order.local_id,
         taxable: order.taxable,
         toAddress: `${order.address.name} - ${order.address.address_1}`,
     }

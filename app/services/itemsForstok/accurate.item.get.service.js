@@ -16,9 +16,9 @@ const eventModel = new EventModel()
 const getItemForstok = async (id) => {
     try {
         const profileId = parseInt(id)
-
         const item = await itemModel.find({
             profile_id: profileId
+            // synced: true
         })
         const loopitem = await item.toArray();
         const event = await eventModel.findBy({
@@ -54,8 +54,16 @@ const getItemForstok = async (id) => {
                 });
             }
         } else {
+            await eventModel.update({
+                profile_id: profileId,
+                status: "running"
+            }, {
+                $set: {
+                    status: "completed"
+                },
+            })
             console.log(
-                ' [✔] Item(s) with Profile ID %s fetch to Accurate',
+                ' [✔] get item sync stock is complete, no items will be synced',
                 id
             )
         }
