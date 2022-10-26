@@ -326,6 +326,8 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
+            poNumber: '4140749258834',
+            saveAsStatusType: "UNAPPROVED",
             taxable: false,
             toAddress:
                 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
@@ -366,6 +368,8 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
+            poNumber: '4140749258834',
+            saveAsStatusType: "UNAPPROVED",
             taxable: false,
             toAddress:
                 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
@@ -395,6 +399,8 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
+            poNumber: '4140749258834',
+            saveAsStatusType: "UNAPPROVED",
             taxable: false,
             toAddress:
                 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
@@ -431,6 +437,8 @@ describe('Order mapping testing', () => {
             transDate: '7/2/2022',
             cashDiscount: 2400,
             number: 35,
+            poNumber: '4140749258834',
+            saveAsStatusType: "UNAPPROVED",
             taxable: false,
             toAddress:
                 'Entis Sutisna Cirebon - Jalan Raya kertajaya Indah 97, Blok O-211',
