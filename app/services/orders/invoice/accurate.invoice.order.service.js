@@ -20,24 +20,15 @@ const shippedOrder = async (id) => {
             _id: ObjectId.createFromHexString(id),
         })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
-        order.taxable = seller.tax ? Boolean(seller.tax.id) : false
-        order.warehouseName = getWarehouse(order.warehouse_id, seller)
         accurate.setAccount(seller)
+        order.taxable = seller.tax ? Boolean(seller.tax.id) : false
+        order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
         await accurate.storeInvoice(order)
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
-}
-
-const getWarehouse = (warehouseId, account) => {
-    const { warehouses } = account
-    if (!warehouseId || !warehouses) return null
-    const warehouseFind = warehouses.find(
-        (warehouse) => warehouse.forstok_warehouse.id == warehouseId
-    )
-    return warehouseFind ? warehouseFind.accurate_warehouse.name : null
 }
 
 module.exports = shippedOrder

@@ -14,26 +14,29 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const deliveredOrder = async (id) => {
+const resetOrder = async (id) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
         })
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)
-
-        if (!order.invoice) {
-            order.taxable = seller.tax ? Boolean(seller.tax.id) : false
-            order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
-            await accurate.storeInvoice(order)
+        if (order.receipt) {
+            await accurate.deleteReceipt(order)
         }
 
-        await accurate.storeReceipt(order)
-        console.log(' [✔] Order %s successfully processed', order.id)
+        if (order.invoice) {
+            await accurate.deleteInvoice(order)
+        }
+
+        if (order.accurate_id) {
+            await accurate.deleteSO(order)
+        }
+        console.log(' [✔] Order %s successfully Reset ', order.id)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
     }
 }
 
-module.exports = deliveredOrder
+module.exports = resetOrder
