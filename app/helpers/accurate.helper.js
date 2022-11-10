@@ -681,6 +681,191 @@ class AccurateHelper {
         }
     }
 
+    async deleteReceipt(order) {
+        try {
+            const endpoint = `api/sales-receipt/delete.do?id=${order.receipt.accurate_id}`
+
+            // const body = accurateMapping.orderClosed(order)
+            const payload = this.payloadBuilder(endpoint, {})
+            const response = await request.requestDelete(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'delete an receipt',
+                profile_id: this.account.profile_id,
+                params: "",
+                log: response,
+                order_id: order.id,
+            })
+
+            if (response.s) {
+                await orderModel.update(
+                    { id: order.id },
+                    { $set: { synced: true } , $unset:{ receipt: true }}
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP
+                    )
+                ) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+
+                    return
+                }
+
+                await this.credentialHandle(message, order)
+                // await this.delayedQueue(
+                //     order.attempts,
+                //     'accurate_sales_cancelled',
+                //     order._id
+                // )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: message, synced: false },
+                        $unset:{ receipt: true } 
+                    }
+                )
+                // throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
+    async deleteInvoice(order) {
+        try {
+            const endpoint = `api/sales-invoice/delete.do?id=${order.invoice.accurate_id}`
+
+            // const body = accurateMapping.orderClosed(order)
+            const payload = this.payloadBuilder(endpoint, {})
+            const response = await request.requestDelete(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'delete an invoice',
+                profile_id: this.account.profile_id,
+                params: "",
+                log: response,
+                order_id: order.id,
+            })
+
+            if (response.s) {
+                await orderModel.update(
+                    { id: order.id },
+                    { $set: { synced: true } , $unset:{ invoice: true }}
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP
+                    )
+                ) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+
+                    return
+                }
+
+                await this.credentialHandle(message, order)
+                // await this.delayedQueue(
+                //     order.attempts,
+                //     'accurate_sales_cancelled',
+                //     order._id
+                // )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: message, synced: false },
+                        $unset:{ receipt: true } 
+                    }
+                )
+                // throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
+    async deleteSO(order) {
+        try {
+            const endpoint = `api/sales-order/delete.do?id=${order.accurate_id}`
+
+            // const body = accurateMapping.orderClosed(order)
+            const payload = this.payloadBuilder(endpoint, {})
+            const response = await request.requestDelete(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'delete an sales order',
+                profile_id: this.account.profile_id,
+                params: "",
+                log: response,
+                order_id: order.id,
+            })
+
+            if (response.s) {
+                await orderModel.update(
+                    { id: order.id },
+                    { $set: { synced: true } }
+                )
+
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_order',
+                    order._id
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SUDAH_TUTUP
+                    )
+                ) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+
+                    return
+                }
+
+                await this.credentialHandle(message, order)
+                // await this.delayedQueue(
+                //     order.attempts,
+                //     'accurate_sales_cancelled',
+                //     order._id
+                // )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: message, synced: false },
+                    }
+                )
+                // throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
     async refreshToken() {
         try {
             const url = `https://account.accurate.id/oauth/token`
@@ -832,6 +1017,19 @@ class AccurateHelper {
             }
             helper.pubQueue(queue, payload)
         }
+    }
+
+    async getWarehouse(warehouseId, account){
+        const { warehouses } = account
+        if (!warehouseId || !warehouses) return null
+        console.log(JSON.stringify(warehouses))
+        console.log(warehouseId)
+        const warehouseFind = warehouses.find(
+            (warehouse) => warehouse.forstok_warehouse.id == warehouseId
+        )
+        console.log(warehouseFind)
+        console.log(warehouseFind.accurate_warehouse.name)
+        return warehouseFind ? warehouseFind.accurate_warehouse.name : null
     }
 }
 
