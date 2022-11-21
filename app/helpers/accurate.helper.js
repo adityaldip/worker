@@ -203,7 +203,6 @@ class AccurateHelper {
     async storeInvoice(order) {
         try {
             const endpoint = `api/sales-invoice/save.do`
-
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
@@ -253,14 +252,20 @@ class AccurateHelper {
                             }
                         }
                     }
+
                     // Get missing accurate items data from item collections
                     const missingItems = await itemModel.find({
                         profile_id: order.profile_id,
-                        synced: false,
                         no: { $in: missingItemSkus }
                     })
+                    const newMissingitem = await missingItems.toArray()
                     try {
-                        await this.storeItemBulk(await missingItems.toArray())
+                        newMissingitem.forEach(e => {
+                            e.detailOpenBalance.forEach( d => {
+                                d.warehouseName = order.warehouseName
+                            } )
+                        });
+                        await this.storeItemBulk(newMissingitem)
                     } catch (error) {
                         console.log(error.stack)
                     }
@@ -397,11 +402,11 @@ class AccurateHelper {
     async storeItemBulk(items) {
         try {
             const endpoint = `api/item/bulk-save.do`
-
             const body = { data: items }
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             const skus = items.map((item) => item.no)
+            const detailOpenBalance = items.map((i) => i.detailOpenBalance)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ITEM',
@@ -411,9 +416,10 @@ class AccurateHelper {
                 log: response,
             })
             if (response.s) {
+                console.log("ke s")
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
-                    { $set: { synced: true, synced_at: new Date() } }
+                    { $set: { synced: true, synced_at: new Date(),detailOpenBalance: detailOpenBalance[0]??[] } }
                 )
             } else {
                 if (Array.isArray(response.d)) {
@@ -429,6 +435,7 @@ class AccurateHelper {
                                     $set: {
                                         synced: true,
                                         synced_at: new Date(),
+                                        detailOpenBalance: detailOpenBalance[0]??[],
                                     },
                                 }
                             )
@@ -448,6 +455,7 @@ class AccurateHelper {
                                     synced: true,
                                     attempts: 5,
                                     synced_at: new Date(),
+                                    detailOpenBalance: detailOpenBalance[0]??[],
                                 },
                             } : {
                                 $inc: { attempts: 1 },
