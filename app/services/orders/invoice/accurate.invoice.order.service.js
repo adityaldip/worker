@@ -23,6 +23,11 @@ const shippedOrder = async (id) => {
         accurate.setAccount(seller)
         order.taxable = seller.tax ? Boolean(seller.tax.id) : false
         order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
+
+        if (!order.accurate_id) {
+            await accurate.storeOrder(order)
+        }
+
         await accurate.storeInvoice(order)
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
