@@ -20,6 +20,8 @@ const itemSyncModel = new ItemSyncModel()
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
 
+const SI_STATUS = ['Ready to Ship', 'Shipped', 'Delivered', 'Completed']
+const receiptStatus = ['Delivered', 'Completed']
 class AccurateHelper {
     constructor(account = null) {
         if (account) this.setAccount(account)
@@ -85,9 +87,9 @@ class AccurateHelper {
                         },
                     }
                 )
-                if (order.status === 'Ready to Ship') {
+                if (SI_STATUS.includes(order.status) && !order.invoice) {
                     await helper.pubQueue('accurate_sales_invoice', order._id)
-                } else if (order.status === 'Delivered') {
+                } else if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
                     await helper.pubQueue('accurate_sales_paid', order._id)
                 } else if (order.status === 'Cancelled') {
                     await helper.pubQueue('accurate_sales_cancelled', order._id)
@@ -97,18 +99,12 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
-                    if (order.status === 'Ready to Ship') {
-                        await helper.pubQueue(
-                            'accurate_sales_invoice',
-                            order._id
-                        )
-                    } else if (order.status === 'Delivered') {
+                    if (SI_STATUS.includes(order.status) && !order.invoice) {
+                        await helper.pubQueue('accurate_sales_invoice', order._id)
+                    } else if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
                         await helper.pubQueue('accurate_sales_paid', order._id)
                     } else if (order.status === 'Cancelled') {
-                        await helper.pubQueue(
-                            'accurate_sales_cancelled',
-                            order._id
-                        )
+                        await helper.pubQueue('accurate_sales_cancelled', order._id)
                     } else {
                         await orderModel.update(
                             { id: order.id },
@@ -232,6 +228,11 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
+                if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
+                    await helper.pubQueue('accurate_sales_paid', order._id)
+                } else if (order.status === 'Cancelled') {
+                    await helper.pubQueue('accurate_sales_cancelled', order._id)
+                }
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -239,6 +240,11 @@ class AccurateHelper {
                         { id: order.id },
                         { $set: { last_error: response, synced: true } }
                     )
+                    if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
+                        await helper.pubQueue('accurate_sales_paid', order._id)
+                    } else if (order.status === 'Cancelled') {
+                        await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    }
                     return
                 }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
                     // Get accurate's missing sku items from order data
