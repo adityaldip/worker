@@ -3,6 +3,7 @@ const amqp = require('amqplib/callback_api')
 const accurateOpenOrder = require('./app/services/orders/open/accurate.open.order.service')
 const accurateShippedOrder = require('./app/services/orders/invoice/accurate.invoice.order.service')
 const accurateDeliveredOrder = require('./app/services/orders/receipt/accurate.receipt.order')
+const accuratePayoutOrder = require('./app/services/orders/receipt/accurate.payout.order')
 const accurateResetOrder = require('./app/services/orders/reset/accurate.reset.order')
 const accurateFilterItem = require('./app/services/items/filters/accurate.filter.item.service')
 const accurateImportItem = require('./app/services/items/import/accurate.import.item.service')
@@ -43,6 +44,10 @@ async function receiveMessage(channel, queue) {
 
             if (queue == 'accurate_sales_paid') {
                 accurateDeliveredOrder(id)
+            }
+
+            if (queue == 'accurate_sales_payout') {
+                accuratePayoutOrder(id)
             }
 
             if (queue == 'accurate_items_query') {
@@ -93,5 +98,6 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
         const queue = process.env.QUEUE_NAME || 'accurate_sales_order'
         receiveMessage(channel, queue)
         receiveMessage(channel, "accurate_reset_order")
+        receiveMessage(channel, "accurate_sales_invoice")
     })
 })

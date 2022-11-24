@@ -261,19 +261,25 @@ class AccurateHelper {
                     const newMissingitem = await missingItems.toArray()
                     try {
                         newMissingitem.forEach(e => {
-                            e.detailOpenBalance.forEach( d => {
-                                d.warehouseName = order.warehouseName
-                            } )
+                            const found = e.detailOpenBalance.find(o => o.quantity <= 0);
+                            if(found){
+                                delete e.detailOpenBalance
+                            }else{
+                                e.detailOpenBalance.forEach( d => {
+                                    d.warehouseName = order.warehouseName
+                                } )  
+                            }
                         });
                         await this.storeItemBulk(newMissingitem)
+                        await helper.pubQueue('accurate_sales_invoice', order._id)
                     } catch (error) {
                         console.log(error.stack)
                     }
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_invoice',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_invoice',
+                    //     order._id
+                    // )
                     await orderModel.update(
                         { id: order.id },
                         {
@@ -283,7 +289,6 @@ class AccurateHelper {
                     )
                     throw new Error("items order not found on accurate")
                 }
-
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(
                     order.attempts,
@@ -416,7 +421,6 @@ class AccurateHelper {
                 log: response,
             })
             if (response.s) {
-                console.log("ke s")
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
                     { $set: { synced: true, synced_at: new Date(),detailOpenBalance: detailOpenBalance[0]??[] } }
@@ -1012,7 +1016,7 @@ class AccurateHelper {
     }
 
     async delayedQueue(attempt, directedQueue, message, inSeconds = false) {
-        if (attempt < maxAttempts) {
+        if (attempt < maxAttempts || !attempt) {
             const delayTime = new Date()
             if (!inSeconds)
                 delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
