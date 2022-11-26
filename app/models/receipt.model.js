@@ -3,7 +3,7 @@ const MongoContext = require('../../config/mongodb')
 class ReceiptModel {
     constructor(context) {
         this.context = context
-        this.collection = 'receipts'
+        this.collection = 'receipt'
     }
 
     async getInstance() {
