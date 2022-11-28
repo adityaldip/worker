@@ -370,6 +370,59 @@ class AccurateHelper {
         }
     }
 
+    async storePayout(order) {
+        try {
+            const endpoint = `api/sales-receipt/saves.do`
+
+            const body = accurateMapping.payout(order)
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestPost(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'create an order receipt payment',
+                profile_id: this.account.profile_id,
+                params: body,
+                log: response,
+                order_id: order.id,
+            })
+
+            if (response.s) {
+                body.accurate_id = response.r.id
+                body.order_id = order.id
+                body.number = response.r.number
+                await orderModel.update(
+                    { id: order.id },
+                    { $set: { synced: true, receipt: body } }
+                )
+                await invoiceModel.update(
+                    { order_id: order.id },
+                    { $set: { receipt: body } }
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                await this.credentialHandle(message, order)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_paid',
+                    order._id
+                )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
+                )
+                throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
     async storeItem(item) {
         try {
             const endpoint = `api/item/save.do`
