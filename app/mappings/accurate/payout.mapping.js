@@ -21,20 +21,20 @@ const payoutMapping = (order) => {
 
     if (order.total_amount_accurate) total = order.total_amount_accurate
 
-    let mappinv = [];
-        order.invoice_mapped.forEach((i, e) => {
-            const totaldiscount = i.shipping_price + i.platform_rebate - i.voucher_seller - i.cashless_shipping_difference - i.platform_fulfilment_fee - i.service_fee
+    const mappinv = [];
+    order.invoice_mapped.forEach((i, e) => {
+        const totaldiscount = i.shipping_price + i.platform_rebate - i.voucher_seller - i.cashless_shipping_difference - i.platform_fulfilment_fee - i.service_fee
 
-            const mapinv = {
-                invoiceNo: order.invoice.number, // required
-                paymentAmount: total, // required
-                detailDiscount: [{
-                    accountNo: order.accountNo, // required
-                    amount: totaldiscount, // reqired
-                }]
-            }
-            return mappinv[e] = mapinv
-        });
+        const mapinv = {
+            invoiceNo: order.invoice.number, // required
+            paymentAmount: total, // required
+            detailDiscount: [{
+                accountNo: order.accountNo, // required
+                amount: totaldiscount, // reqired
+            }]
+        }
+        return mappinv[e] = mapinv
+    });
     const mapped = {
         bankNo: order.accountNo, // required
         chequeAmount: total, // required
