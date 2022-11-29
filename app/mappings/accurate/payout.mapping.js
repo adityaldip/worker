@@ -8,19 +8,6 @@ const helper = new GeneralHelper()
  * @returns {Object}        Mapped receipt object for Accurate
  */
 const payoutMapping = (order) => {
-    let total =
-        order.subtotal - (order.discount_amount + (order.voucher_amount || 0))
-
-    if (order.tax_price > 0) {
-        for (const item of order.item_lines) {
-            total += item.tax_price
-        }
-    }
-
-    if (!order.cashless) total += order.shipping_price
-
-    if (order.total_amount_accurate) total = order.total_amount_accurate
-
     const mappinv = [];
     order.invoice_mapped.forEach((i, e) => {
         let detailDiscount = [];
@@ -56,14 +43,14 @@ const payoutMapping = (order) => {
         }
         const mapinv = {
             invoiceNo: order.invoice.number, // required
-            paymentAmount: total, // required
+            paymentAmount: i.total, // required
             detailDiscount: detailDiscount
         }
         return mappinv[e] = mapinv
     });
     const mapped = {
         bankNo: order.accountNo, // required
-        chequeAmount: total, // required
+        chequeAmount: order.amount_receive, // required
         customerNo: order.store_id, // required
         detailInvoice: mappinv,
         transDate: helper.dateConvert(order.updated_at), // required

@@ -38,6 +38,7 @@ const PayoutOrder = async (id) => {
         order.shipping_difference = seller.shipping_difference
         order.fulfillment = seller.fulfillment
         order.service = seller.service
+        order.amount_receive = receipt.amount_receive
         await accurate.storePayout(order)
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
