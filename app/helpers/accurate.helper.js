@@ -376,10 +376,7 @@ class AccurateHelper {
 
             const body = accurateMapping.payout(order)
             const payload = this.payloadBuilder(endpoint, body)
-            console.log("body", body)
-            console.log("detail diskon",body.detailInvoice[0].detailDiscount)
             const response = await request.requestPost(payload)
-            console.log(response.d)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
