@@ -23,16 +23,30 @@ const payoutMapping = (order) => {
 
     const mappinv = [];
     order.invoice_mapped.forEach((i, e) => {
-        const totaldiscount = i.shipping_price + i.platform_rebate - i.voucher_seller - i.cashless_shipping_difference - i.platform_fulfilment_fee - i.service_fee
-
         const mapinv = {
             invoiceNo: order.invoice.number, // required
             paymentAmount: total, // required
             detailDiscount: [
                 {
-                    accountNo: order.accountNo, // required
-                    amount: totaldiscount, // reqired
-                }
+                    accountNo: order.platform_rebate.no, // required
+                    amount: i.platform_rebate, // reqired
+                },
+                {
+                    accountNo: order.shipping_difference.no, // required
+                    amount: i.cashless_shipping_difference, // reqired
+                },
+                {
+                    accountNo: order.voucher_seller.no, // required
+                    amount: i.voucher_seller, // reqired
+                },
+                {
+                    accountNo: order.fulfillment.no, // required
+                    amount: i.platform_fulfilment_fee, // reqired
+                },
+                {
+                    accountNo: order.service.no, // required
+                    amount: i.service_fee, // reqired
+                },
             ]
         }
         return mappinv[e] = mapinv

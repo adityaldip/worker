@@ -33,6 +33,11 @@ const PayoutOrder = async (id) => {
             await accurate.storeInvoice(order)
         }
         order.invoice_mapped = receipt.invoices
+        order.platform_rebate = seller.platform_rebate
+        order.voucher_seller = seller.voucher_seller
+        order.shipping_difference = seller.shipping_difference
+        order.fulfillment = seller.fulfillment
+        order.service = seller.service
         await accurate.storePayout(order)
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
