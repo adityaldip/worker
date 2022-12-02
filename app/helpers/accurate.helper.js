@@ -228,7 +228,7 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
-                if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
+                if (receiptStatus.includes(order.status) && !order.receipt) {
                     await helper.pubQueue('accurate_sales_paid', order._id)
                 } else if (order.status === 'Cancelled') {
                     await helper.pubQueue('accurate_sales_cancelled', order._id)
