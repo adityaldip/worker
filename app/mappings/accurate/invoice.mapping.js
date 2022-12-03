@@ -33,7 +33,7 @@ const invoiceMapping = (order) => {
             itemCashDiscount:
                 (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
-            salesOrderNumber: order.id,
+            // salesOrderNumber: order.id,
             useTax1: order.taxable,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName

@@ -252,7 +252,7 @@ class AccurateHelper {
                             }
                         }
                     }
-
+                    console.log(missingItemSkus)
                     // Get missing accurate items data from item collections
                     const missingItems = await itemModel.find({
                         profile_id: order.profile_id,
@@ -270,8 +270,28 @@ class AccurateHelper {
                                 } )  
                             }
                         });
-                        await this.storeItemBulk(newMissingitem)
-                        await helper.pubQueue('accurate_sales_invoice', order._id)
+                        if(newMissingitem ==''){
+                            const mappeditem = [{
+                                itemType: 'INVENTORY', // required; INVENTORY
+                                name: order.item_lines[0].name, // required; item_lines.name
+                                detailOpenBalance: [
+                                    {
+                                        quantity: parseInt(order.item_lines.length || 0),
+                                        unitCost: order.item_lines[0].price || 0,
+                                        warehouseName: 'Utama',
+                                    },
+                                ],
+                                no: order.item_lines[0].sku, // item_lines.sku
+                                unit1Name: 'PCS',
+                                unitPrice: order.item_lines[0].price || 0, // item_lines.price
+                            }]
+                            await this.storeItemBulk(mappeditem)
+                            await helper.pubQueue('accurate_sales_invoice', order._id)
+                        }else{
+                            await this.storeItemBulk(newMissingitem)
+                            await helper.pubQueue('accurate_sales_invoice', order._id)
+                        }
+
                     } catch (error) {
                         console.log(error.stack)
                     }
