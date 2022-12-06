@@ -4,12 +4,14 @@ const GeneralHelper = require('../../../helpers/general.helper')
 const OrderModel = require('../../../models/order.model')
 const SellerModel = require('../../../models/seller.model')
 const ReceiptModel = require('../../../models/receipt.model')
+const SettingsModel = require('../../../models/settings.model')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
 const orderModel = new OrderModel()
 const sellerModel = new SellerModel()
 const receiptModel = new ReceiptModel()
+const settingsModel = new SettingsModel()
 
 /**
  * Process a new order from accurate middleware to Accurate
@@ -26,6 +28,9 @@ const PayoutOrder = async (id) => {
         accurate.setAccount(seller)
         
         const order = await orderModel.findBy({ id: receipt.order_id })
+
+        const setting = await settingsModel.findBy({ profile_id: receipt.profile_id })
+        if (!setting) throw new Error(`Seller ${payload.profile_id} not user testing`);  
 
         if (!order.invoice) {
             order.taxable = seller.tax ? Boolean(seller.tax.id) : false
