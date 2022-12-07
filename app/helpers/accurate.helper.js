@@ -200,7 +200,7 @@ class AccurateHelper {
         }
     }
 
-    async storeInvoice(order) {
+    async storeInvoiceNew(order) {
         try {
             const endpoint = `api/sales-invoice/save.do`
             const body = accurateMapping.invoice(order)
@@ -285,11 +285,21 @@ class AccurateHelper {
                                 unit1Name: 'PCS',
                                 unitPrice: order.item_lines[0].price || 0, // item_lines.price
                             }]
-                            await this.storeItemBulk(mappeditem)
-                            await helper.pubQueue('accurate_sales_invoice', order._id)
+
+                            try {
+                                await this.storeItemBulk(mappeditem)
+                                await helper.pubQueue('accurate_sales_invoice', order._id)
+                            } catch (error) {
+                                console.log(error.stack)
+                            }
+                            
                         }else{
-                            await this.storeItemBulk(newMissingitem)
-                            await helper.pubQueue('accurate_sales_invoice', order._id)
+                            try {
+                                await this.storeItemBulk(newMissingitem)
+                                await helper.pubQueue('accurate_sales_invoice', order._id)
+                            } catch (error) {
+                                console.log(error.stack)
+                            }
                         }
 
                     } catch (error) {
@@ -309,6 +319,112 @@ class AccurateHelper {
                     )
                     throw new Error("items order not found on accurate")
                 }
+                await this.credentialHandle(message, order)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_invoice',
+                    order._id
+                )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
+                )
+                if (order.attempts >= maxAttempts) {
+                    helper.accurateLog({
+                        activity: 'create order invoice',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                }
+                throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+    async storeInvoice(order) {
+        try {
+            const endpoint = `api/sales-invoice/save.do`
+    
+            const body = accurateMapping.invoice(order)
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestPost(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'create an order invoice',
+                profile_id: this.account.profile_id,
+                params: body,
+                log: response,
+                order_id: order.id,
+            })
+    
+            if (response.s) {
+                body.accurate_id = response.r.id
+                body.order_id = order.id
+                body.number = response.r.number
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $set: {
+                            synced: true,
+                            invoice: body,
+                            total_amount_accurate: response.r.totalAmount,
+                        },
+                    }
+                )
+                await invoiceModel.insert(body)
+            } else {
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+                    return
+                }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                    // Get accurate's missing sku items from order data
+                    const missingItemSkus = []
+                    for (const item of order.item_lines) {
+                        missingItemSkus.push(item.sku)
+    
+                        // get items from order's bundle if available
+                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                            for (const bundle of item.bundle_info) {
+                                missingItemSkus.push(bundle.sku)
+                            }
+                        }
+                    }
+                    // Get missing accurate items data from item collections
+                    const missingItems = await itemModel.find({
+                        profile_id: order.profile_id,
+                        synced: false,
+                        no: { $in: missingItemSkus }
+                    })
+                    try {
+                        await this.storeItemBulk(await missingItems.toArray())
+                    } catch (error) {
+                        console.log(error.stack)
+                    }
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_invoice',
+                        order._id
+                    )
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error("items order not found on accurate")
+                }
+    
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(
                     order.attempts,
