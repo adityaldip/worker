@@ -2,6 +2,7 @@ const amqp = require('amqplib/callback_api')
 
 const accurateOpenOrder = require('./app/services/orders/open/accurate.open.order.service')
 const accurateShippedOrder = require('./app/services/orders/invoice/accurate.invoice.order.service')
+const accurateInvoiceOrder = require('./app/services/orders/invoice/accurate.invoice.new.order.service')
 const accurateDeliveredOrder = require('./app/services/orders/receipt/accurate.receipt.order')
 const accuratePayoutOrder = require('./app/services/orders/receipt/accurate.payout.order')
 const accurateResetOrder = require('./app/services/orders/reset/accurate.reset.order')
@@ -40,6 +41,10 @@ async function receiveMessage(channel, queue) {
 
             if (queue == 'accurate_sales_invoice') {
                 accurateShippedOrder(id)
+            }
+
+            if (queue == 'accurate_invoice_sales') {
+                accurateInvoiceOrder(id)
             }
 
             if (queue == 'accurate_sales_paid') {

@@ -14,7 +14,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const shippedOrder = async (id) => {
+const InvoiceOrder = async (id) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
@@ -28,7 +28,7 @@ const shippedOrder = async (id) => {
             await accurate.storeOrder(order)
         }
 
-        await accurate.storeInvoice(order)
+        await accurate.storeInvoiceNew(order)
         console.log(' [✔] Order %s successfully processed', order.id)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
@@ -36,4 +36,4 @@ const shippedOrder = async (id) => {
     }
 }
 
-module.exports = shippedOrder
+module.exports = InvoiceOrder
