@@ -30,7 +30,7 @@ const PayoutOrder = async (id) => {
         const order = await orderModel.findBy({ id: receipt.order_id })
 
         const setting = await settingsModel.findBy({ profile_id: receipt.profile_id })
-        if (!setting) throw new Error(`Seller ${payload.profile_id} not user testing`);  
+        if (!setting) throw new Error(`Seller ${receipt.profile_id} not user testing`);  
 
         if (!order.invoice) {
             order.taxable = seller.tax ? Boolean(seller.tax.id) : false

@@ -277,20 +277,22 @@ class AccurateHelper {
                             }
                         });
                         if(newMissingitem ==''){
-                            const mappeditem = [{
-                                itemType: 'INVENTORY', // required; INVENTORY
-                                name: order.item_lines[0].name, // required; item_lines.name
-                                detailOpenBalance: [
-                                    {
-                                        quantity: parseInt(order.item_lines.length || 0),
-                                        unitCost: order.item_lines[0].price || 0,
-                                        warehouseName: 'Utama',
-                                    },
-                                ],
-                                no: order.item_lines[0].sku, // item_lines.sku
-                                unit1Name: 'PCS',
-                                unitPrice: order.item_lines[0].price || 0, // item_lines.price
-                            }]
+                            const mappeditem = [
+                                {
+                                    itemType: 'INVENTORY', // required; INVENTORY
+                                    name: order.item_lines[0].name, // required; item_lines.name
+                                    detailOpenBalance: [
+                                        {
+                                            quantity: parseInt(order.item_lines.length || 0),
+                                            unitCost: order.item_lines[0].price || 0,
+                                            warehouseName: 'Utama',
+                                        },
+                                    ],
+                                    no: order.item_lines[0].sku, // item_lines.sku
+                                    unit1Name: 'PCS',
+                                    unitPrice: order.item_lines[0].price || 0, // item_lines.price
+                                }
+                            ]
 
                             try {
                                 await this.storeItemBulk(mappeditem)
