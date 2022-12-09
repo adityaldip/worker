@@ -42,18 +42,18 @@ const payoutMapping = (order) => {
             })
         }
         const mapinv = {
-            invoiceNo: order.invoice.number, // required
+            invoiceNo: order.invNumber[e], // required
             paymentAmount: i.total, // required
             detailDiscount: detailDiscount
         }
         return mappinv[e] = mapinv
     });
     const mapped = {
-        bankNo: order.accountNo, // required
+        bankNo: order.bankNo, // required
         chequeAmount: order.amount_receive, // required
-        customerNo: order.store_id, // required
+        customerNo: order.customerNo, // required
         detailInvoice: mappinv,
-        transDate: helper.dateConvert(order.updated_at), // required
+        transDate: helper.dateConvert(order.transDate), // required
     }
 
     if (order.branchId) {

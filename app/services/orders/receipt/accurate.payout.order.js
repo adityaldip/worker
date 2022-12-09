@@ -5,6 +5,7 @@ const OrderModel = require('../../../models/order.model')
 const SellerModel = require('../../../models/seller.model')
 const ReceiptModel = require('../../../models/receipt.model')
 const SettingsModel = require('../../../models/settings.model')
+const { order } = require('../../../mappings/accurate/general.mapping')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
@@ -20,32 +21,42 @@ const settingsModel = new SettingsModel()
  */
 const PayoutOrder = async (id) => {
     try {
+        const mapped = {};
         const receipt = await receiptModel.findBy({
             _id: ObjectId.createFromHexString(id),
         })
-
         const seller = await sellerModel.findBy({ seller_id: receipt.profile_id })
         accurate.setAccount(seller)
         
-        const order = await orderModel.findBy({ id: receipt.order_id })
-
         const setting = await settingsModel.findBy({ profile_id: receipt.profile_id })
         if (!setting) throw new Error(`Seller ${receipt.profile_id} not user testing`);  
 
-        if (!order.invoice) {
-            order.taxable = seller.tax ? Boolean(seller.tax.id) : false
-            order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
-            await accurate.storeInvoice(order)
+
+        for (const orderId of receipt.order_id) {
+            const order = await orderModel.findBy({ id: orderId })
+            if (!order.invoice) {
+                order.taxable = seller.tax ? Boolean(seller.tax.id) : false
+                order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
+                await accurate.storeInvoice(order)
+            }
         }
-        order.invoice_mapped = receipt.invoices
-        order.platform_rebate = seller.platform_rebate
-        order.voucher_seller = seller.voucher_seller
-        order.shipping_difference = seller.shipping_difference
-        order.fulfillment = seller.fulfillment
-        order.service = seller.service
-        order.amount_receive = receipt.amount_receive
-        await accurate.storePayout(order)
-        console.log(' [✔] Order %s successfully processed', order.id)
+
+        mapped.profile_id = receipt.profile_id
+        mapped.transDate = receipt.transDate
+        mapped.order = receipt.order_id
+        mapped.bankNo = receipt.bankNo
+        mapped.customerNo = receipt.customerNo
+        mapped.branchId = receipt.branchId
+        mapped.invoice_mapped = receipt.invoices
+        mapped.platform_rebate = seller.platform_rebate
+        mapped.voucher_seller = seller.voucher_seller
+        mapped.shipping_difference = seller.shipping_difference
+        mapped.fulfillment = seller.fulfillment
+        mapped.service = seller.service
+        mapped.amount_receive = receipt.amount_receive
+        mapped.invNumber = receipt.invNumber
+        await accurate.storePayout(mapped)
+        console.log(' [✔] Order %s successfully processed',receipt.order_id.toString())
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)

@@ -517,7 +517,6 @@ class AccurateHelper {
     async storePayout(order) {
         try {
             const endpoint = `api/sales-receipt/save.do`
-
             const body = accurateMapping.payout(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
