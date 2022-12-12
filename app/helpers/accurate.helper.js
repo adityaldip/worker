@@ -258,7 +258,6 @@ class AccurateHelper {
                             }
                         }
                     }
-                    console.log(missingItemSkus)
                     // Get missing accurate items data from item collections
                     const missingItems = await itemModel.find({
                         profile_id: order.profile_id,
@@ -277,6 +276,8 @@ class AccurateHelper {
                             }
                         });
                         if(newMissingitem ==''){
+                            const account = await sellerModel.findBy({ seller_id: order.profile_id })
+                            const WhName = await this.getWarehouse(order.warehouse_id, account)
                             const mappeditem = [
                                 {
                                     itemType: 'INVENTORY', // required; INVENTORY
@@ -285,7 +286,7 @@ class AccurateHelper {
                                         {
                                             quantity: parseInt(order.item_lines.length || 0),
                                             unitCost: order.item_lines[0].price || 0,
-                                            warehouseName: 'Utama',
+                                            warehouseName: WhName || 'Utama',
                                         },
                                     ],
                                     no: order.item_lines[0].sku, // item_lines.sku
@@ -293,21 +294,11 @@ class AccurateHelper {
                                     unitPrice: order.item_lines[0].price || 0, // item_lines.price
                                 }
                             ]
-
-                            try {
                                 await this.storeItemBulk(mappeditem)
-                                await helper.pubQueue('accurate_sales_invoice', order._id)
-                            } catch (error) {
-                                console.log(error.stack)
-                            }
-                            
+                                await helper.pubQueue('accurate_sales_invoice', order._id)                          
                         }else{
-                            try {
                                 await this.storeItemBulk(newMissingitem)
                                 await helper.pubQueue('accurate_sales_invoice', order._id)
-                            } catch (error) {
-                                console.log(error.stack)
-                            }
                         }
 
                     } catch (error) {
