@@ -294,11 +294,11 @@ class AccurateHelper {
                                     unitPrice: order.item_lines[0].price || 0, // item_lines.price
                                 }
                             ]
-                                await this.storeItemBulk(mappeditem)
-                                await helper.pubQueue('accurate_sales_invoice', order._id)                          
+                            await this.storeItemBulk(mappeditem)
+                            await helper.pubQueue('accurate_sales_invoice', order._id)                          
                         }else{
-                                await this.storeItemBulk(newMissingitem)
-                                await helper.pubQueue('accurate_sales_invoice', order._id)
+                            await this.storeItemBulk(newMissingitem)
+                            await helper.pubQueue('accurate_sales_invoice', order._id)
                         }
 
                     } catch (error) {

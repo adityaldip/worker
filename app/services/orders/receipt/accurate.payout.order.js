@@ -5,7 +5,6 @@ const OrderModel = require('../../../models/order.model')
 const SellerModel = require('../../../models/seller.model')
 const ReceiptModel = require('../../../models/receipt.model')
 const SettingsModel = require('../../../models/settings.model')
-const { order } = require('../../../mappings/accurate/general.mapping')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
