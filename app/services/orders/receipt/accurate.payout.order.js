@@ -39,9 +39,11 @@ const PayoutOrder = async (id) => {
                 await accurate.storeInvoice(order)
             }
         }
-
+        
+        mapped._id = receipt._id
+        mapped.id = receipt.id
         mapped.profile_id = receipt.profile_id
-        mapped.transDate = receipt.transDate
+        mapped.transDate =  new Date()
         mapped.order = receipt.order_id
         mapped.bankNo = receipt.bankNo
         mapped.customerNo = receipt.customerNo
