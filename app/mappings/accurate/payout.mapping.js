@@ -9,12 +9,13 @@ const helper = new GeneralHelper()
  */
 const payoutMapping = (order) => {
     const mappinv = [];
+    console.log(order)
     order.invoice_mapped.forEach((i, e) => {
         const detailDiscount = [];
         if(order.platform_rebate){
             detailDiscount.push({
                 accountNo: order.platform_rebate.no, // required
-                amount: i.platform_rebate, // reqired
+                amount: Number(i.platform_rebate) * -1, // reqired
             })
         }
         if(order.voucher_seller){
