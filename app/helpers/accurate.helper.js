@@ -7,6 +7,7 @@ const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
 const { ObjectID } = require('bson')
+const ReceiptModel = require('../models/receipt.model')
 
 const helper = new GeneralHelper()
 const request = new RequestHelper()
@@ -16,6 +17,7 @@ const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
 const itemSyncModel = new ItemSyncModel()
+const receiptModel = new ReceiptModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -205,7 +207,7 @@ class AccurateHelper {
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
-                activity: 'create an order invoice',
+                activity: 'create an order invoice new ',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
@@ -227,11 +229,11 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
-                if (receiptStatus.includes(order.status) && !order.receipt) {
-                    await helper.pubQueue('accurate_sales_paid', order._id)
-                } else if (order.status === 'Cancelled') {
-                    await helper.pubQueue('accurate_sales_cancelled', order._id)
-                }
+                // if (receiptStatus.includes(order.status) && !order.receipt) {
+                //     await helper.pubQueue('accurate_sales_paid', order._id)
+                // } else if (order.status === 'Cancelled') {
+                //     await helper.pubQueue('accurate_sales_cancelled', order._id)
+                // }
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -239,11 +241,11 @@ class AccurateHelper {
                         { id: order.id },
                         { $set: { last_error: response, synced: true } }
                     )
-                    if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
-                        await helper.pubQueue('accurate_sales_paid', order._id)
-                    } else if (order.status === 'Cancelled') {
-                        await helper.pubQueue('accurate_sales_cancelled', order._id)
-                    }
+                    // if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
+                    //     await helper.pubQueue('accurate_sales_paid', order._id)
+                    // } else if (order.status === 'Cancelled') {
+                    //     await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    // }
                     return
                 }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
                     // Get accurate's missing sku items from order data
@@ -295,10 +297,10 @@ class AccurateHelper {
                                 }
                             ]
                             await this.storeItemBulk(mappeditem)
-                            await helper.pubQueue('accurate_sales_invoice', order._id)                          
+                            await helper.pubQueue('accurate_invoice_sales', order._id)                          
                         }else{
                             await this.storeItemBulk(newMissingitem)
-                            await helper.pubQueue('accurate_sales_invoice', order._id)
+                            await helper.pubQueue('accurate_invoice_sales', order._id)
                         }
 
                     } catch (error) {
@@ -321,7 +323,7 @@ class AccurateHelper {
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(
                     order.attempts,
-                    'accurate_sales_invoice',
+                    'accurate_invoice_sales',
                     order._id
                 )
                 await orderModel.update(
@@ -333,7 +335,7 @@ class AccurateHelper {
                 )
                 if (order.attempts >= maxAttempts) {
                     helper.accurateLog({
-                        activity: 'create order invoice',
+                        activity: 'create order invoice new',
                         profile_id: order.profile_id,
                         params: body,
                         response: response,
@@ -514,7 +516,7 @@ class AccurateHelper {
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
-                activity: 'create an order receipt payment',
+                activity: 'create an order receipt payment new',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
@@ -523,14 +525,10 @@ class AccurateHelper {
 
             if (response.s) {
                 body.accurate_id = response.r.id
-                body.order_id = order.id
                 body.number = response.r.number
-                await orderModel.update(
-                    { id: order.id },
-                    { $set: { synced: true, receipt: body } }
-                )
-                await invoiceModel.update(
-                    { order_id: order.id },
+                body.message = response.d
+                await receiptModel.update(
+                    { _id: ObjectID(order._id) },
                     { $set: { receipt: body } }
                 )
             } else {
@@ -540,7 +538,7 @@ class AccurateHelper {
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(
                     order.attempts,
-                    'accurate_sales_paid',
+                    'accurate_sales_payout',
                     order._id
                 )
                 await orderModel.update(
