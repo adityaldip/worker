@@ -34,7 +34,6 @@ const invoiceMapping = (order) => {
                 (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             // salesOrderNumber: order.id,
-            id: order.id,
             useTax1: order.taxable,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName
@@ -46,6 +45,7 @@ const invoiceMapping = (order) => {
     }
 
     const mapped = {
+        number: order.id,
         customerNo: order.store_id,
         detailItem: detailItems,
         transDate: helper.dateConvert(order.updated_at), // required
