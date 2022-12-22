@@ -9,7 +9,6 @@ const helper = new GeneralHelper()
  */
 const payoutMapping = (order) => {
     const mappinv = [];
-    console.log(order)
     order.invoice_mapped.forEach((i, e) => {
         const detailDiscount = [];
         if(order.platform_rebate){
