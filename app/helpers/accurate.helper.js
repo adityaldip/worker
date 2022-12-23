@@ -7,6 +7,7 @@ const SellerModel = require('../models/seller.model')
 const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
 const { ObjectID } = require('bson')
+const ReceiptModel = require('../models/receipt.model')
 
 const helper = new GeneralHelper()
 const request = new RequestHelper()
@@ -16,6 +17,7 @@ const customerModel = new CustomerModel()
 const invoiceModel = new InvoiceModel()
 const itemModel = new ItemModel()
 const itemSyncModel = new ItemSyncModel()
+const receiptModel = new ReceiptModel()
 
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
@@ -196,17 +198,16 @@ class AccurateHelper {
         }
     }
 
-    async storeInvoice(order) {
+    async storeInvoiceNew(order) {
         try {
             const endpoint = `api/sales-invoice/save.do`
-
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
-                activity: 'create an order invoice',
+                activity: 'create an order invoice new ',
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
@@ -228,11 +229,11 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
-                if (receiptStatus.includes(order.status) && !order.receipt) {
-                    await helper.pubQueue('accurate_sales_paid', order._id)
-                } else if (order.status === 'Cancelled') {
-                    await helper.pubQueue('accurate_sales_cancelled', order._id)
-                }
+                // if (receiptStatus.includes(order.status) && !order.receipt) {
+                //     await helper.pubQueue('accurate_sales_paid', order._id)
+                // } else if (order.status === 'Cancelled') {
+                //     await helper.pubQueue('accurate_sales_cancelled', order._id)
+                // }
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -240,11 +241,11 @@ class AccurateHelper {
                         { id: order.id },
                         { $set: { last_error: response, synced: true } }
                     )
-                    if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
-                        await helper.pubQueue('accurate_sales_paid', order._id)
-                    } else if (order.status === 'Cancelled') {
-                        await helper.pubQueue('accurate_sales_cancelled', order._id)
-                    }
+                    // if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
+                    //     await helper.pubQueue('accurate_sales_paid', order._id)
+                    // } else if (order.status === 'Cancelled') {
+                    //     await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    // }
                     return
                 }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
                     // Get accurate's missing sku items from order data
@@ -252,6 +253,146 @@ class AccurateHelper {
                     for (const item of order.item_lines) {
                         missingItemSkus.push(item.sku)
 
+                        // get items from order's bundle if available
+                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                            for (const bundle of item.bundle_info) {
+                                missingItemSkus.push(bundle.sku)
+                            }
+                        }
+                    }
+                    // Get missing accurate items data from item collections
+                    const missingItems = await itemModel.find({
+                        profile_id: order.profile_id,
+                        no: { $in: missingItemSkus }
+                    })
+                    const newMissingitem = await missingItems.toArray()
+                    try {
+                        newMissingitem.forEach(e => {
+                            const found = e.detailOpenBalance.find(o => o.quantity <= 0);
+                            if(found){
+                                delete e.detailOpenBalance
+                            }else{
+                                e.detailOpenBalance.forEach( d => {
+                                    d.warehouseName = order.warehouseName
+                                } )  
+                            }
+                        });
+                        if(newMissingitem ==''){
+                            const account = await sellerModel.findBy({ seller_id: order.profile_id })
+                            const WhName = await this.getWarehouse(order.warehouse_id, account)
+                            const mappeditem = [
+                                {
+                                    itemType: 'INVENTORY', // required; INVENTORY
+                                    name: order.item_lines[0].name, // required; item_lines.name
+                                    detailOpenBalance: [
+                                        {
+                                            quantity: parseInt(order.item_lines.length || 0),
+                                            unitCost: order.item_lines[0].price || 0,
+                                            warehouseName: WhName || 'Utama',
+                                        },
+                                    ],
+                                    no: order.item_lines[0].sku, // item_lines.sku
+                                    unit1Name: 'PCS',
+                                    unitPrice: order.item_lines[0].price || 0, // item_lines.price
+                                }
+                            ]
+                            await this.storeItemBulk(mappeditem)
+                            await helper.pubQueue('accurate_invoice_sales', order._id)                          
+                        }else{
+                            await this.storeItemBulk(newMissingitem)
+                            await helper.pubQueue('accurate_invoice_sales', order._id)
+                        }
+
+                    } catch (error) {
+                        console.log(error.stack)
+                    }
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_invoice',
+                    //     order._id
+                    // )
+                    await orderModel.update(
+                        { id: order.id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    throw new Error("items order not found on accurate")
+                }
+                await this.credentialHandle(message, order)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_invoice_sales',
+                    order._id
+                )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
+                )
+                if (order.attempts >= maxAttempts) {
+                    helper.accurateLog({
+                        activity: 'create order invoice new',
+                        profile_id: order.profile_id,
+                        params: body,
+                        response: response,
+                    })
+                }
+                throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+    async storeInvoice(order) {
+        try {
+            const endpoint = `api/sales-invoice/save.do`
+    
+            const body = accurateMapping.invoice(order)
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestPost(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'create an order invoice',
+                profile_id: this.account.profile_id,
+                params: body,
+                log: response,
+                order_id: order.id,
+            })
+    
+            if (response.s) {
+                body.accurate_id = response.r.id
+                body.order_id = order.id
+                body.number = response.r.number
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $set: {
+                            synced: true,
+                            invoice: body,
+                            total_amount_accurate: response.r.totalAmount,
+                        },
+                    }
+                )
+                await invoiceModel.insert(body)
+            } else {
+                const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                    await orderModel.update(
+                        { id: order.id },
+                        { $set: { last_error: response, synced: true } }
+                    )
+                    return
+                }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                    // Get accurate's missing sku items from order data
+                    const missingItemSkus = []
+                    for (const item of order.item_lines) {
+                        missingItemSkus.push(item.sku)
+    
                         // get items from order's bundle if available
                         if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
                             for (const bundle of item.bundle_info) {
@@ -284,7 +425,7 @@ class AccurateHelper {
                     )
                     throw new Error("items order not found on accurate")
                 }
-
+    
                 await this.credentialHandle(message, order)
                 await this.delayedQueue(
                     order.attempts,
@@ -366,6 +507,54 @@ class AccurateHelper {
         }
     }
 
+    async storePayout(order) {
+        try {
+            const endpoint = `api/sales-receipt/save.do`
+            const body = accurateMapping.payout(order)
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestPost(payload)
+            await helper.accurateLog({
+                created_at: new Date(),
+                type: 'ORDER',
+                activity: 'create an order receipt payment new',
+                profile_id: this.account.profile_id,
+                params: body,
+                log: response,
+                order_id: order.id,
+            })
+
+            if (response.s) {
+                body.accurate_id = response.r.id
+                body.number = response.r.number
+                body.message = response.d
+                await receiptModel.update(
+                    { _id: ObjectID(order._id) },
+                    { $set: { receipt: body } }
+                )
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                await this.credentialHandle(message, order)
+                await this.delayedQueue(
+                    order.attempts,
+                    'accurate_sales_payout',
+                    order._id
+                )
+                await orderModel.update(
+                    { id: order.id },
+                    {
+                        $inc: { attempts: 1 },
+                        $set: { last_error: response, synced: false },
+                    }
+                )
+                throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+
     async storeItem(item) {
         try {
             const endpoint = `api/item/save.do`
@@ -403,11 +592,11 @@ class AccurateHelper {
     async storeItemBulk(items) {
         try {
             const endpoint = `api/item/bulk-save.do`
-
             const body = { data: items }
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             const skus = items.map((item) => item.no)
+            const detailOpenBalance = items.map((i) => i.detailOpenBalance)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ITEM',
@@ -419,7 +608,7 @@ class AccurateHelper {
             if (response.s) {
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
-                    { $set: { synced: true, synced_at: new Date() } }
+                    { $set: { synced: true, synced_at: new Date(),detailOpenBalance: detailOpenBalance[0]??[] } }
                 )
             } else {
                 if (Array.isArray(response.d)) {
@@ -435,6 +624,7 @@ class AccurateHelper {
                                     $set: {
                                         synced: true,
                                         synced_at: new Date(),
+                                        detailOpenBalance: detailOpenBalance[0]??[],
                                     },
                                 }
                             )
@@ -454,6 +644,7 @@ class AccurateHelper {
                                     synced: true,
                                     attempts: 5,
                                     synced_at: new Date(),
+                                    detailOpenBalance: detailOpenBalance[0]??[],
                                 },
                             } : {
                                 $inc: { attempts: 1 },
@@ -1010,7 +1201,7 @@ class AccurateHelper {
     }
 
     async delayedQueue(attempt, directedQueue, message, inSeconds = false) {
-        if (attempt < maxAttempts) {
+        if (attempt < maxAttempts || !attempt) {
             const delayTime = new Date()
             if (!inSeconds)
                 delayTime.setMinutes(delayTime.getMinutes() + (attempt || 1))
