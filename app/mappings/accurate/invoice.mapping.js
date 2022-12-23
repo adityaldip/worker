@@ -28,12 +28,12 @@ const invoiceMapping = (order) => {
         const detailItem = {
             itemNo: item.sku, // required; item_lines.id
             unitPrice: item.sale_price || item.price || item.total_price, // required; item_lines.total_price
-            detailName: `${item.name} ${item.variant_name || ''}`, // item_lines.variant_name
+            detailName: (`${item.name} ${item.variant_name || ''}`).substring(0, 230), // item_lines.variant_name
             detailNotes: item.note || '', //item_lines.note
             itemCashDiscount:
                 (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
-            salesOrderNumber: order.id,
+            // salesOrderNumber: order.id,
             useTax1: order.taxable,
         }
         if (order.warehouseName) detailItem.warehouseName = order.warehouseName
@@ -45,6 +45,7 @@ const invoiceMapping = (order) => {
     }
 
     const mapped = {
+        number: order.id,
         customerNo: order.store_id,
         detailItem: detailItems,
         transDate: helper.dateConvert(order.updated_at), // required
