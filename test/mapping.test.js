@@ -95,6 +95,7 @@ const orderMock = {
     note: 'Mantap',
     internal_note: null,
     skus: [],
+    new_rule: true
 }
 
 const itemMock = {
