@@ -26,7 +26,7 @@ const payoutMapping = (order) => {
         if(order.fulfillment){
             detailDiscount.push({
                 accountNo: order.fulfillment.no, // required
-                amount: i.platform_fulfilment_fee, // reqired
+                amount: i.fulfillment_fee, // reqired
             })
         }
         if(order.service){
@@ -39,6 +39,12 @@ const payoutMapping = (order) => {
             detailDiscount.push({
                 accountNo: order.shipping_difference.no, // required
                 amount: i.cashless_shipping_difference, // reqired
+            })
+        }
+        if(order.shipping_fee){
+            detailDiscount.push({
+                accountNo: order.shipping_fee.id, // required
+                amount: i.shipping_price, // reqired
             })
         }
         const mapinv = {

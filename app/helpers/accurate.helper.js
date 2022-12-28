@@ -511,6 +511,7 @@ class AccurateHelper {
         try {
             const endpoint = `api/sales-receipt/save.do`
             const body = accurateMapping.payout(order)
+            console.log(body.detailInvoice[0].detailDiscount)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
             await helper.accurateLog({
