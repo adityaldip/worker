@@ -41,12 +41,12 @@ const payoutMapping = (order) => {
                 amount: i.cashless_shipping_difference, // reqired
             })
         }
-        if(order.shipping_fee){
-            detailDiscount.push({
-                accountNo: order.shipping_fee.id, // required
-                amount: i.shipping_price, // reqired
-            })
-        }
+        // if(order.shipping_fee){
+        //     detailDiscount.push({
+        //         accountNo: order.shipping_fee.id, // required
+        //         amount: i.shipping_price, // reqired
+        //     })
+        // }
         const mapinv = {
             invoiceNo: order.invNumber[e], // required
             paymentAmount: i.total, // required
