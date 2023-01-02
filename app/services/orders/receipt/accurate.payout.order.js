@@ -52,6 +52,7 @@ const PayoutOrder = async (id) => {
         mapped.platform_rebate = seller.platform_rebate
         mapped.voucher_seller = seller.voucher_seller
         mapped.shipping_difference = seller.shipping_difference
+        mapped.shipping_fee = seller.shipping
         mapped.fulfillment = seller.fulfillment
         mapped.service = seller.service
         mapped.amount_receive = receipt.amount_receive

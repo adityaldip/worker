@@ -46,7 +46,8 @@ const invoiceMapping = (order) => {
     }
 
     const mapped = {
-        number: order.id,
+        // number: order.id,
+        description: order.local_name ? order.local_name : order.id,
         customerNo: order.store_id,
         detailItem: detailItems,
         transDate: helper.dateConvert(order.updated_at), // required
