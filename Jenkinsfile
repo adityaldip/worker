@@ -6,7 +6,7 @@ pipeline{
         stage('test') {
           agent {
             docker {
-              image 'node:12.22.0-alpine'
+              image 'node:16.14.0-alpine'
               label "slave"
             }
           }
@@ -31,7 +31,7 @@ pipeline{
         stage('linter') {
           agent {
             docker {
-                image 'node:12.22.0-alpine'
+                image 'node:16.14.0-alpine'
                 label "slave"
             }
           }
