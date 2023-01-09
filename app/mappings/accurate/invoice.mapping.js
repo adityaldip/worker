@@ -46,7 +46,6 @@ const invoiceMapping = (order) => {
     }
 
     const mapped = {
-        // number: order.id,
         number: order.local_name ? order.local_name : order.id,
         description: order.id,
         customerNo: order.store_id,
