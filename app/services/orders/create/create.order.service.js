@@ -11,7 +11,7 @@ const insertOrder = async (payload) => {
         if (order) {
             console.log('Order already exist')
         } else {
-            if(payload.status != 'Pending Payment' || payload.status != 'Cancelled'){
+            if(payload.status != 'Pending Payment' & payload.status != 'Cancelled'){
                 const mongoRes = await orderModel.insert(payload)
                 const setting = await settingsModel.findBy({ profile_id: payload.profile_id })
                 if (!setting) {
