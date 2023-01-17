@@ -11,17 +11,15 @@ const insertOrder = async (payload) => {
         if (order) {
             console.log('Order already exist')
         } else {
-            if(payload.status != 'Pending Payment' & payload.status != 'Cancelled'){
-                const mongoRes = await orderModel.insert(payload)
-                const setting = await settingsModel.findBy({ profile_id: payload.profile_id })
-                if (!setting) {
-                    await helper.pubQueue(
-                        'accurate_sales_order',
-                        mongoRes.insertedId
-                    )
-                }
+            const mongoRes = await orderModel.insert(payload)
+            const setting = await settingsModel.findBy({ profile_id: payload.profile_id })
+            const dennyStatus = ['Pending Payment', 'Cancelled']
+            if (!setting && !dennyStatus.includes(payload.status)) {
+                await helper.pubQueue(
+                    'accurate_sales_order',
+                    mongoRes.insertedId
+                )
             }
-            
         }
         console.log(` [✔] Order  ${payload.id} successfully processed`, payload.id)
 
