@@ -16,10 +16,6 @@ const helper = new GeneralHelper()
 const itemSyncBulkModel = new ItemSyncBulkModel()
 const fetchItemStock = async (itemJob) => {
     try {
-        if (!itemJob.eventID || !itemJob.sku)
-            throw new Error('Item job is invalid')
-        if (!itemJob.warehouseName) itemJob.warehouseName = 'Utama'
-
         // Get item sync
         let itemSync = await itemSyncModel.findBy({
             _id: ObjectID(itemJob.eventID),
@@ -31,8 +27,13 @@ const fetchItemStock = async (itemJob) => {
         const seller = await sellerModel.findBy({
             seller_id: itemSync.profile_id,
         })
+
         if (!seller) throw new Error('cannot get seller data')
         accurate.setAccount(seller)
+
+        if (!itemJob.eventID || !itemJob.sku)
+            throw new Error('Item job is invalid')
+        if (!itemJob.warehouseName) itemJob.warehouseName = seller.warehouses[0].accurate_warehouse.name
 
         // get stock from accurate
         await accurate.getStockItem(itemJob, itemSync)

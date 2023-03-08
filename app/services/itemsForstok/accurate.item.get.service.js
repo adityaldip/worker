@@ -7,6 +7,8 @@ const EventModel = require('../../models/event.model')
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
 const eventModel = new EventModel()
+const SellerModel = require('../../models/seller.model')
+const sellerModel = new SellerModel()
 
 /**
  * Process a new order from accurate middleware to Accurate
@@ -20,6 +22,11 @@ const getItemForstok = async (id) => {
             profile_id: profileId
             // synced: true
         })
+
+        const seller = await sellerModel.findBy({
+            seller_id: profileId,
+        })
+
         const loopitem = await item.toArray();
         const event = await eventModel.findBy({
             profile_id: profileId,
@@ -39,19 +46,20 @@ const getItemForstok = async (id) => {
             if (!updateEvent) {
                 throw Error('Event tidak terupdate!')
             } else {
-                loopitem.forEach((element, e) => {
-                    setTimeout(async () => {
-                        const {
-                            detailOpenBalance
-                        } = element
-                        const dataDelayed = {
-                            eventID: event._id.toString(),
-                            sku: element.no,
-                            warehouseName: detailOpenBalance[0].warehouseName
-                        };
-                        await helper.pubQueue('accurate_items_fetch', dataDelayed)
-                    }, e * 300);
-                });
+                seller.warehouses.forEach((wh) => {
+                    if (wh.accurate_warehouse && wh.accurate_warehouse.name !== "") {
+                        loopitem.forEach((element, e) => {
+                            setTimeout(async () => {
+                                const dataDelayed = {
+                                    eventID: event._id.toString(),
+                                    sku: element.no,
+                                    warehouseName: wh.accurate_warehouse.name
+                                };
+                                await helper.pubQueue('accurate_items_fetch', dataDelayed)
+                            }, e * 300);
+                        });
+                    }
+                })
             }
         } else {
             await eventModel.update({
