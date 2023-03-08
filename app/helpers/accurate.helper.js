@@ -138,11 +138,13 @@ class AccurateHelper {
                     } catch (error) {
                         console.log(error.stack)
                     }
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_order',
-                        order._id
-                    )
+                    if (order.attempts < maxAttempts) {
+                        await this.delayedQueue(
+                            order.attempts,
+                            'accurate_sales_order',
+                            order._id
+                        )
+                    }
                     await orderModel.update(
                         { id: order.id },
                         {
@@ -171,11 +173,13 @@ class AccurateHelper {
                 }
 
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_order',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_order',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -286,7 +290,7 @@ class AccurateHelper {
                                     name: order.item_lines[0].name, // required; item_lines.name
                                     detailOpenBalance: [
                                         {
-                                            quantity: parseInt(order.item_lines.length || 0),
+                                            quantity: parseInt(order.item_lines.length || 10),
                                             unitCost: order.item_lines[0].price || 0,
                                             warehouseName: WhName || 'Utama',
                                         },
@@ -321,11 +325,13 @@ class AccurateHelper {
                     throw new Error("items order not found on accurate")
                 }
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_invoice_sales',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_invoice_sales',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -411,11 +417,13 @@ class AccurateHelper {
                     } catch (error) {
                         console.log(error.stack)
                     }
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_invoice',
-                        order._id
-                    )
+                    if (order.attempts < maxAttempts) {
+                        await this.delayedQueue(
+                            order.attempts,
+                            'accurate_sales_invoice',
+                            order._id
+                        )
+                    }
                     await orderModel.update(
                         { id: order.id },
                         {
@@ -427,11 +435,13 @@ class AccurateHelper {
                 }
     
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_invoice',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_invoice',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -488,11 +498,13 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_paid',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_paid',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -536,11 +548,13 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_payout',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_payout',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -859,11 +873,13 @@ class AccurateHelper {
                 }
 
                 await this.credentialHandle(message, order)
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_cancelled',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_cancelled',
+                        order._id
+                    )
+                }
                 await orderModel.update(
                     { id: order.id },
                     {
@@ -1020,12 +1036,13 @@ class AccurateHelper {
                     { id: order.id },
                     { $set: { synced: true } }
                 )
-
-                await this.delayedQueue(
-                    order.attempts,
-                    'accurate_sales_order',
-                    order._id
-                )
+                if (order.attempts < maxAttempts) {
+                    await this.delayedQueue(
+                        order.attempts,
+                        'accurate_sales_order',
+                        order._id
+                    )
+                }
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||

@@ -9,7 +9,7 @@ const itemMapping = (item) => {
         name: item.name, // required; item_lines.name
         detailOpenBalance: [
             {
-                quantity: parseInt(item.qty || 0),
+                quantity: parseInt(item.qty || 10),
                 unitCost: item.price || item.total_price || 0,
                 warehouseName: item.warehouseName || 'Utama',
             },
