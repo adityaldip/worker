@@ -164,7 +164,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Utama',
                 },
@@ -185,7 +185,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Utama',
                 },
@@ -207,7 +207,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Utama',
                 },
@@ -229,7 +229,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Utama',
                 },
@@ -251,7 +251,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Utama',
                 },
@@ -272,7 +272,7 @@ describe('Item mapping testing', () => {
             name: 'celana joger xl5 keren pake banget hehe 2',
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 100000,
                     warehouseName: 'Warehouse Keren',
                 },
@@ -291,7 +291,7 @@ describe('Item mapping testing', () => {
             name: undefined,
             detailOpenBalance: [
                 {
-                    quantity: 0,
+                    quantity: 10,
                     unitCost: 0,
                     warehouseName: 'Utama',
                 },
@@ -338,7 +338,7 @@ describe('Order mapping testing', () => {
             {
                 itemType: 'INVENTORY',
                 name: 'celana joger xl5 keren pake banget hehe 2',
-                detailOpenBalance: [{ quantity: 0, unitCost: 100000, warehouseName: 'Utama' },],
+                detailOpenBalance: [{ quantity: 10, unitCost: 100000, warehouseName: 'Utama' },],
                 no: 'sku0002',
                 unit1Name: 'PCS',
                 unitPrice: 100000,

@@ -27,6 +27,16 @@ const InvoiceOrder = async (id) => {
         
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)
+
+        const accountName = order.store_name || order.channel
+        for (const account of seller.customers) {
+            if (account.forstok_channel.name == accountName) {
+                order.accountNo = account.account.id || account.account.no
+                order.branchId = account.branch ? account.branch.id : null
+                break
+            }
+        }
+
         order.taxable = seller.tax ? Boolean(seller.tax.id) : false
         order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
         order.new_rule = true
