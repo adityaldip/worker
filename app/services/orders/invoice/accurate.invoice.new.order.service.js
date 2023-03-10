@@ -16,7 +16,7 @@ const settingsModel = new SettingsModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const InvoiceOrder = async (id) => {
+const InvoiceOrder = async (id, channel, msg) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
@@ -43,9 +43,11 @@ const InvoiceOrder = async (id) => {
 
         await accurate.storeInvoiceNew(order)
         console.log(' [✔] Order %s successfully processed', order.id)
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
+        channel.ack(msg)
     }
 }
 

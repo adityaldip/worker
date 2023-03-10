@@ -13,7 +13,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const filterItem = async (id) => {
+const filterItem = async (id, channel, msg) => {
     try {
         const profileId = parseInt(id)
         const seller = await sellerModel.findBy({ seller_id: profileId })
@@ -44,9 +44,11 @@ const filterItem = async (id) => {
         }
 
         console.log(` [✔] %d item(s) from profile %s retrieved, took: ${parseInt(endTime-startTime)/1000} s`, mappedItems.length, id)
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message, { profile_id: id })
+        channel.ack(msg)
     }
 }
 

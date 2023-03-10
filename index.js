@@ -20,66 +20,66 @@ async function receiveMessage(channel, queue) {
     channel.assertQueue(queue, {
         durable: true,
     })
+    channel.prefetch(5);
     console.log(' [*] Waiting for messages in %s. To exit press CTRL+C', queue)
     channel.consume(
         queue,
-        function (msg) {
+        async function (msg) {
             console.log(' [+] Received message on queue %s', queue)
             let id = parseJson(msg.content.toString())
             if (!id) id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
-
             if (queue == 'accurate_sales_order') {
-                accurateOpenOrder(id)
+                accurateOpenOrder(id, channel, msg)
             }
             if (queue == 'accurate_insert_order') {
-                insertOrder(id)
+                insertOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_sales_cancelled') {
-                accurateCancelledOrder(id)
+                accurateCancelledOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_sales_invoice') {
-                accurateShippedOrder(id)
+                accurateShippedOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_invoice_sales') {
-                accurateInvoiceOrder(id)
+                accurateInvoiceOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_sales_paid') {
-                accurateDeliveredOrder(id)
+                accurateDeliveredOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_sales_payout') {
-                accuratePayoutOrder(id)
+                accuratePayoutOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_items_query') {
-                accurateFilterItem(id)
+                accurateFilterItem(id, channel, msg)
             }
 
             if (queue == 'accurate_items_import') {
-                accurateImportItem(id)
+                accurateImportItem(id, channel, msg)
             }
             if(queue == 'accurate_items_get'){
-                getItemForstok(id)
+                getItemForstok(id, channel, msg)
             }   
 
             if (queue == 'accurate_items_fetch') {
-                accurateFetchItemStock(id)
+                accurateFetchItemStock(id, channel, msg)
             }
 
             if (queue == 'accurate_quantity_sync') {
-                forstokSyncQuantity(id)
+                forstokSyncQuantity(id, channel, msg)
             }
 
             if (queue == 'accurate_reset_order') {
-                accurateResetOrder(id)
+                accurateResetOrder(id, channel, msg)
             }
         },
         {
-            noAck: true,
+            noAck: false,
         }
     )
 }
