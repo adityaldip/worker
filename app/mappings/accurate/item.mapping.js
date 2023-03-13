@@ -6,7 +6,7 @@
 const itemMapping = (item) => {
     const mapped = {
         itemType: 'INVENTORY', // required; INVENTORY
-        name: item.name, // required; item_lines.name
+        name: item.name ? item.name.replace(/[^a-zA-Z0-9]+/g, " ") : item.name, // required; item_lines.name
         detailOpenBalance: [
             {
                 quantity: parseInt(item.qty || 10),
