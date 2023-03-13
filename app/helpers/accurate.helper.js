@@ -273,6 +273,7 @@ class AccurateHelper {
                     try {
                         newMissingitem.forEach(e => {
                             const found = e.detailOpenBalance.find(o => o.quantity <= 0);
+                            e.name = helper.removeSpecialChar(e.name)
                             if(found){
                                 delete e.detailOpenBalance
                             }else{
@@ -287,7 +288,7 @@ class AccurateHelper {
                             const mappeditem = [
                                 {
                                     itemType: 'INVENTORY', // required; INVENTORY
-                                    name: order.item_lines[0].name, // required; item_lines.name
+                                    name: helper.removeSpecialChar(order.item_lines[0].name), // required; item_lines.name
                                     detailOpenBalance: [
                                         {
                                             quantity: parseInt(order.item_lines.length || 10),
