@@ -273,6 +273,7 @@ class AccurateHelper {
                     try {
                         newMissingitem.forEach(e => {
                             const found = e.detailOpenBalance.find(o => o.quantity <= 0);
+                            e.name = helper.removeSpecialChar(e.name)
                             if(found){
                                 delete e.detailOpenBalance
                             }else{
@@ -281,13 +282,14 @@ class AccurateHelper {
                                 } )  
                             }
                         });
+                        console.log(newMissingitem)
                         if(newMissingitem ==''){
                             const account = await sellerModel.findBy({ seller_id: order.profile_id })
                             const WhName = await this.getWarehouse(order.warehouse_id, account)
                             const mappeditem = [
                                 {
                                     itemType: 'INVENTORY', // required; INVENTORY
-                                    name: order.item_lines[0].name, // required; item_lines.name
+                                    name: helper.removeSpecialChar(order.item_lines[0].name), // required; item_lines.name
                                     detailOpenBalance: [
                                         {
                                             quantity: parseInt(order.item_lines.length || 10),
@@ -300,6 +302,7 @@ class AccurateHelper {
                                     unitPrice: order.item_lines[0].price || 0, // item_lines.price
                                 }
                             ]
+                            console.log(mappeditem)
                             await this.storeItemBulk(mappeditem)
                             await helper.pubQueue('accurate_invoice_sales', order._id)                          
                         }else{

@@ -58,6 +58,10 @@ class GeneralHelper {
         await logModel.insert(payload)
     }
 
+    removeSpecialChar(string){
+        return string.replace(/[^a-zA-Z0-9]+/g, " ")
+    }
+
     dateConvert(date) {
         const _date = new Date(date)
         return `${_date.getDate()}/${
