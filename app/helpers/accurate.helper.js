@@ -282,7 +282,6 @@ class AccurateHelper {
                                 } )  
                             }
                         });
-                        console.log(newMissingitem)
                         if(newMissingitem ==''){
                             const account = await sellerModel.findBy({ seller_id: order.profile_id })
                             const WhName = await this.getWarehouse(order.warehouse_id, account)
@@ -302,7 +301,6 @@ class AccurateHelper {
                                     unitPrice: order.item_lines[0].price || 0, // item_lines.price
                                 }
                             ]
-                            console.log(mappeditem)
                             await this.storeItemBulk(mappeditem)
                             await helper.pubQueue('accurate_invoice_sales', order._id)                          
                         }else{
