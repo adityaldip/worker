@@ -9,7 +9,7 @@ const itemMapping = (item) => {
         name: item.name ? item.name.replace(/[^a-zA-Z0-9]+/g, " ") : item.name, // required; item_lines.name
         detailOpenBalance: [
             {
-                quantity: parseInt(item.qty || 10),
+                quantity: parseInt(item.available_qty || 10),
                 unitCost: item.price || item.total_price || 0,
                 warehouseName: item.warehouseName || 'Utama',
             },

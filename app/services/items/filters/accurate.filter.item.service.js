@@ -23,12 +23,13 @@ const filterItem = async (id) => {
         const skus = await itemModel.distinct('no', { profile_id: profileId })
         const existedSkus = skus.length ? skus : ['']
         const items = await itemForstok.find(profileId, existedSkus)
-        const warehouseName = items.length ? getWarehouse(items[0].warehouse_id, warehouses) : null
+        // const warehouseName = items.length ? getWarehouse(items[0].warehouse_id, warehouses) : null
         const endTime = performance.now()
 
         const itemTax = tax ? tax.id : null
 
         const mappedItems = items.map(item => {
+            const warehouseName = items.length ? getWarehouse(item.warehouse_id, warehouses) : null
             item.warehouseName = warehouseName
             item.taxId = itemTax
             const payload = accurateMapping.item(item)
@@ -37,7 +38,7 @@ const filterItem = async (id) => {
             payload.attempts = 0
             return payload;
         });
-
+        
         if (mappedItems.length > 0) {
             await itemModel.insertMany(mappedItems)
             await helper.pubQueue('accurate_items_import', profileId)
