@@ -14,7 +14,7 @@ const sellerModel = new SellerModel()
 const accurate = new AccurateHelper()
 const helper = new GeneralHelper()
 const itemSyncBulkModel = new ItemSyncBulkModel()
-const fetchItemStock = async (itemJob) => {
+const fetchItemStock = async (itemJob, channel, msg) => {
     try {
         // Get item sync
         let itemSync = await itemSyncModel.findBy({
@@ -191,8 +191,10 @@ const fetchItemStock = async (itemJob) => {
                 chunkJob.insertedId.toString()
             )
         }
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
+        channel.ack(msg)
     }
 }
 

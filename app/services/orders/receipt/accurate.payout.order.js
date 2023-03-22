@@ -18,7 +18,7 @@ const settingsModel = new SettingsModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const PayoutOrder = async (id) => {
+const PayoutOrder = async (id, channel, msg) => {
     try {
         const mapped = {};
         const receipt = await receiptModel.findBy({
@@ -59,9 +59,11 @@ const PayoutOrder = async (id) => {
         mapped.invNumber = receipt.invNumber
         await accurate.storePayout(mapped)
         console.log(' [✔] Order %s successfully processed',receipt.order_id.toString())
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
+        channel.ack(msg)
     }
 }
 
