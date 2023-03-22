@@ -14,7 +14,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const deliveredOrder = async (id) => {
+const deliveredOrder = async (id, channel, msg) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
@@ -30,9 +30,11 @@ const deliveredOrder = async (id) => {
 
         await accurate.storeReceipt(order)
         console.log(' [✔] Order %s successfully processed', order.id)
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
+        channel.ack(msg)
     }
 }
 

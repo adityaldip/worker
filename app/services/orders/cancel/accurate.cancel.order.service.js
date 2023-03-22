@@ -14,7 +14,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const cancelledOrder = async (id) => {
+const cancelledOrder = async (id, channel, msg) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
@@ -28,9 +28,11 @@ const cancelledOrder = async (id) => {
         await accurate.deleteOrder(order)
 
         console.log(' [✔] Order %s successfully processed', order.id)
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
+        channel.ack(msg)
     }
 }
 

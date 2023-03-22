@@ -16,7 +16,7 @@ const sellerModel = new SellerModel()
 const forstok = new ForstokHelper()
 const helper = new GeneralHelper()
 
-const syncQuantity = async (id) => {
+const syncQuantity = async (id, channel, msg) => {
     try {
         const itemSyncBulk = await itemSyncBulkModel.findBy({
             _id: ObjectID(id),
@@ -63,6 +63,7 @@ const syncQuantity = async (id) => {
                 }
             )
             console.log(` [✔] Success executing bulk update to forstok API`)
+            channel.ack(msg)
         } catch (error) {
             // Retry request
             if (!itemSyncBulk.attempt) itemSyncBulk.attempt = 1
@@ -104,6 +105,7 @@ const syncQuantity = async (id) => {
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message, { item_sync_bulk_id: id })
+        channel.ack(msg)
     }
 }
 

@@ -14,7 +14,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const resetOrder = async (id) => {
+const resetOrder = async (id, channel, msg) => {
     try {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
@@ -33,9 +33,11 @@ const resetOrder = async (id) => {
             await accurate.deleteSO(order)
         }
         console.log(' [✔] Order %s successfully Reset ', order.id)
+        channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
         helper.errorLog(id, error.message)
+        channel.ack(msg)
     }
 }
 

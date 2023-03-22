@@ -15,7 +15,7 @@ const sellerModel = new SellerModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
-const getItemForstok = async (id) => {
+const getItemForstok = async (id, channel, msg) => {
     try {
         const profileId = parseInt(id)
         const item = await itemModel.find({
@@ -61,7 +61,9 @@ const getItemForstok = async (id) => {
                     }
                 })
             }
+            channel.ack(msg)
         } else {
+            channel.ack(msg)
             await eventModel.update({
                 profile_id: profileId,
                 status: "running"
@@ -80,6 +82,7 @@ const getItemForstok = async (id) => {
         helper.errorLog(id, error.message, {
             profile_id: id
         })
+        channel.ack(msg)
     }
 }
 

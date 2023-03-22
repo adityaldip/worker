@@ -5,7 +5,7 @@ const orderModel = new OrderModel()
 const SettingsModel = require('../../../models/settings.model')
 const settingsModel = new SettingsModel()
 
-const insertOrder = async (payload) => {
+const insertOrder = async (payload, channel, msg) => {
     try {
         const order = await orderModel.findBy({ id: payload.id })
         if (order) {
@@ -22,8 +22,9 @@ const insertOrder = async (payload) => {
             }
         }
         console.log(` [✔] Order  ${payload.id} successfully processed`, payload.id)
-
+        channel.ack(msg)
     } catch (error) {
+        channel.ack(msg)
         console.error(' [x] Error: %s', error.message)
     }
 }
