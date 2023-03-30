@@ -556,7 +556,7 @@ class AccurateHelper {
                         order._id
                     )
                 }
-                await orderModel.update(
+                await receiptModel.update(
                     { id: order.id },
                     {
                         $inc: { attempts: 1 },
