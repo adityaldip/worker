@@ -4,14 +4,12 @@ const GeneralHelper = require('../../../helpers/general.helper')
 const OrderModel = require('../../../models/order.model')
 const SellerModel = require('../../../models/seller.model')
 const ReceiptModel = require('../../../models/receipt.model')
-const SettingsModel = require('../../../models/settings.model')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
 const orderModel = new OrderModel()
 const sellerModel = new SellerModel()
 const receiptModel = new ReceiptModel()
-const settingsModel = new SettingsModel()
 
 /**
  * Process a new order from accurate middleware to Accurate
