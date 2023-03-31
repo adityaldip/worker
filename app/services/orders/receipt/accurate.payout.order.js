@@ -57,6 +57,7 @@ const PayoutOrder = async (id, channel, msg) => {
         mapped.service = seller.service
         mapped.amount_receive = receipt.amount_receive
         mapped.invNumber = receipt.invNumber
+        mapped.attempts = receipt.attempts ? receipt.attempts : 0
         await accurate.storePayout(mapped)
         console.log(' [✔] Order %s successfully processed',receipt.order_id.toString())
         channel.ack(msg)
