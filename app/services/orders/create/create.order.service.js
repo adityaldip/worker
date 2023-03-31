@@ -11,15 +11,7 @@ const insertOrder = async (payload, channel, msg) => {
         if (order) {
             console.log('Order already exist')
         } else {
-            const mongoRes = await orderModel.insert(payload)
-            const setting = await settingsModel.findBy({ profile_id: payload.profile_id })
-            const dennyStatus = ['Pending Payment', 'Cancelled']
-            if (!setting && !dennyStatus.includes(payload.status)) {
-                await helper.pubQueue(
-                    'accurate_sales_order',
-                    mongoRes.insertedId
-                )
-            }
+           await orderModel.insert(payload)
         }
         console.log(` [✔] Order  ${payload.id} successfully processed`, payload.id)
         channel.ack(msg)

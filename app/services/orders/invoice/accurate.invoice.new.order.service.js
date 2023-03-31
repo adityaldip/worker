@@ -22,8 +22,8 @@ const InvoiceOrder = async (id, channel, msg) => {
             _id: ObjectId.createFromHexString(id),
         })
         
-        const setting = await settingsModel.findBy({ profile_id: order.profile_id })
-        if (!setting) throw new Error(`Seller ${order.profile_id} not user testing`); 
+        // const setting = await settingsModel.findBy({ profile_id: order.profile_id })
+        // // if (!setting) throw new Error(`Seller ${order.profile_id} not user testing`); 
         
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)

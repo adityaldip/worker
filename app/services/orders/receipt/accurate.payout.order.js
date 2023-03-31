@@ -27,8 +27,8 @@ const PayoutOrder = async (id, channel, msg) => {
         const seller = await sellerModel.findBy({ seller_id: receipt.profile_id })
         accurate.setAccount(seller)
         
-        const setting = await settingsModel.findBy({ profile_id: receipt.profile_id })
-        if (!setting) throw new Error(`Seller ${receipt.profile_id} not user testing`);  
+        // const setting = await settingsModel.findBy({ profile_id: receipt.profile_id })
+        // if (!setting) throw new Error(`Seller ${receipt.profile_id} not user testing`);  
 
 
         for (const orderId of receipt.order_id) {
