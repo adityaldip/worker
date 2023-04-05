@@ -544,6 +544,10 @@ class AccurateHelper {
                     { _id: ObjectID(order._id) },
                     { $set: { receipt: body } }
                 )
+                await orderModel.update(
+                    { id: order.order[0] },
+                    { $set: { synced: true, receipt: body } }
+                )
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -557,7 +561,7 @@ class AccurateHelper {
                     )
                 }
                 await receiptModel.update(
-                    { id: order.id },
+                    { _id: order._id },
                     {
                         $inc: { attempts: 1 },
                         $set: { last_error: response, synced: false },
