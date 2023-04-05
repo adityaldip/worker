@@ -12,44 +12,56 @@ const payoutMapping = (order) => {
     order.invoice_mapped.forEach((i, e) => {
         const detailDiscount = [];
         if(order.platform_rebate){
-            detailDiscount.push({
-                accountNo: order.platform_rebate.no, // required
-                amount: Number(i.platform_rebate) * -1, // reqired
-            })
+            if(order.platform_rebate.no != ""){
+                detailDiscount.push({
+                    accountNo: order.platform_rebate.no, // required
+                    amount: Number(i.platform_rebate) * -1, // reqired
+                })
+            }
         }
         if(order.voucher_seller){
-            detailDiscount.push({
-                accountNo: order.voucher_seller.no, // required
-                amount: i.voucher_seller, // reqired
-            })
+            if(order.voucher_seller.no != ""){
+                detailDiscount.push({
+                    accountNo: order.voucher_seller.no, // required
+                    amount: i.voucher_seller, // reqired
+                })
+            }
         }
         if(order.fulfillment){
-            detailDiscount.push({
-                accountNo: order.fulfillment.no, // required
-                amount: i.fulfillment_fee, // reqired
-            })
+            if(order.fulfillment.no != ""){
+                detailDiscount.push({
+                    accountNo: order.fulfillment.no, // required
+                    amount: i.fulfillment_fee, // reqired
+                })
+            }
         }
         if(order.service){
-            detailDiscount.push({
-                accountNo: order.service.no, // required
-                amount: i.service_fee, // reqired
-            })
+            if(order.service.no != ""){
+                detailDiscount.push({
+                    accountNo: order.service.no, // required
+                    amount: i.service_fee, // reqired
+                })
+            }
         }
         if(order.shipping_difference){
-            detailDiscount.push({
-                accountNo: order.shipping_difference.no, // required
-                amount: i.cashless_shipping_difference, // reqired
-            })
+            if(order.shipping_difference.no != ""){
+                detailDiscount.push({
+                    accountNo: order.shipping_difference.no, // required
+                    amount: i.cashless_shipping_difference, // reqired
+                })
+            }
         }
         if(order.shipping_fee){
-            detailDiscount.push({
-                accountId: order.shipping_fee.id, // required
-                amount: Number(i.shipping_price )* -1, // reqired
-            })
+            if(order.shipping_fee.no != ""){
+                detailDiscount.push({
+                    accountId: order.shipping_fee.id, // required
+                    amount: Number(i.shipping_price )* -1, // reqired
+                })
+            }
         }
         const mapinv = {
             invoiceNo: order.invNumber[e], // required
-            paymentAmount: i.balance_due, // required
+            paymentAmount: i.total, // required
             detailDiscount: detailDiscount
         }
         return mappinv[e] = mapinv

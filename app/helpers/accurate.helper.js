@@ -533,7 +533,7 @@ class AccurateHelper {
                 profile_id: this.account.profile_id,
                 params: body,
                 log: response,
-                order_id: order.id,
+                order_id: order.order[0],
             })
 
             if (response.s) {
@@ -556,7 +556,7 @@ class AccurateHelper {
                         order._id
                     )
                 }
-                await orderModel.update(
+                await receiptModel.update(
                     { id: order.id },
                     {
                         $inc: { attempts: 1 },
@@ -967,7 +967,7 @@ class AccurateHelper {
                 type: 'ORDER',
                 activity: 'delete an invoice',
                 profile_id: this.account.profile_id,
-                params: "",
+                params: endpoint,
                 log: response,
                 order_id: order.id,
             })
