@@ -13,6 +13,7 @@ const accurateFetchItemStock = require('./app/services/items/sync/accurate.fetch
 const forstokSyncQuantity = require('./app/services/items/sync/forstok.sync.quantity.service')
 const getItemForstok = require('./app/services/itemsForstok/accurate.item.get.service')
 const insertOrder = require('./app/services/orders/create/create.order.service')
+const deleteInvoice = require('./app/services/orders/invoice/accurate.invoice.delete.service')
 
 require('dotenv').config()
 
@@ -76,6 +77,9 @@ async function receiveMessage(channel, queue) {
 
             if (queue == 'accurate_reset_order') {
                 accurateResetOrder(id, channel, msg)
+            }
+            if (queue == 'accurate_delete_invoice') {
+                deleteInvoice(id, channel, msg)
             }
         },
         {
