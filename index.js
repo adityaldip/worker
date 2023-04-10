@@ -115,7 +115,5 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
         const queue = process.env.QUEUE_NAME || 'accurate_sales_order'
         receiveMessage(channel, queue)
         receiveMessage(channel, "accurate_reset_order")
-        receiveMessage(channel, "accurate_reset_receipt")
-        receiveMessage(channel, "accurate_reset_invoice")
     })
 })
