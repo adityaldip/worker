@@ -14,6 +14,8 @@ const forstokSyncQuantity = require('./app/services/items/sync/forstok.sync.quan
 const getItemForstok = require('./app/services/itemsForstok/accurate.item.get.service')
 const insertOrder = require('./app/services/orders/create/create.order.service')
 const deleteInvoice = require('./app/services/orders/invoice/accurate.invoice.delete.service')
+const resetPayout = require('./app/services/orders/reset/delete.payout.order')
+const resetInvoice = require('./app/services/orders/reset/delete.invoice.order')
 
 require('dotenv').config()
 
@@ -81,6 +83,12 @@ async function receiveMessage(channel, queue) {
             if (queue == 'accurate_delete_invoice') {
                 deleteInvoice(id, channel, msg)
             }
+            if (queue == 'accurate_reset_invoice') {
+                resetInvoice(id, channel, msg)
+            }
+            if (queue == 'accurate_reset_receipt') {
+                resetPayout(id, channel, msg)
+            }
         },
         {
             noAck: false,
@@ -107,5 +115,7 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
         const queue = process.env.QUEUE_NAME || 'accurate_sales_order'
         receiveMessage(channel, queue)
         receiveMessage(channel, "accurate_reset_order")
+        receiveMessage(channel, "accurate_reset_receipt")
+        receiveMessage(channel, "accurate_reset_invoice")
     })
 })
