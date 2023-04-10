@@ -19,4 +19,6 @@ docker service update  --image $image --force accurate-middleware_items_quantity
 docker service update  --image $image --force accurate-middleware_create_order --with-registry-auth
 docker service update  --image $image --force accurate-middleware_create_invoice --with-registry-auth
 docker service update  --image $image --force accurate-middleware_create_payout --with-registry-auth
+docker service update  --image $image --force accurate-middleware_reset_invoice --with-registry-auth
+docker service update  --image $image --force accurate-middleware_reset_payout --with-registry-auth
 docker image prune -f
