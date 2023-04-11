@@ -47,7 +47,7 @@ const orderMock = {
             price: 100000,
             sale_price: null,
             total_price: 100000,
-            voucher_amount: 100,
+            voucher_amount: 0,
             voucher_code: null,
             voucher_platform: 0,
             voucher_seller: 0,
@@ -319,7 +319,7 @@ describe('Order mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -361,7 +361,7 @@ describe('Order mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -392,7 +392,7 @@ describe('Order mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -430,7 +430,7 @@ describe('Order mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -487,7 +487,7 @@ describe('Invoice mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -517,7 +517,7 @@ describe('Invoice mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },
@@ -554,7 +554,7 @@ describe('Invoice mapping testing', () => {
                     detailName:
                         'celana joger xl5 keren pake banget hehe 2 Variant Item',
                     detailNotes: '',
-                    itemCashDiscount: 100,
+                    // itemCashDiscount: 100,
                     quantity: 1,
                     useTax1: false,
                 },

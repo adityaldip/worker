@@ -20,8 +20,8 @@ const orderMapping = (order) => {
             detailItems = detailItems.map((obj) => {
                 if (obj.itemNo == item.sku) {
                     obj.quantity++
-                    obj.itemCashDiscount +=
-                        (item.discount_amount || 0) + item.voucher_amount
+                    // obj.itemCashDiscount +=
+                    //     (item.discount_amount || 0) + item.voucher_amount
                 }
                 return obj
             })
@@ -32,11 +32,11 @@ const orderMapping = (order) => {
 
         const detailItem = {
             itemNo: item.sku, // required; item_lines.id
-            unitPrice: item.sale_price || item.price || item.total_price || 0, // required; item_lines.total_price
+            unitPrice: item.sale_price || item.total_price || item.price || 0, // required; item_lines.total_price
             detailName: (`${item.name} ${item.variant_name || ''}`).substring(0, 230), // item_lines.variant_name
             detailNotes: item.note || '', //item_lines.note
-            itemCashDiscount:
-                (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
+            // itemCashDiscount:
+            //     (item.discount_amount || 0) + item.voucher_amount || 0, // item_lines.voucher_amount
             quantity: 1,
             useTax1: order.taxable,
         }
