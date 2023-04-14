@@ -302,10 +302,22 @@ class AccurateHelper {
                                 }
                             ]
                             await this.storeItemBulk(mappeditem)
-                            await helper.pubQueue('accurate_invoice_sales', order._id)                          
+                            if (order.attempts < maxAttempts) {
+                                await this.delayedQueue(
+                                    order.attempts,
+                                    'accurate_invoice_sales',
+                                    order._id
+                                )
+                            }
                         }else{
                             await this.storeItemBulk(newMissingitem)
-                            await helper.pubQueue('accurate_invoice_sales', order._id)
+                            if (order.attempts < maxAttempts) {
+                                await this.delayedQueue(
+                                    order.attempts,
+                                    'accurate_invoice_sales',
+                                    order._id
+                                )
+                            }
                         }
 
                     } catch (error) {
