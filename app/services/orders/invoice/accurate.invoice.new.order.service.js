@@ -19,7 +19,7 @@ const InvoiceOrder = async (id, channel, msg) => {
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
         })
-        
+
         // const setting = await settingsModel.findBy({ profile_id: order.profile_id })
         // // if (!setting) throw new Error(`Seller ${order.profile_id} not user testing`); 
         
@@ -38,6 +38,20 @@ const InvoiceOrder = async (id, channel, msg) => {
         order.taxable = seller.tax ? Boolean(seller.tax.id) : false
         order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
         order.new_rule = true
+        for (const items of order.item_lines){
+            if(items.sku == ""){
+                await helper.accurateLog({
+                    created_at: new Date(),
+                    type: 'ORDER',
+                    activity: 'create an order invoice new',
+                    profile_id: order.profile_id,
+                    params: items,
+                    log: "SKU can not be empty",
+                    order_id: order.id,
+                })
+                throw new Error(`SKU can not be empty`);  
+            }
+        }
 
         await accurate.storeInvoiceNew(order)
         console.log(' [✔] Order %s successfully processed', order.id)
