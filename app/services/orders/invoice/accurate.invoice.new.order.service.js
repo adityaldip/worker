@@ -49,7 +49,7 @@ const InvoiceOrder = async (id, channel, msg) => {
                     log: "SKU can not be empty",
                     order_id: order.id,
                 })
-                 throw new Error(`SKU can not be empty`);  
+                throw new Error(`SKU can not be empty`);  
             }
         }
 
