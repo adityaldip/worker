@@ -60,6 +60,7 @@ class ItemForstokModel {
         const query = `SELECT items.id,
                             item_variants.sku,
                             items.name,
+                            ic.name                                      as listing,
                             item_variants.id                             as variant_id,
                             ws.quantity                                  as available_qty, 
                             IFNULL(item_variants.price, 0)               as price,
