@@ -8,8 +8,10 @@ const CustomerModel = require('../models/customer.model')
 const InvoiceModel = require('../models/invoice.model')
 const { ObjectID } = require('bson')
 const ReceiptModel = require('../models/receipt.model')
+const DelayedModel = require('../models/delayed.model')
 
 const helper = new GeneralHelper()
+const delayed = new DelayedModel()
 const request = new RequestHelper()
 const orderModel = new OrderModel()
 const sellerModel = new SellerModel()
@@ -90,11 +92,32 @@ class AccurateHelper {
                     }
                 )
                 if (SI_STATUS.includes(order.status) && !order.invoice) {
-                    await helper.pubQueue('accurate_sales_invoice', order._id)
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_invoice",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
+                    // await helper.pubQueue('accurate_sales_invoice', order._id)
                 } else if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
-                    await helper.pubQueue('accurate_sales_paid', order._id)
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_paid",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
+                    // await helper.pubQueue('accurate_sales_paid', order._id)
                 } else if (order.status === 'Cancelled') {
-                    await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    // await helper.pubQueue('accurate_sales_cancelled', order._id)
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_cancelled",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
             } else {
                 const message =
@@ -102,11 +125,32 @@ class AccurateHelper {
                     response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_ADA)) {
                     if (SI_STATUS.includes(order.status) && !order.invoice) {
-                        await helper.pubQueue('accurate_sales_invoice', order._id)
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue:"accurate_sales_invoice",
+                            payload:order._id,
+                            in_progress:0,
+                            created_at:new Date()
+                        })
+                        // await helper.pubQueue('accurate_sales_invoice', order._id)
                     } else if (receiptStatus.includes(order.status) && order.invoice && !order.receipt) {
-                        await helper.pubQueue('accurate_sales_paid', order._id)
+                        // await helper.pubQueue('accurate_sales_paid', order._id)
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue:"accurate_sales_paid",
+                            payload:order._id,
+                            in_progress:0,
+                            created_at:new Date()
+                        })
                     } else if (order.status === 'Cancelled') {
-                        await helper.pubQueue('accurate_sales_cancelled', order._id)
+                        // await helper.pubQueue('accurate_sales_cancelled', order._id)
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue:"accurate_sales_cancelled",
+                            payload:order._id,
+                            in_progress:0,
+                            created_at:new Date()
+                        })
                     } else {
                         await orderModel.update(
                             { id: order.id },
@@ -139,11 +183,18 @@ class AccurateHelper {
                         console.log(error.stack)
                     }
                     if (order.attempts < maxAttempts) {
-                        await this.delayedQueue(
-                            order.attempts,
-                            'accurate_sales_order',
-                            order._id
-                        )
+                        // await this.delayedQueue(
+                        //     order.attempts,
+                        //     'accurate_sales_order',
+                        //     order._id
+                        // )
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue:"accurate_sales_order",
+                            payload:order._id,
+                            in_progress:0,
+                            created_at:new Date()
+                        })
                     }
                     await orderModel.update(
                         { id: order.id },
@@ -174,11 +225,18 @@ class AccurateHelper {
 
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_order',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_order',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_order",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await orderModel.update(
                     { id: order.id },
@@ -303,20 +361,34 @@ class AccurateHelper {
                             ]
                             await this.storeItemBulk(mappeditem)
                             if (order.attempts < maxAttempts) {
-                                await this.delayedQueue(
-                                    order.attempts,
-                                    'accurate_invoice_sales',
-                                    order._id
-                                )
+                                // await this.delayedQueue(
+                                //     order.attempts,
+                                //     'accurate_invoice_sales',
+                                //     order._id
+                                // )
+                                await delayed.insert({
+                                    profile_id: order.profile_id,
+                                    queue:"accurate_invoice_sales",
+                                    payload:order._id,
+                                    in_progress:0,
+                                    created_at:new Date()
+                                })
                             }
                         }else{
                             await this.storeItemBulk(newMissingitem)
                             if (order.attempts < maxAttempts) {
-                                await this.delayedQueue(
-                                    order.attempts,
-                                    'accurate_invoice_sales',
-                                    order._id
-                                )
+                                // await this.delayedQueue(
+                                //     order.attempts,
+                                //     'accurate_invoice_sales',
+                                //     order._id
+                                // )
+                                await delayed.insert({
+                                    profile_id: order.profile_id,
+                                    queue:"accurate_invoice_sales",
+                                    payload:order._id,
+                                    in_progress:0,
+                                    created_at:new Date()
+                                })
                             }
                         }
 
@@ -339,11 +411,18 @@ class AccurateHelper {
                 }
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_invoice_sales',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_invoice_sales',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_invoice_sales",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await orderModel.update(
                     { id: order.id },
@@ -431,11 +510,18 @@ class AccurateHelper {
                         console.log(error.stack)
                     }
                     if (order.attempts < maxAttempts) {
-                        await this.delayedQueue(
-                            order.attempts,
-                            'accurate_sales_invoice',
-                            order._id
-                        )
+                        // await this.delayedQueue(
+                        //     order.attempts,
+                        //     'accurate_sales_invoice',
+                        //     order._id
+                        // )
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue:"accurate_sales_invoice",
+                            payload:order._id,
+                            in_progress:0,
+                            created_at:new Date()
+                        })
                     }
                     await orderModel.update(
                         { id: order.id },
@@ -449,11 +535,18 @@ class AccurateHelper {
     
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_invoice',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_invoice',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_invoice",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await orderModel.update(
                     { id: order.id },
@@ -512,11 +605,18 @@ class AccurateHelper {
                     response
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_paid',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_paid',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_paid",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await orderModel.update(
                     { id: order.id },
@@ -566,11 +666,18 @@ class AccurateHelper {
                     response
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_payout',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_payout',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_payout",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await receiptModel.update(
                     { _id: order._id },
@@ -778,12 +885,19 @@ class AccurateHelper {
             if (!itemJob.attempt) itemJob.attempt = 0
             itemJob.attempt = parseInt(itemJob.attempt) + 1
             if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
-                await this.delayedQueue(
-                    itemJob.attempt,
-                    'accurate_items_fetch',
-                    itemJob,
-                    true
-                )
+                // await this.delayedQueue(
+                //     itemJob.attempt,
+                //     'accurate_items_fetch',
+                //     itemJob,
+                //     true
+                // )
+                await delayed.insert({
+                    profile_id: itemSync.profile_id,
+                    queue:"accurate_items_fetch",
+                    payload:itemJob,
+                    in_progress:0,
+                    created_at:new Date()
+                })
             } else {
                 // SKU failed to fetch
                 await itemSyncModel.update(
@@ -891,11 +1005,18 @@ class AccurateHelper {
 
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
-                    await this.delayedQueue(
-                        order.attempts,
-                        'accurate_sales_cancelled',
-                        order._id
-                    )
+                    // await this.delayedQueue(
+                    //     order.attempts,
+                    //     'accurate_sales_cancelled',
+                    //     order._id
+                    // )
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue:"accurate_sales_cancelled",
+                        payload:order._id,
+                        in_progress:0,
+                        created_at:new Date()
+                    })
                 }
                 await orderModel.update(
                     { id: order.id },
