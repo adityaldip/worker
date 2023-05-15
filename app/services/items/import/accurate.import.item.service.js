@@ -34,7 +34,7 @@ const importItem = async (id, channel, msg) => {
                 console.log(res.length)
                 if (res.length > 0) {
                     await delayed.insert({
-                        profile_id: res.profile_id,
+                        profile_id: profileId,
                         queue:"accurate_store_items",
                         payload:res,
                         in_progress:0,
