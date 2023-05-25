@@ -22,8 +22,6 @@ const receiptModel = new ReceiptModel()
 const maxAttempts = process.env.MAX_ATTEMPT || 5
 const queue = process.env.DELAYED_QUEUE || 'middleware-delayed-jobs'
 
-const SI_STATUS = ['Ready to Ship', 'Shipped', 'Delivered', 'Completed']
-const receiptStatus = ['Delivered', 'Completed']
 class AccurateHelper {
     constructor(account = null) {
         if (account) this.setAccount(account)
