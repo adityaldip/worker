@@ -1,9 +1,6 @@
 const amqp = require('amqplib/callback_api')
 
-const accurateOpenOrder = require('./app/services/orders/open/accurate.open.order.service')
-const accurateShippedOrder = require('./app/services/orders/invoice/accurate.invoice.order.service')
 const accurateInvoiceOrder = require('./app/services/orders/invoice/accurate.invoice.new.order.service')
-const accurateDeliveredOrder = require('./app/services/orders/receipt/accurate.receipt.order')
 const accuratePayoutOrder = require('./app/services/orders/receipt/accurate.payout.order')
 const accurateResetOrder = require('./app/services/orders/reset/accurate.reset.order')
 const accurateFilterItem = require('./app/services/items/filters/accurate.filter.item.service')
@@ -31,9 +28,6 @@ async function receiveMessage(channel, queue) {
             console.log(' [+] Received message on queue %s', queue)
             let id = parseJson(msg.content.toString())
             if (!id) id = msg.content.toString().replace(/[^a-zA-Z0-9]/g, '')
-            if (queue == 'accurate_sales_order') {
-                accurateOpenOrder(id, channel, msg)
-            }
             if (queue == 'accurate_insert_order') {
                 insertOrder(id, channel, msg)
             }
@@ -42,16 +36,8 @@ async function receiveMessage(channel, queue) {
                 accurateCancelledOrder(id, channel, msg)
             }
 
-            if (queue == 'accurate_sales_invoice') {
-                accurateShippedOrder(id, channel, msg)
-            }
-
             if (queue == 'accurate_invoice_sales') {
                 accurateInvoiceOrder(id, channel, msg)
-            }
-
-            if (queue == 'accurate_sales_paid') {
-                accurateDeliveredOrder(id, channel, msg)
             }
 
             if (queue == 'accurate_sales_payout') {
@@ -76,16 +62,19 @@ async function receiveMessage(channel, queue) {
             if (queue == 'accurate_quantity_sync') {
                 forstokSyncQuantity(id, channel, msg)
             }
-
+            
             if (queue == 'accurate_reset_order') {
                 accurateResetOrder(id, channel, msg)
             }
+
             if (queue == 'accurate_delete_invoice') {
                 deleteInvoice(id, channel, msg)
             }
+
             if (queue == 'accurate_reset_invoice') {
                 resetInvoice(id, channel, msg)
             }
+            
             if (queue == 'accurate_reset_receipt') {
                 resetPayout(id, channel, msg)
             }
