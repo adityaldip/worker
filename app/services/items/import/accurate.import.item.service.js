@@ -38,6 +38,7 @@ const importItem = async (id, channel, msg) => {
                         queue:"accurate_store_items",
                         payload:res,
                         in_progress:0,
+                        priority:3,
                         created_at:new Date()
                     })
                     // await accurate.storeItemBulk(res)

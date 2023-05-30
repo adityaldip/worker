@@ -97,6 +97,7 @@ class AccurateHelper {
                         queue:"accurate_sales_invoice",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                     // await helper.pubQueue('accurate_sales_invoice', order._id)
@@ -106,6 +107,7 @@ class AccurateHelper {
                         queue:"accurate_sales_paid",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                     // await helper.pubQueue('accurate_sales_paid', order._id)
@@ -116,6 +118,7 @@ class AccurateHelper {
                         queue:"accurate_sales_cancelled",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                 }
@@ -130,6 +133,7 @@ class AccurateHelper {
                             queue:"accurate_sales_invoice",
                             payload:order._id,
                             in_progress:0,
+                            priority:1,
                             created_at:new Date()
                         })
                         // await helper.pubQueue('accurate_sales_invoice', order._id)
@@ -140,6 +144,7 @@ class AccurateHelper {
                             queue:"accurate_sales_paid",
                             payload:order._id,
                             in_progress:0,
+                            priority:1,
                             created_at:new Date()
                         })
                     } else if (order.status === 'Cancelled') {
@@ -149,6 +154,7 @@ class AccurateHelper {
                             queue:"accurate_sales_cancelled",
                             payload:order._id,
                             in_progress:0,
+                            priority:1,
                             created_at:new Date()
                         })
                     } else {
@@ -193,6 +199,7 @@ class AccurateHelper {
                             queue:"accurate_sales_order",
                             payload:order._id,
                             in_progress:0,
+                            priority:1,
                             created_at:new Date()
                         })
                     }
@@ -235,6 +242,7 @@ class AccurateHelper {
                         queue:"accurate_sales_order",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                 }
@@ -357,6 +365,7 @@ class AccurateHelper {
                                 queue:"accurate_store_items",
                                 payload:mappeditem,
                                 in_progress:0,
+                                priority:3,
                                 created_at:new Date()
                             })
                             // await this.storeItemBulk(mappeditem)
@@ -367,6 +376,7 @@ class AccurateHelper {
                                     queue:"accurate_invoice_sales",
                                     payload:order._id,
                                     in_progress:0,
+                                    priority:1,
                                     created_at:new Date()
                                 })
                             }
@@ -377,6 +387,7 @@ class AccurateHelper {
                                 queue:"accurate_store_items",
                                 payload:newMissingitem,
                                 in_progress:0,
+                                priority:3,
                                 created_at:new Date()
                             })
                             // await this.storeItemBulk(newMissingitem)
@@ -387,6 +398,7 @@ class AccurateHelper {
                                     queue:"accurate_invoice_sales",
                                     payload:order._id,
                                     in_progress:0,
+                                    priority:1,
                                     created_at:new Date()
                                 })
                             }
@@ -411,6 +423,7 @@ class AccurateHelper {
                         queue:"accurate_invoice_sales",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,                        
                         created_at:new Date()
                     })
                 }
@@ -510,6 +523,7 @@ class AccurateHelper {
                             queue:"accurate_sales_invoice",
                             payload:order._id,
                             in_progress:0,
+                            priority:1,
                             created_at:new Date()
                         })
                     }
@@ -535,6 +549,7 @@ class AccurateHelper {
                         queue:"accurate_sales_invoice",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                 }
@@ -605,6 +620,7 @@ class AccurateHelper {
                         queue:"accurate_sales_paid",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                 }
@@ -661,6 +677,7 @@ class AccurateHelper {
                         queue:"accurate_sales_payout",
                         payload:order._id,
                         in_progress:0,
+                        priority:1,
                         created_at:new Date()
                     })
                 }
@@ -881,6 +898,7 @@ class AccurateHelper {
                     queue:"accurate_items_fetch",
                     payload:itemJob,
                     in_progress:0,
+                    priority:2,
                     created_at:new Date()
                 })
             } else {
@@ -1000,6 +1018,7 @@ class AccurateHelper {
                         queue:"accurate_sales_cancelled",
                         payload:order._id,
                         in_progress:0,
+                        priority:0,
                         created_at:new Date()
                     })
                 }

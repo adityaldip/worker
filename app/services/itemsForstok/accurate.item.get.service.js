@@ -55,7 +55,14 @@ const getItemForstok = async (id, channel, msg) => {
                                     sku: element.no,
                                     warehouseName: wh.accurate_warehouse.name
                                 };
-                                await helper.pubQueue('accurate_items_fetch', dataDelayed)
+                                await delayed.insert({
+                                    profile_id: profileId,
+                                    queue:"accurate_items_fetch",
+                                    payload:dataDelayed,
+                                    in_progress:0,
+                                    created_at:new Date()
+                                })
+                                // await helper.pubQueue('accurate_items_fetch', dataDelayed)
                             }, e * 300);
                         });
                     }
