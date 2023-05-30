@@ -31,7 +31,6 @@ const importItem = async (id, channel, msg) => {
             .limit(100)
             .toArray(async (err, res) => {
                 if (err) throw new Error(err.message)
-                console.log(res.length)
                 if (res.length > 0) {
                     await delayed.insert({
                         profile_id: profileId,
