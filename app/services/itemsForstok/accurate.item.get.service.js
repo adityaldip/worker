@@ -3,12 +3,14 @@ const {
     ItemModel
 } = require('../../models/item.model')
 const EventModel = require('../../models/event.model')
+const DelayedModel = require('../../models/delayed.model')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
 const eventModel = new EventModel()
 const SellerModel = require('../../models/seller.model')
 const sellerModel = new SellerModel()
+const delayed = new DelayedModel()
 
 /**
  * Process a new order from accurate middleware to Accurate
