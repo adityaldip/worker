@@ -1,51 +1,51 @@
 version: 0.1.6
-ecr: order
+ecr: accurate-worker
 services:
-- stack: accurate-worker
+  - stack: accurate-worker
     name: cancelled
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: create_invoice
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: create_order
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: create_payout
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: delete-invoice
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: items-fetch
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: items-get
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: items-import
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: items-quantity-sync
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: items-query
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: reset-invoice
     cluster: polling-azure
     arch: x86
-- stack: accurate-worker
+  - stack: accurate-worker
     name: reset-payout
     cluster: polling-azure
     arch: x86
