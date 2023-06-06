@@ -50,33 +50,88 @@ pipeline{
     }
 
     stage("build"){
-      agent { label "slave" }
-      when {
-        branch 'master'
+      failFast true
+      parallel {
+        stage('x86') {
+          agent { label 'slave' }
+
+          when {
+            branch 'master'
+          }
+
+          environment {
+            AWS_KEY = credentials('AWS_KEY')
+            AWS_SECRET = credentials('AWS_SECRET')
+            AWS_REGION = credentials('AWS_REGION')
+          }
+
+          steps {
+            withCredentials([file(credentialsId: 'GOOGLE_CLOUD_KEY', variable: 'google_cloud_key')]) {
+              sh 'sudo cp /$google_cloud_key config/google-cloud-key.json'
+              sh 'forstok build --arch x86'
+            }
+          }
+        }
       }
-      environment {
-          AWS_KEY = credentials('AWS_KEY')
-          AWS_SECRET = credentials('AWS_SECRET')
-          AWS_REGION = credentials('AWS_REGION')
-      }
-      steps {
-        sh 'bin/build'
-      }
+
+      // agent { label "slave" }
+      // when {
+      //   branch 'master'
+      // }
+      // environment {
+      //     AWS_KEY = credentials('AWS_KEY')
+      //     AWS_SECRET = credentials('AWS_SECRET')
+      //     AWS_REGION = credentials('AWS_REGION')
+      // }
+      // steps {
+      //   sh 'bin/build'
+      // }
     }
 
     stage("deploy"){
-      agent { label "master" }
-      when {
-        branch 'master'
+      failFast true
+      parallel{
+        stage('polling-azure'){
+          agent { label 'master' }
+
+          when {
+            branch 'master'
+          }
+          environment {
+            AWS_KEY = credentials('AWS_KEY')
+            AWS_SECRET = credentials('AWS_SECRET')
+            AWS_REGION = credentials('AWS_REGION')
+          }
+          steps {
+            withCredentials([file(credentialsId: 'GOOGLE_CLOUD_KEY', variable: 'google_cloud_key')]) {
+              sh 'sudo cp /$google_cloud_key config/google-cloud-key.json'
+              sh 'forstok deploy --cluster polling-azure'
+            }
+          }
+          post {
+            failure {
+              slackSend message: "${env.JOB_NAME} fails, info: ${env.BUILD_URL}",
+                        color: 'danger', channel: '#order-army'
+            }
+            aborted {
+              slackSend message: "${env.JOB_NAME} aborted, info: ${env.BUILD_URL}",
+                        color: '#949393', channel: '#order-army'
+            }
+          }
+        }
       }
-      environment {
-          AWS_KEY = credentials('AWS_KEY')
-          AWS_SECRET = credentials('AWS_SECRET')
-          AWS_REGION = credentials('AWS_REGION')
-      }
-      steps {
-        sh 'bin/deploy'
-      }
+      // agent { label "master" }
+      // when {
+      //   branch 'master'
+      // }
+      // environment {
+      //     AWS_KEY = credentials('AWS_KEY')
+      //     AWS_SECRET = credentials('AWS_SECRET')
+      //     AWS_REGION = credentials('AWS_REGION')
+      // }
+      // steps {
+      //   sh 'bin/deploy'
+      // }
     }
   }
 }
