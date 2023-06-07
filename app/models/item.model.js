@@ -1,4 +1,5 @@
 const MongoContext = require('../../config/mongodb')
+const NewMongoContext = require('../../config/newmongodb')
 const Mysql = require('../../config/mysql')
 
 class ItemModel {
@@ -84,6 +85,77 @@ class ItemForstokModel {
         return rows
     }
 }
+class MasterDataModel {
+    async find(profileId, skus) {
+            function processArray() {
+                return new Promise(async (resolve, reject) => {
+                    try {
+                        const products = [];
+                        const variantID = [];
+                        const db = await NewMongoContext.getInstance()
+                        const product = await db.collection('master_products').aggregate([
+                            { $match:{profile_id:profileId, 'variants.sku' : {$nin: skus}}},
+                            {
+                                $lookup: {
+                                    from: 'listings',
+                                    localField: 'product_id',
+                                    foreignField: 'master_product_id',
+                                    as: 'listings',
+                                    pipeline: [
+                                        { $match: {
+                                        'master_product_id' :{$ne: null,$exists: true},
+                                        } }
+                                    ]
+                                }
+                            }
+                        ])
+                        await product.forEach(e => {
+                                const variants = e.variants
+                                if (variants != null){
+                                    variants.forEach(v => {
+                                        let addName = ""
+                                        if(v.options != null){
+                                            addName = v.options.map(item => item.option).join(' ');
+                                        }
+                                        variantID.push(v.id)
+                                        const prod = {
+                                            id: e.product_id,
+                                            sku: v.sku,
+                                            name :`${e.name} ${addName}`,
+                                            listing: e.listings.length != 0 ? e.listings[0].name : null,
+                                            variant_id: v.id,
+                                            // available_qty: 0,
+                                            price: v.regular_price,
+                                            cost_price: v.cost_price,
+                                            barcode: v.barcode,
+                                            total_price:v.regular_price,
+                                            // warehouse_id:0,
+                                            category:e.category
+                                        };
+                                        products.push(prod)
+                                    })
+                                }
+                            });
+                            const query = `SELECT warehouse_id, quantity, item_variant_id FROM warehouse_spaces where item_variant_id IN (?)`
+                            const [rows] = await Mysql.promise().query(query, [variantID])
+
+                            const searchData = products.map(p => {
+                                const foundObj = rows.find(r => r.item_variant_id === p.variant_id);
+                                return foundObj ? { ...p, warehouse_id: foundObj.warehouse_id, available_qty: foundObj.quantity } : p;
+                            });
+                            
+                        resolve(searchData);
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+              }
+              return processArray()
+                .then(result => {
+                  return result
+            })
+    }
+}
 
 class ItemSyncModel {
     constructor(context) {
@@ -152,4 +224,4 @@ class ItemSyncBulkModel {
     }
 }
 
-module.exports = { ItemModel, ItemForstokModel, ItemSyncModel, ItemSyncBulkModel }
+module.exports = { ItemModel, ItemForstokModel, ItemSyncModel, ItemSyncBulkModel, MasterDataModel }
