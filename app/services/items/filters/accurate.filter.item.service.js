@@ -1,11 +1,10 @@
 const GeneralHelper = require('../../../helpers/general.helper')
 const { accurateMapping } = require('../../../helpers/mapping.helper')
-const { ItemModel, ItemForstokModel, MasterDataModel } = require('../../../models/item.model')
+const { ItemModel, MasterDataModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
-const itemForstok = new ItemForstokModel()
 const itemsModel = new MasterDataModel()
 const sellerModel = new SellerModel()
 

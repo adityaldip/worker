@@ -110,24 +110,24 @@ class MasterDataModel {
             const variants = e.variants
             if (variants != null){
                 variants.forEach(v => {
-                let addName = ""
-                if(v.options != null){
-                    addName = v.options.map(item => item.option).join(' ');
-                }
-                variantID.push(v.id)
-                const prod = {
-                    id: e.product_id,
-                    sku: v.sku,
-                    name :`${e.name} ${addName}`,
-                    listing: e.listings.length != 0 ? e.listings[0].name : null,
-                    variant_id: v.id,
-                    price: v.regular_price,
-                    cost_price: v.cost_price,
-                    barcode: v.barcode,
-                    total_price:v.regular_price,
-                    category:e.category
-                };
-                products.push(prod)
+                    let addName = ""
+                    if(v.options != null){
+                        addName = v.options.map(item => item.option).join(' ');
+                    }
+                    variantID.push(v.id)
+                    const prod = {
+                        id: e.product_id,
+                        sku: v.sku,
+                        name :`${e.name} ${addName}`,
+                        listing: e.listings.length != 0 ? e.listings[0].name : null,
+                        variant_id: v.id,
+                        price: v.regular_price,
+                        cost_price: v.cost_price,
+                        barcode: v.barcode,
+                        total_price:v.regular_price,
+                        category:e.category
+                    };
+                    products.push(prod)
                 })
             }
         });
