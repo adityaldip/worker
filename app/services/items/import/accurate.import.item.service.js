@@ -2,11 +2,13 @@ const AccurateHelper = require('../../../helpers/accurate.helper')
 const GeneralHelper = require('../../../helpers/general.helper')
 const { ItemModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
+const DelayedModel = require('../../../models/delayed.model')
 
 const helper = new GeneralHelper()
 const accurate = new AccurateHelper()
 const itemModel = new ItemModel()
 const sellerModel = new SellerModel()
+const delayed = new DelayedModel()
 
 /**
  * Process a new order from accurate middleware to Accurate
@@ -30,7 +32,15 @@ const importItem = async (id, channel, msg) => {
             .toArray(async (err, res) => {
                 if (err) throw new Error(err.message)
                 if (res.length > 0) {
-                    await accurate.storeItemBulk(res)
+                    await delayed.insert({
+                        profile_id: profileId,
+                        queue:"accurate_store_items",
+                        payload:res,
+                        in_progress:0,
+                        priority:3,
+                        created_at:new Date()
+                    })
+                    // await accurate.storeItemBulk(res)
                     await helper.pubQueue('accurate_items_import', profileId)
                 } else {
                     console.log(
