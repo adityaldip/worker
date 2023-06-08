@@ -16,6 +16,7 @@ const insertOrder = require('./app/services/orders/create/create.order.service')
 const deleteInvoice = require('./app/services/orders/invoice/accurate.invoice.delete.service')
 const resetPayout = require('./app/services/orders/reset/delete.payout.order')
 const resetInvoice = require('./app/services/orders/reset/delete.invoice.order')
+const StoreItemBulk = require('./app/services/items/create/store.bulk.service')
 
 require('dotenv').config()
 
@@ -88,6 +89,9 @@ async function receiveMessage(channel, queue) {
             }
             if (queue == 'accurate_reset_receipt') {
                 resetPayout(id, channel, msg)
+            }
+            if (queue == 'accurate_store_items') {
+                StoreItemBulk(id, channel, msg)
             }
         },
         {
