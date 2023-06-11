@@ -15,6 +15,7 @@ const delayed = new DelayedModel()
  * @param {String} id MongoDB Object ID from orders collection
  * @returns
  */
+
 const importItem = async (id, channel, msg) => {
     try {
         const profileId = parseInt(id)
@@ -28,20 +29,23 @@ const importItem = async (id, channel, msg) => {
             attempts: { $lt: accurate.getMaxAttempt() },
         })
         item.project({ accurate_id: 0, _id: 0, synced: 0, synced_at: 0 })
-            .limit(100)
             .toArray(async (err, res) => {
                 if (err) throw new Error(err.message)
                 if (res.length > 0) {
-                    await delayed.insert({
-                        profile_id: profileId,
-                        queue:"accurate_store_items",
-                        payload:res,
-                        in_progress:0,
-                        priority:3,
-                        created_at:new Date()
-                    })
-                    // await accurate.storeItemBulk(res)
-                    await helper.pubQueue('accurate_items_import', profileId)
+                    const ukuranChunk = 100;
+                    for (let i = 0; i < res.length; i += ukuranChunk) {
+                        const resp = res.slice(i, i + ukuranChunk);
+                        await delayed.insert({
+                            profile_id: profileId,
+                            queue:"accurate_store_items",
+                            payload:resp,
+                            in_progress:0,
+                            priority:3,
+                            created_at:new Date()
+                        })
+                    }
+                    // await accurate.toreItemBulk(res)
+                    // await helper.pubQueue('accurate_items_import', profileId)
                 } else {
                     console.log(
                         ' [✔] Item(s) with Profile ID %s uploaded to Accurate',
@@ -56,5 +60,11 @@ const importItem = async (id, channel, msg) => {
         channel.ack(msg)
     }
 }
+
+function delay(ms) {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
+  }
 
 module.exports = importItem
