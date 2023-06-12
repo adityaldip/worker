@@ -49,3 +49,7 @@ services:
     name: reset-payout
     cluster: polling-azure
     arch: x86
+  - stack: accurate-worker
+    name: store-items
+    cluster: polling-azure
+    arch: x86
