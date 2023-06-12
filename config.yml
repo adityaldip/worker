@@ -1,4 +1,4 @@
-version: 0.1.6
+version: 0.1.7
 ecr: accurate-worker
 services:
   - stack: accurate-worker
@@ -47,5 +47,9 @@ services:
     arch: x86
   - stack: accurate-worker
     name: reset-payout
+    cluster: polling-azure
+    arch: x86
+  - stack: accurate-worker
+    name: store-items
     cluster: polling-azure
     arch: x86

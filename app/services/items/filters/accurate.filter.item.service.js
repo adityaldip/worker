@@ -1,11 +1,11 @@
 const GeneralHelper = require('../../../helpers/general.helper')
 const { accurateMapping } = require('../../../helpers/mapping.helper')
-const { ItemModel, ItemForstokModel } = require('../../../models/item.model')
+const { ItemModel, MasterDataModel } = require('../../../models/item.model')
 const SellerModel = require('../../../models/seller.model')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
-const itemForstok = new ItemForstokModel()
+const itemsModel = new MasterDataModel()
 const sellerModel = new SellerModel()
 
 /**
@@ -22,10 +22,12 @@ const filterItem = async (id, channel, msg) => {
         const startTime = performance.now()
         const skus = await itemModel.distinct('no', { profile_id: profileId })
         const existedSkus = skus.length ? skus : ['']
-        const items = await itemForstok.find(profileId, existedSkus)
+
+        // const items = await itemForstok.find(profileId, existedSkus)
+
+        const items = await itemsModel.find(profileId, existedSkus)
         // const warehouseName = items.length ? getWarehouse(items[0].warehouse_id, warehouses) : null
         const endTime = performance.now()
-
         const itemTax = tax ? tax.id : null
 
         const mappedItems = items.map(item => {
@@ -38,7 +40,7 @@ const filterItem = async (id, channel, msg) => {
             payload.attempts = 0
             return payload;
         });
-        
+
         if (mappedItems.length > 0) {
             await itemModel.insertMany(mappedItems)
             await helper.pubQueue('accurate_items_import', profileId)
