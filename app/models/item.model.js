@@ -131,7 +131,7 @@ class MasterDataModel {
                 })
             }
         }); 
-        var searchData = []
+        let searchData = []
         if(variantID > 0){
             const query = `SELECT warehouse_id, quantity, item_variant_id FROM warehouse_spaces where item_variant_id IN (?)`
             const [rows] = await Mysql.promise().query(query, [variantID])
