@@ -117,6 +117,7 @@ const fetchItemStock = async (itemJob, channel, msg) => {
                 'accurate_quantity_sync',
                 chunkJob.insertedId.toString()
             )
+            channel.ack(msg)
             return
         }
 
