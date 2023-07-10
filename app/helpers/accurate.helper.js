@@ -55,7 +55,7 @@ class AccurateHelper {
     }
 
     async storeInvoiceNew(order) {
-        try {   
+        try {
             const endpoint = `api/sales-invoice/save.do`
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
@@ -93,7 +93,7 @@ class AccurateHelper {
                         { $set: { last_error: response, synced: true } }
                     )
                     return
-                }  else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
+                } else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
 
                     // Get accurate's missing sku items from order data
                     const missingItemSkus = []
@@ -117,15 +117,15 @@ class AccurateHelper {
                         newMissingitem.forEach(e => {
                             const found = e.detailOpenBalance.find(o => o.quantity <= 0);
                             e.name = helper.removeSpecialChar(e.name)
-                            if(found){
+                            if (found) {
                                 delete e.detailOpenBalance
-                            }else{
-                                e.detailOpenBalance.forEach( d => {
+                            } else {
+                                e.detailOpenBalance.forEach(d => {
                                     d.warehouseName = order.warehouseName
-                                } )  
+                                })
                             }
                         });
-                        if(newMissingitem ==''){
+                        if (newMissingitem == '') {
                             const account = await sellerModel.findBy({ seller_id: order.profile_id })
                             const WhName = await this.getWarehouse(order.warehouse_id, account)
                             const mappeditem = [
@@ -148,44 +148,44 @@ class AccurateHelper {
 
                             await delayed.insert({
                                 profile_id: order.profile_id,
-                                queue:"accurate_store_items",
-                                payload:mappeditem,
-                                in_progress:0,
-                                priority:3,
-                                created_at:new Date()
+                                queue: "accurate_store_items",
+                                payload: mappeditem,
+                                in_progress: 0,
+                                priority: 3,
+                                created_at: new Date()
                             })
                             // await this.storeItemBulk(mappeditem)
 
                             if (order.attempts < maxAttempts) {
                                 await delayed.insert({
                                     profile_id: order.profile_id,
-                                    queue:"accurate_invoice_sales",
-                                    payload:order._id,
-                                    in_progress:0,
-                                    priority:1,
-                                    created_at:new Date()
+                                    queue: "accurate_invoice_sales",
+                                    payload: order._id,
+                                    in_progress: 0,
+                                    priority: 1,
+                                    created_at: new Date()
                                 })
                             }
-                        }else{
+                        } else {
 
                             await delayed.insert({
                                 profile_id: order.profile_id,
-                                queue:"accurate_store_items",
-                                payload:newMissingitem,
-                                in_progress:0,
-                                priority:3,
-                                created_at:new Date()
+                                queue: "accurate_store_items",
+                                payload: newMissingitem,
+                                in_progress: 0,
+                                priority: 3,
+                                created_at: new Date()
                             })
                             // await this.storeItemBulk(newMissingitem)
 
                             if (order.attempts < maxAttempts) {
                                 await delayed.insert({
                                     profile_id: order.profile_id,
-                                    queue:"accurate_invoice_sales",
-                                    payload:order._id,
-                                    in_progress:0,
-                                    priority:1,
-                                    created_at:new Date()
+                                    queue: "accurate_invoice_sales",
+                                    payload: order._id,
+                                    in_progress: 0,
+                                    priority: 1,
+                                    created_at: new Date()
                                 })
                             }
                         }
@@ -206,11 +206,11 @@ class AccurateHelper {
                 if (order.attempts < maxAttempts) {
                     await delayed.insert({
                         profile_id: order.profile_id,
-                        queue:"accurate_invoice_sales",
-                        payload:order._id,
-                        in_progress:0,
-                        priority:1,                        
-                        created_at:new Date()
+                        queue: "accurate_invoice_sales",
+                        payload: order._id,
+                        in_progress: 0,
+                        priority: 1,
+                        created_at: new Date()
                     })
                 }
                 await orderModel.update(
@@ -271,11 +271,11 @@ class AccurateHelper {
                 if (order.attempts < maxAttempts) {
                     await delayed.insert({
                         profile_id: order.profile_id,
-                        queue:"accurate_sales_payout",
-                        payload:order._id,
-                        in_progress:0,
-                        priority:1,
-                        created_at:new Date()
+                        queue: "accurate_sales_payout",
+                        payload: order._id,
+                        in_progress: 0,
+                        priority: 1,
+                        created_at: new Date()
                     })
                 }
                 await receiptModel.update(
@@ -345,7 +345,7 @@ class AccurateHelper {
             if (response.s) {
                 await itemModel.updateMany(
                     { no: { $in: skus }, profile_id: this.account.profile_id },
-                    { $set: { synced: true, synced_at: new Date(),detailOpenBalance: detailOpenBalance[0]??[] } }
+                    { $set: { synced: true, synced_at: new Date(), detailOpenBalance: detailOpenBalance[0] ?? [] } }
                 )
             } else {
                 if (Array.isArray(response.d)) {
@@ -361,7 +361,7 @@ class AccurateHelper {
                                     $set: {
                                         synced: true,
                                         synced_at: new Date(),
-                                        detailOpenBalance: detailOpenBalance[0]??[],
+                                        detailOpenBalance: detailOpenBalance[0] ?? [],
                                     },
                                 }
                             )
@@ -381,7 +381,7 @@ class AccurateHelper {
                                     synced: true,
                                     attempts: 5,
                                     synced_at: new Date(),
-                                    detailOpenBalance: detailOpenBalance[0]??[],
+                                    detailOpenBalance: detailOpenBalance[0] ?? [],
                                 },
                             } : {
                                 $inc: { attempts: 1 },
@@ -492,11 +492,11 @@ class AccurateHelper {
                 // )
                 await delayed.insert({
                     profile_id: itemSync.profile_id,
-                    queue:"accurate_items_fetch",
-                    payload:itemJob,
-                    in_progress:0,
-                    priority:2,
-                    created_at:new Date()
+                    queue: "accurate_items_fetch",
+                    payload: itemJob,
+                    in_progress: 0,
+                    priority: 2,
+                    created_at: new Date()
                 })
             } else {
                 // SKU failed to fetch
@@ -612,11 +612,11 @@ class AccurateHelper {
                     // )
                     await delayed.insert({
                         profile_id: order.profile_id,
-                        queue:"accurate_sales_cancelled",
-                        payload:order._id,
-                        in_progress:0,
-                        priority:0,
-                        created_at:new Date()
+                        queue: "accurate_sales_cancelled",
+                        payload: order._id,
+                        in_progress: 0,
+                        priority: 0,
+                        created_at: new Date()
                     })
                 }
                 await orderModel.update(
@@ -653,7 +653,7 @@ class AccurateHelper {
             if (response.s) {
                 await orderModel.update(
                     { id: order.id },
-                    { $set: { synced: true } , $unset:{ receipt: true }}
+                    { $set: { synced: true }, $unset: { receipt: true } }
                 )
             } else {
                 const message =
@@ -678,7 +678,7 @@ class AccurateHelper {
                     {
                         $inc: { attempts: 1 },
                         $set: { last_error: message, synced: false },
-                        $unset:{ receipt: true } 
+                        $unset: { receipt: true }
                     }
                 )
                 // throw new Error(message)
@@ -708,7 +708,7 @@ class AccurateHelper {
             if (response.s) {
                 await orderModel.update(
                     { id: order.id },
-                    { $set: { synced: true } , $unset:{ invoice: true }}
+                    { $set: { synced: true }, $unset: { invoice: true } }
                 )
             } else {
                 const message =
@@ -733,7 +733,7 @@ class AccurateHelper {
                     {
                         $inc: { attempts: 1 },
                         $set: { last_error: message, synced: false },
-                        $unset:{ receipt: true } 
+                        $unset: { receipt: true }
                     }
                 )
                 // throw new Error(message)
@@ -909,11 +909,13 @@ class AccurateHelper {
 
     async credentialHandle(response, order = '') {
         if (response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TOKEN)) {
-            await this.refreshToken()
+            // await this.refreshToken()
+            await sellerModel.update({ seller_id: this.account.profile_id || this.account.seller_id }, { $set: { "invalid_token": true } })
         } else if (
             response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.SESSION)
         ) {
-            await this.refreshSession()
+            // await this.refreshSession()
+            await sellerModel.update({ seller_id: this.account.profile_id || this.account.seller_id }, { $set: { "invalid_token": true } })
         } else if (
             response.includes(
                 GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PESANAN_PENJUALAN
@@ -957,7 +959,7 @@ class AccurateHelper {
         }
     }
 
-    async getWarehouse(warehouseId, account){
+    async getWarehouse(warehouseId, account) {
         const { warehouses } = account
         if (!warehouseId || !warehouses) return null
         console.log(JSON.stringify(warehouses))
