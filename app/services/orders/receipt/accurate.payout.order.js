@@ -37,7 +37,7 @@ const PayoutOrder = async (id, channel, msg) => {
         mapped._id = receipt._id
         mapped.id = receipt.id
         mapped.profile_id = receipt.profile_id
-        mapped.transDate =  new Date()
+        mapped.transDate =  receipt.paid_at
         mapped.order = receipt.order_id
         mapped.bankNo = receipt.bankNo
         mapped.customerNo = receipt.customerNo
