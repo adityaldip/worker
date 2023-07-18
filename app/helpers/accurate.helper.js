@@ -128,23 +128,25 @@ class AccurateHelper {
                         if (newMissingitem == '') {
                             const account = await sellerModel.findBy({ seller_id: order.profile_id })
                             const WhName = await this.getWarehouse(order.warehouse_id, account)
-                            const mappeditem = [
-                                {
+                            const mappeditem = []
+                            order.item_lines.forEach(itemlines => {
+                                const itemline = {
                                     itemType: 'INVENTORY', // required; INVENTORY
-                                    name: helper.removeSpecialChar(order.item_lines[0].name), // required; item_lines.name
+                                    name: helper.removeSpecialChar(itemlines.name), // required; item_lines.name
                                     detailOpenBalance: [
                                         {
                                             quantity: parseInt(order.item_lines.length || 10),
-                                            unitCost: order.item_lines[0].price || 0,
+                                            unitCost: itemlines.price || 0,
                                             warehouseName: WhName || 'Utama',
                                         },
                                     ],
-                                    no: order.item_lines[0].sku, // item_lines.sku
+                                    no: itemlines.sku, // item_lines.sku
                                     unit1Name: 'PCS',
-                                    unitPrice: order.item_lines[0].price || 0, // item_lines.price
+                                    unitPrice: itemlines.price || 0, // item_lines.price
                                     profile_id: order.profile_id
                                 }
-                            ]
+                                mappeditem.push(itemline)
+                            });
 
                             await delayed.insert({
                                 profile_id: order.profile_id,
