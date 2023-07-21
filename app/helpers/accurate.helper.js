@@ -68,6 +68,7 @@ class AccurateHelper {
                 params: body,
                 log: response,
                 order_id: order.id,
+                attempt: order.attempts
             })
 
             if (response.s) {
@@ -228,6 +229,8 @@ class AccurateHelper {
                         profile_id: order.profile_id,
                         params: body,
                         response: response,
+                        log:'reach max attemps',
+                        attempt: order.attempts
                     })
                 }
                 throw new Error(message)
