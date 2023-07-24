@@ -230,7 +230,8 @@ class AccurateHelper {
                         params: body,
                         response: response,
                         log:'reach max attemps',
-                        attempt: order.attempts
+                        attempt: order.attempts,
+                        order_id: order.id
                     })
                 }
                 throw new Error(message)
