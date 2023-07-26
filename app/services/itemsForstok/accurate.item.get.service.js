@@ -4,6 +4,7 @@ const {
 } = require('../../models/item.model')
 const EventModel = require('../../models/event.model')
 const DelayedModel = require('../../models/delayed.model')
+const AccurateHelper = require('../../helpers/accurate.helper')
 
 const helper = new GeneralHelper()
 const itemModel = new ItemModel()
@@ -11,6 +12,7 @@ const eventModel = new EventModel()
 const SellerModel = require('../../models/seller.model')
 const sellerModel = new SellerModel()
 const delayed = new DelayedModel()
+const accurate = new AccurateHelper()
 
 /**
  * Process a new order from accurate middleware to Accurate
@@ -28,6 +30,7 @@ const getItemForstok = async (id, channel, msg) => {
         const seller = await sellerModel.findBy({
             seller_id: profileId,
         })
+        accurate.setAccount(seller)
 
         const loopitem = await item.toArray();
         const event = await eventModel.findBy({
@@ -48,15 +51,16 @@ const getItemForstok = async (id, channel, msg) => {
             if (!updateEvent) {
                 throw Error('Event tidak terupdate!')
             } else {
-                seller.warehouses.forEach((wh) => {
+                for(const wh of seller.warehouses) {
                     if (wh.accurate_warehouse && wh.accurate_warehouse.name !== "") {
-                        loopitem.forEach((element, e) => {
-                            setTimeout(async () => {
+                        const TotalPage = await accurate.getTotalDataStockByWarehouse(wh.accurate_warehouse.name)
+                        if (TotalPage.pageCount > 1) {
+                            for (let index = 1; index <= TotalPage.pageCount; index++) {
                                 const dataDelayed = {
-                                    eventID: event._id.toString(),
-                                    sku: element.no,
-                                    warehouseName: wh.accurate_warehouse.name
-                                };
+                                    eventID: itemJob.eventID,
+                                    warehouseName: wh.accurate_warehouse.name,
+                                    page: index
+                                }
                                 await delayed.insert({
                                     profile_id: profileId,
                                     queue:"accurate_items_fetch",
@@ -64,11 +68,10 @@ const getItemForstok = async (id, channel, msg) => {
                                     in_progress:0,
                                     created_at:new Date()
                                 })
-                                // await helper.pubQueue('accurate_items_fetch', dataDelayed)
-                            }, e * 300);
-                        });
+                            }
+                        }
                     }
-                })
+                }
             }
             channel.ack(msg)
         } else {

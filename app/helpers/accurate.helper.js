@@ -521,6 +521,83 @@ class AccurateHelper {
             throw new Error(error.message)
         }
     }
+    
+    async getTotalDataStockByWarehouse(warehouseName){
+        try {
+            const endpoint = `api/item/list-stock.do?sp.pageSize=100`
+            const body = {
+                warehouseName: warehouseName || 'Utama'
+            }
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestGet(payload)
+            if(response.s){
+                return response.sp
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
+    async getStockByWarehouse(itemJob,itemSync){
+        try {
+            const endpoint = `api/item/list-stock.do?sp.pageSize=100&sp.page=${itemJob.page}`
+            const body = {
+                warehouseName: itemJob.warehouseName || 'Utama'
+            }
+            const payload = this.payloadBuilder(endpoint, body)
+            const response = await request.requestGet(payload)
+            if (response.s) {
+                // SKU found on accurate
+                for(const data of response.d) {
+                    if(data.quantity >= 0){
+                        await itemSyncModel.update(
+                            { _id: itemSync._id },
+                            {
+                                $push: {
+                                    item_accurate_quantity: {
+                                        _id: new ObjectID(),
+                                        sku: data.no,
+                                        warehouseName: itemJob.warehouseName,
+                                        quantity: data.quantity,
+                                    },
+                                },
+                                $inc: { item_accurate_count: 1 },
+                            }
+                        )
+                    }
+                }
+            } else {
+                const message =
+                    (Array.isArray(response.d) ? response.d[0] : response.d) ||
+                    response
+                if (
+                    message.includes(
+                        GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM
+                    )
+                ) {
+                    // SKU not found on accurate
+                    await itemSyncModel.update(
+                        { _id: itemSync._id },
+                        {
+                            $push: {
+                                item_accurate_quantity: {
+                                    _id: new ObjectID(),
+                                    sku: itemJob.sku,
+                                    warehouseName: itemJob.warehouseName,
+                                    error: message,
+                                },
+                            },
+                            $inc: { item_accurate_count: 1 },
+                        }
+                    )
+                    return
+                }
+
+                throw new Error(message)
+            }
+        } catch (error) {
+            throw new Error(error.message)
+        }
+    }
 
     async storeCustomer(order) {
         try {
