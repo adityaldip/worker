@@ -20,7 +20,6 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
        let itemSync = await itemSyncModel.findBy({
         _id: ObjectID(itemJob.eventID),
         })
-
         if (!itemSync) throw new Error('event item quantity sync cannot be found')   
         
         // Seller auth preparation to accurate
@@ -33,10 +32,24 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
         if (!itemJob.eventID) throw new Error('Item job is invalid')
         if (!itemJob.warehouseName) itemJob.warehouseName = seller.warehouses[0].accurate_warehouse.name    
             
-        await accurate.getStockByWarehouse(itemJob,itemSync)
+        const resp = await accurate.getStockByWarehouse(itemJob,itemSync)
         console.log(' [✔] Success fetching item stock from accurate')
-
-        console.log(' [✔] Success fetching item stock from accurate')
+        
+        if(resp.sp.page <= resp.sp.pageCount){
+            // Function to divide the array into subarrays of a given size
+            function divideArrayIntoChunks(arr, chunkSize) {
+                const chunkIds = [];
+                for (let i = 0; i < arr.length; i += chunkSize) {
+                const chunkItems = arr.slice(i, i + chunkSize);
+                chunkItems.forEach((item) => chunkIds.push(item._id))
+                }
+                return chunkIds;
+            }
+            
+            // Divide the original array into subarrays of size 20
+            const subarrays = divideArrayIntoChunks(itemSync.item_accurate_qunatity, CHUNK_SIZE);
+            console.log(subarrays);            
+        }
         channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)

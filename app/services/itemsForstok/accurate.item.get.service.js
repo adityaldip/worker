@@ -57,7 +57,7 @@ const getItemForstok = async (id, channel, msg) => {
                         if (TotalPage.pageCount > 1) {
                             for (let index = 1; index <= TotalPage.pageCount; index++) {
                                 const dataDelayed = {
-                                    eventID: itemJob.eventID,
+                                    eventID: event._id.toString(),
                                     warehouseName: wh.accurate_warehouse.name,
                                     page: index
                                 }
@@ -66,6 +66,7 @@ const getItemForstok = async (id, channel, msg) => {
                                     queue:"accurate_items_fetch",
                                     payload:dataDelayed,
                                     in_progress:0,
+                                    priority: 2,
                                     created_at:new Date()
                                 })
                             }

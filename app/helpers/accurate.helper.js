@@ -486,12 +486,6 @@ class AccurateHelper {
             if (!itemJob.attempt) itemJob.attempt = 0
             itemJob.attempt = parseInt(itemJob.attempt) + 1
             if (!itemJob.attempt || itemJob.attempt < maxAttempts) {
-                // await this.delayedQueue(
-                //     itemJob.attempt,
-                //     'accurate_items_fetch',
-                //     itemJob,
-                //     true
-                // )
                 await delayed.insert({
                     profile_id: itemSync.profile_id,
                     queue: "accurate_items_fetch",
@@ -565,6 +559,7 @@ class AccurateHelper {
                         )
                     }
                 }
+                return response
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
