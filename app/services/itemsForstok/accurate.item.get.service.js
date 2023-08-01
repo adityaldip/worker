@@ -56,19 +56,21 @@ const getItemForstok = async (id, channel, msg) => {
                         const TotalPage = await accurate.getTotalDataStockByWarehouse(wh.accurate_warehouse.name)
                         if (TotalPage.pageCount > 1) {
                             for (let index = 1; index <= TotalPage.pageCount; index++) {
-                                const dataDelayed = {
-                                    eventID: event._id.toString(),
-                                    warehouseName: wh.accurate_warehouse.name,
-                                    page: index
-                                }
-                                await delayed.insert({
-                                    profile_id: profileId,
-                                    queue:"accurate_items_fetch",
-                                    payload:dataDelayed,
-                                    in_progress:0,
-                                    priority: 2,
-                                    created_at:new Date()
-                                })
+                                setTimeout(async () => {
+                                    const dataDelayed = {
+                                        eventID: event._id.toString(),
+                                        warehouseName: wh.accurate_warehouse.name,
+                                        page: index
+                                    }
+                                    await delayed.insert({
+                                        profile_id: profileId,
+                                        queue:"accurate_items_fetch",
+                                        payload:dataDelayed,
+                                        in_progress:0,
+                                        priority: 2,
+                                        created_at:new Date()
+                                    })
+                                }, index * 300);
                             }
                         }
                     }

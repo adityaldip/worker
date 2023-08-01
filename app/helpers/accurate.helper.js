@@ -9,6 +9,7 @@ const InvoiceModel = require('../models/invoice.model')
 const { ObjectID } = require('bson')
 const ReceiptModel = require('../models/receipt.model')
 const DelayedModel = require('../models/delayed.model')
+const { promise } = require('../../config/mysql')
 
 const helper = new GeneralHelper()
 const delayed = new DelayedModel()
@@ -540,8 +541,7 @@ class AccurateHelper {
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestGet(payload)
             if (response.s) {
-                // SKU found on accurate
-                for(const data of response.d) {
+                for await(const data of response.d) {
                     if(data.quantity >= 0){
                         await itemSyncModel.update(
                             { _id: itemSync._id },
@@ -559,7 +559,7 @@ class AccurateHelper {
                         )
                     }
                 }
-                return response
+                return response.sp
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||

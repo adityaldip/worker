@@ -34,21 +34,68 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
             
         const resp = await accurate.getStockByWarehouse(itemJob,itemSync)
         console.log(' [✔] Success fetching item stock from accurate')
-        
-        if(resp.sp.page <= resp.sp.pageCount){
-            // Function to divide the array into subarrays of a given size
-            function divideArrayIntoChunks(arr, chunkSize) {
-                const chunkIds = [];
-                for (let i = 0; i < arr.length; i += chunkSize) {
-                const chunkItems = arr.slice(i, i + chunkSize);
+        let tx = await itemSyncModel.findBy({
+            _id: ObjectID(itemJob.eventID),
+        })
+        if(resp.page <= resp.pageCount){
+            const chunkIds = [];
+            for (let i = 0; i < tx.item_accurate_quantity.length; i += CHUNK_SIZE) {
+                const chunkItems = tx.item_accurate_quantity.slice(i, i + CHUNK_SIZE);
                 chunkItems.forEach((item) => chunkIds.push(item._id))
-                }
-                return chunkIds;
+                 await itemSyncModel.update(
+                    { _id: tx._id },
+                    {
+                        $pull: {
+                            item_accurate_quantity: {
+                                _id: { $in: chunkIds },
+                            },
+                        },
+                        $push: {
+                            response_sync: { $each: chunkItems },
+                        },
+                    }
+                )
+
+                // remapping items for payload
+                const payloads = chunkItems.reduce((bucket, item) => {
+                    if (typeof item.quantity !== 'undefined') 
+                        bucket.items.push({
+                            sku: item.sku,
+                            warehouse_id: getForstokWarehouse(
+                                item.warehouseName,
+                                seller.warehouses
+                            ),
+                            quantity: item.quantity,
+                        })
+                    else bucket.errors.push({
+                        sku: item.sku,
+                        warehouse_id: getForstokWarehouse(
+                            item.warehouseName,
+                            seller.warehouses
+                        ),
+                        error: item.error,
+                    })
+                    return bucket
+                }, ({ items: [], errors: [] }))
+
+                const chunkJob = await itemSyncBulkModel.insert({
+                    data: {
+                        item_sync_id: itemSync._id.toString(),
+                        profile_id: itemSync.profile_id,
+                        items: payloads.items,
+                        error_items: payloads.errors
+                    },
+                    queue: 'accurate_quantity_sync',
+                    createdAt: new Date(),
+                })
+                setTimeout(async () => {
+                    helper.pubQueue(
+                        'accurate_quantity_sync',
+                        chunkJob.insertedId.toString()
+                    )
+                  },i * 1500);
+                
             }
-            
-            // Divide the original array into subarrays of size 20
-            const subarrays = divideArrayIntoChunks(itemSync.item_accurate_qunatity, CHUNK_SIZE);
-            console.log(subarrays);            
         }
         channel.ack(msg)
     } catch (error) {
@@ -57,5 +104,12 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
     }
 }
 
+const getForstokWarehouse = (warehouseName, warehouses) => {
+    if (!warehouseName || !warehouses) return null
+    const warehouseFind = warehouses.find(
+        (warehouse) => warehouse.accurate_warehouse.name == warehouseName
+    )
+    return warehouseFind ? warehouseFind.forstok_warehouse.id : false
+}
 
 module.exports = fetchItemStockV2
