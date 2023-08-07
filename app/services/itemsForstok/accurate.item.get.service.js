@@ -67,6 +67,9 @@ const getItemForstok = async (id, channel, msg) => {
                 }
             }
         }
+        console.log(
+            '[✔] get item sync stock is complete'
+        )
         channel.ack(msg)
     } catch (error) {
         console.error(' [x] Error: %s', error.message)
