@@ -1,13 +1,9 @@
 const GeneralHelper = require('../../helpers/general.helper')
-const {
-    ItemModel
-} = require('../../models/item.model')
 const EventModel = require('../../models/event.model')
 const DelayedModel = require('../../models/delayed.model')
 const AccurateHelper = require('../../helpers/accurate.helper')
 
 const helper = new GeneralHelper()
-const itemModel = new ItemModel()
 const eventModel = new EventModel()
 const SellerModel = require('../../models/seller.model')
 const sellerModel = new SellerModel()

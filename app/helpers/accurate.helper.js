@@ -9,7 +9,6 @@ const InvoiceModel = require('../models/invoice.model')
 const { ObjectID } = require('bson')
 const ReceiptModel = require('../models/receipt.model')
 const DelayedModel = require('../models/delayed.model')
-const { promise } = require('../../config/mysql')
 
 const helper = new GeneralHelper()
 const delayed = new DelayedModel()

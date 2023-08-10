@@ -16,9 +16,9 @@ const helper = new GeneralHelper()
 const itemSyncBulkModel = new ItemSyncBulkModel()
 const fetchItemStockV2 = async (itemJob, channel, msg) => {
     try {
-       // Get item sync
-       let itemSync = await itemSyncModel.findBy({
-        _id: ObjectID(itemJob.eventID),
+        // Get item sync
+        const itemSync = await itemSyncModel.findBy({
+            _id: ObjectID(itemJob.eventID),
         })
         if (!itemSync) throw new Error('event item quantity sync cannot be found')   
         
@@ -34,7 +34,7 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
             
         const resp = await accurate.getStockByWarehouse(itemJob,itemSync)
         console.log(' [✔] Success fetching item stock from accurate')
-        let tx = await itemSyncModel.findBy({
+        const tx = await itemSyncModel.findBy({
             _id: ObjectID(itemJob.eventID),
         })
         if(resp.page <= resp.pageCount){
@@ -42,7 +42,7 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
             for (let i = 0; i < tx.item_accurate_quantity.length; i += CHUNK_SIZE) {
                 const chunkItems = tx.item_accurate_quantity.slice(i, i + CHUNK_SIZE);
                 chunkItems.forEach((item) => chunkIds.push(item._id))
-                 await itemSyncModel.update(
+                    await itemSyncModel.update(
                     { _id: tx._id },
                     {
                         $pull: {
@@ -93,7 +93,7 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
                         'accurate_quantity_sync',
                         chunkJob.insertedId.toString()
                     )
-                  },i * 1500);
+                },i * 1500);
                 
             }
         }
