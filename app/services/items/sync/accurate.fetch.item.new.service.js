@@ -42,7 +42,7 @@ const fetchItemStockV2 = async (itemJob, channel, msg) => {
             for (let i = 0; i < tx.item_accurate_quantity.length; i += CHUNK_SIZE) {
                 const chunkItems = tx.item_accurate_quantity.slice(i, i + CHUNK_SIZE);
                 chunkItems.forEach((item) => chunkIds.push(item._id))
-                    await itemSyncModel.update(
+                await itemSyncModel.update(
                     { _id: tx._id },
                     {
                         $pull: {
