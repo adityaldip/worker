@@ -86,6 +86,20 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
+                const ExportData = {
+                    'event_date':order.ordered_at,
+                    'type':'invoice',
+                    'channel_order_id':order.local_id,
+                    'forstok_order_id':order.id,
+                    'channel_name': order.channel,
+                    'store_name': order.store_name,
+                    'reason': response.s,
+                    'group_event':'accurate',
+                    'profile_id':order.profile_id,
+                    'status':'success'
+                }
+                console.log(ExportData)
+                await helper.pubQueue('summary-export-event', ExportData)
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -233,6 +247,21 @@ class AccurateHelper {
                         attempt: order.attempts,
                         order_id: order.id
                     })
+                    console.log("sukses")
+                    const ExportData = {
+                        'event_date':order.ordered_at,
+                        'type':'invoice',
+                        'channel_order_id':order.local_id,
+                        'forstok_order_id':order.id,
+                        'channel_name': order.channel,
+                        'store_name': order.store_name,
+                        'reason': response.d,
+                        'group_event':'accurate',
+                        'profile_id':order.profile_id,
+                        'status':'failed'
+                    }
+                    console.log(ExportData)
+                    await helper.pubQueue('summary-export-event', ExportData)
                 }
                 throw new Error(message)
             }
