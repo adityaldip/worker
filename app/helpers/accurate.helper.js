@@ -308,14 +308,12 @@ class AccurateHelper {
                     'profile_id':ordr.profile_id,
                     'status':'success'
                 }
-                console.log("sukses",ExportData)
                 await helper.pubQueue('summary-export-event', ExportData)
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
-                console.log(order.attempts, maxAttempts)
                 if (order.attempts < maxAttempts) {
                     await delayed.insert({
                         profile_id: order.profile_id,
