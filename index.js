@@ -6,7 +6,8 @@ const accurateResetOrder = require('./app/services/orders/reset/accurate.reset.o
 const accurateFilterItem = require('./app/services/items/filters/accurate.filter.item.service')
 const accurateImportItem = require('./app/services/items/import/accurate.import.item.service')
 const accurateCancelledOrder = require('./app/services/orders/cancel/accurate.cancel.order.service')
-const accurateFetchItemStock = require('./app/services/items/sync/accurate.fetch.item.service')
+// const accurateFetchItemStock = require('./app/services/items/sync/accurate.fetch.item.service')
+const fetchItemStockV2 = require('./app/services/items/sync/accurate.fetch.item.new.service')
 const forstokSyncQuantity = require('./app/services/items/sync/forstok.sync.quantity.service')
 const getItemForstok = require('./app/services/itemsForstok/accurate.item.get.service')
 const insertOrder = require('./app/services/orders/create/create.order.service')
@@ -57,8 +58,11 @@ async function receiveMessage(channel, queue) {
             }   
 
             if (queue == 'accurate_items_fetch') {
-                accurateFetchItemStock(id, channel, msg)
+                fetchItemStockV2(id, channel, msg)
             }
+            // if (queue == 'accurate_items_fetch') {
+            //     accurateFetchItemStock(id, channel, msg)
+            // }
 
             if (queue == 'accurate_quantity_sync') {
                 forstokSyncQuantity(id, channel, msg)
@@ -107,6 +111,5 @@ amqp.connect(process.env.RABBITMQ_HOST, function (error0, connection) {
         }
         const queue = process.env.QUEUE_NAME || 'accurate_sales_order'
         receiveMessage(channel, queue)
-        // receiveMessage(channel, "accurate_items_fetch")
     })
 })
