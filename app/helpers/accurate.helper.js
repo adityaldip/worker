@@ -93,7 +93,7 @@ class AccurateHelper {
                     'forstok_order_id':order.id,
                     'channel_name': order.channel,
                     'store_name': order.store_name,
-                    'reason': response.s,
+                    'reason': response.d[0],
                     'group_event':'accurate',
                     'profile_id':order.profile_id,
                     'status':'success'
@@ -273,6 +273,7 @@ class AccurateHelper {
             const body = accurateMapping.payout(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
+            const ordr = await orderModel.findBy({ id: order.order[0] })
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
@@ -295,6 +296,19 @@ class AccurateHelper {
                     { id: order.order[0] },
                     { $set: { synced: true, receipt: body } }
                 )
+                const ExportData = {
+                    'event_date':ordr.ordered_at,
+                    'type':'payment recieve',
+                    'channel_order_id':ordr.local_id,
+                    'forstok_order_id':ordr.id,
+                    'channel_name': ordr.channel,
+                    'store_name': ordr.store_name,
+                    'reason': response.d[0],
+                    'group_event':'accurate',
+                    'profile_id':ordr.profile_id,
+                    'status':'success'
+                }
+                await helper.pubQueue('summary-export-event', ExportData)
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -309,6 +323,19 @@ class AccurateHelper {
                         priority: 1,
                         created_at: new Date()
                     })
+                    const ExportData = {
+                        'event_date':ordr.ordered_at,
+                        'type':'payment recieve',
+                        'channel_order_id':ordr.local_id,
+                        'forstok_order_id':ordr.id,
+                        'channel_name': ordr.channel,
+                        'store_name': ordr.store_name,
+                        'reason': response.d[0],
+                        'group_event':'accurate',
+                        'profile_id':ordr.profile_id,
+                        'status':'failed'
+                    }
+                    await helper.pubQueue('summary-export-event', ExportData)
                 }
                 await receiptModel.update(
                     { _id: order._id },
@@ -318,6 +345,7 @@ class AccurateHelper {
                     }
                 )
                 throw new Error(message)
+                
             }
         } catch (error) {
             throw new Error(error.message)
