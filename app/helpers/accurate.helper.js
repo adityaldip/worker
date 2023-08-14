@@ -93,7 +93,7 @@ class AccurateHelper {
                     'forstok_order_id':order.id,
                     'channel_name': order.channel,
                     'store_name': order.store_name,
-                    'reason': response.d[0],
+                    'reason': response.d[0].replace(/"/g, ''),
                     'group_event':'accurate',
                     'profile_id':order.profile_id,
                     'status':'success'
@@ -253,7 +253,7 @@ class AccurateHelper {
                         'forstok_order_id':order.id,
                         'channel_name': order.channel,
                         'store_name': order.store_name,
-                        'reason': response.d[0],
+                        'reason': response.d[0].replace(/"/g, ''),
                         'group_event':'accurate',
                         'profile_id':order.profile_id,
                         'status':'failed'
@@ -303,17 +303,19 @@ class AccurateHelper {
                     'forstok_order_id':ordr.id,
                     'channel_name': ordr.channel,
                     'store_name': ordr.store_name,
-                    'reason': response.d[0],
+                    'reason': response.d[0].replace(/"/g, ''),
                     'group_event':'accurate',
                     'profile_id':ordr.profile_id,
                     'status':'success'
                 }
+                console.log("sukses",ExportData)
                 await helper.pubQueue('summary-export-event', ExportData)
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 await this.credentialHandle(message, order)
+                console.log(order.attempts, maxAttempts)
                 if (order.attempts < maxAttempts) {
                     await delayed.insert({
                         profile_id: order.profile_id,
@@ -330,7 +332,7 @@ class AccurateHelper {
                         'forstok_order_id':ordr.id,
                         'channel_name': ordr.channel,
                         'store_name': ordr.store_name,
-                        'reason': response.d[0],
+                        'reason': response.d[0].replace(/"/g, ''),
                         'group_event':'accurate',
                         'profile_id':ordr.profile_id,
                         'status':'failed'
