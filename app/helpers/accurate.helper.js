@@ -87,7 +87,7 @@ class AccurateHelper {
                 )
                 await invoiceModel.insert(body)
                 const ExportData = {
-                    'event_date':order.ordered_at,
+                    'event_date': new Date(),
                     'type':'invoice',
                     'channel_order_id':order.local_id,
                     'forstok_order_id':order.id,
@@ -247,7 +247,7 @@ class AccurateHelper {
                         order_id: order.id
                     })
                     const ExportData = {
-                        'event_date':order.ordered_at,
+                        'event_date': new Date(),
                         'type':'invoice',
                         'channel_order_id':order.local_id,
                         'forstok_order_id':order.id,
@@ -297,7 +297,7 @@ class AccurateHelper {
                     { $set: { synced: true, receipt: body } }
                 )
                 const ExportData = {
-                    'event_date':ordr.ordered_at,
+                    'event_date': new Date(),
                     'type':'payment recieve',
                     'channel_order_id':ordr.local_id,
                     'forstok_order_id':ordr.id,
@@ -324,7 +324,7 @@ class AccurateHelper {
                         created_at: new Date()
                     })
                     const ExportData = {
-                        'event_date':ordr.ordered_at,
+                        'event_date': new Date(),
                         'type':'payment recieve',
                         'channel_order_id':ordr.local_id,
                         'forstok_order_id':ordr.id,
