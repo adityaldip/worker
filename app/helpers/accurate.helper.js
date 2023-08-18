@@ -86,19 +86,7 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
-                const ExportData = {
-                    'event_date': new Date(),
-                    'type':'invoice',
-                    'channel_order_id':order.local_id,
-                    'forstok_order_id':order.id,
-                    'channel_name': order.channel,
-                    'store_name': order.store_name,
-                    'reason': response.d[0].replace(/"/g, ''),
-                    'group_event':'accurate',
-                    'profile_id':order.profile_id,
-                    'status':'success'
-                }
-                await helper.pubQueue('summary-export-event', ExportData)
+                await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -246,19 +234,7 @@ class AccurateHelper {
                         attempt: order.attempts,
                         order_id: order.id
                     })
-                    const ExportData = {
-                        'event_date': new Date(),
-                        'type':'invoice',
-                        'channel_order_id':order.local_id,
-                        'forstok_order_id':order.id,
-                        'channel_name': order.channel,
-                        'store_name': order.store_name,
-                        'reason': response.d[0].replace(/"/g, ''),
-                        'group_event':'accurate',
-                        'profile_id':order.profile_id,
-                        'status':'failed'
-                    }
-                    await helper.pubQueue('summary-export-event', ExportData)
+                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'gagal')
                 }
                 throw new Error(message)
             }
@@ -296,19 +272,7 @@ class AccurateHelper {
                     { id: order.order[0] },
                     { $set: { synced: true, receipt: body } }
                 )
-                const ExportData = {
-                    'event_date': new Date(),
-                    'type':'payment recieve',
-                    'channel_order_id':ordr.local_id,
-                    'forstok_order_id':ordr.id,
-                    'channel_name': ordr.channel,
-                    'store_name': ordr.store_name,
-                    'reason': response.d[0].replace(/"/g, ''),
-                    'group_event':'accurate',
-                    'profile_id':ordr.profile_id,
-                    'status':'success'
-                }
-                await helper.pubQueue('summary-export-event', ExportData)
+                await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -323,19 +287,6 @@ class AccurateHelper {
                         priority: 1,
                         created_at: new Date()
                     })
-                    const ExportData = {
-                        'event_date': new Date(),
-                        'type':'payment recieve',
-                        'channel_order_id':ordr.local_id,
-                        'forstok_order_id':ordr.id,
-                        'channel_name': ordr.channel,
-                        'store_name': ordr.store_name,
-                        'reason': response.d[0].replace(/"/g, ''),
-                        'group_event':'accurate',
-                        'profile_id':ordr.profile_id,
-                        'status':'failed'
-                    }
-                    await helper.pubQueue('summary-export-event', ExportData)
                 }
                 await receiptModel.update(
                     { _id: order._id },
@@ -344,6 +295,7 @@ class AccurateHelper {
                         $set: { last_error: response, synced: false },
                     }
                 )
+                await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                 throw new Error(message)
                 
             }
@@ -1101,6 +1053,22 @@ class AccurateHelper {
         console.log(warehouseFind)
         console.log(warehouseFind.accurate_warehouse.name)
         return warehouseFind ? warehouseFind.accurate_warehouse.name : null
+    }
+
+    async sendSummaryExportEvent(dataOrder, type, reason, status){
+        const ExportData = {
+            'event_date': new Date(),
+            'type': type,
+            'channel_order_id':dataOrder.local_id,
+            'forstok_order_id':dataOrder.id,
+            'channel_name': dataOrder.channel,
+            'store_name': dataOrder.store_name,
+            'reason': reason,
+            'group_event':'accurate',
+            'profile_id':dataOrder.profile_id,
+            'status': status
+          }
+          await helper.pubQueue('summary-export-event', ExportData)
     }
 }
 
