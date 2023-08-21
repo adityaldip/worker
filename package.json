@@ -26,6 +26,7 @@
         "axios": "^0.27.2",
         "dotenv": "^10.0.0",
         "http-parser-js": "^0.5.2",
+        "moment": "^2.29.4",
         "mongodb": "^4.2.0",
         "mysql2": "^2.3.3",
         "node-cron": "^3.0.0",

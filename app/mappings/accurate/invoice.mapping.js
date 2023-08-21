@@ -50,7 +50,7 @@ const invoiceMapping = (order) => {
         description: order.id,
         customerNo: order.store_id,
         detailItem: detailItems,
-        transDate: helper.dateConvert(order.updated_at), // required
+        transDate: order.transDate, // required
         cashDiscount: (order.voucher_amount || 0) + order.discount_amount || 0,
         taxable: order.taxable,
         toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
