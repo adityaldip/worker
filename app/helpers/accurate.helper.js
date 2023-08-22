@@ -1067,8 +1067,8 @@ class AccurateHelper {
             'group_event':'accurate',
             'profile_id':dataOrder.profile_id,
             'status': status
-          }
-          await helper.pubQueue('summary-export-event', ExportData)
+        }
+        await helper.pubQueue('summary-export-event', ExportData)
     }
 }
 
