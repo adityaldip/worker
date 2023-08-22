@@ -95,7 +95,9 @@ const orderMock = {
     note: 'Mantap',
     internal_note: null,
     skus: [],
-    new_rule: true
+    new_rule: true,
+    transDate: '7/2/2022',
+
 }
 
 const itemMock = {
