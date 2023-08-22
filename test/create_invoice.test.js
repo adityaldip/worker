@@ -96,6 +96,7 @@ const orderMock = {
     note: 'Mantap',
     internal_note: null,
     skus: [],
+    transDate: "7/2/2022"
 }
 
 describe('Create Invoice', () => {
