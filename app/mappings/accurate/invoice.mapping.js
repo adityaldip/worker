@@ -1,6 +1,4 @@
-const GeneralHelper = require('../../helpers/general.helper')
 
-const helper = new GeneralHelper()
 
 /**
  * Mapping invoice based on order request
