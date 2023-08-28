@@ -86,6 +86,7 @@ class AccurateHelper {
                     }
                 )
                 await invoiceModel.insert(body)
+                await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
@@ -233,6 +234,7 @@ class AccurateHelper {
                         attempt: order.attempts,
                         order_id: order.id
                     })
+                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'gagal')
                 }
                 throw new Error(message)
             }
@@ -247,6 +249,7 @@ class AccurateHelper {
             const body = accurateMapping.payout(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
+            const ordr = await orderModel.findBy({ id: order.order[0] })
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
@@ -269,6 +272,7 @@ class AccurateHelper {
                     { id: order.order[0] },
                     { $set: { synced: true, receipt: body } }
                 )
+                await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
@@ -291,7 +295,9 @@ class AccurateHelper {
                         $set: { last_error: response, synced: false },
                     }
                 )
+                await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                 throw new Error(message)
+                
             }
         } catch (error) {
             throw new Error(error.message)
@@ -1047,6 +1053,22 @@ class AccurateHelper {
         console.log(warehouseFind)
         console.log(warehouseFind.accurate_warehouse.name)
         return warehouseFind ? warehouseFind.accurate_warehouse.name : null
+    }
+
+    async sendSummaryExportEvent(dataOrder, type, reason, status){
+        const ExportData = {
+            'event_date': new Date(),
+            'type': type,
+            'channel_order_id':dataOrder.local_id,
+            'forstok_order_id':dataOrder.id,
+            'channel_name': dataOrder.channel,
+            'store_name': dataOrder.store_name,
+            'reason': reason,
+            'group_event':'accurate',
+            'profile_id':dataOrder.profile_id,
+            'status': status
+        }
+        await helper.pubQueue('summary-export-event', ExportData)
     }
 }
 
