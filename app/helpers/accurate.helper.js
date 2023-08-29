@@ -234,7 +234,7 @@ class AccurateHelper {
                         attempt: order.attempts,
                         order_id: order.id
                     })
-                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'gagal')
+                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                 }
                 throw new Error(message)
             }
