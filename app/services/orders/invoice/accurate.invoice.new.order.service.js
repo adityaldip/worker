@@ -49,7 +49,7 @@ const InvoiceOrder = async (id, channel, msg) => {
                     log: "SKU can not be empty",
                     order_id: order.id,
                 })
-                await accurate.sendSummaryExportEvent(order,"invoice","SKU can not be empty","success")
+                await accurate.sendSummaryExportEvent(order,"invoice","SKU can not be empty","failed")
                 throw new Error(`SKU can not be empty`);  
             }
         }
