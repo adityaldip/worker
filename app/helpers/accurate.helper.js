@@ -76,7 +76,7 @@ class AccurateHelper {
                 body.order_id = order.id
                 body.number = response.r.number
                 await orderModel.update(
-                    { id: order.id },
+                    { _id: ObjectID(order._id) },
                     {
                         $set: {
                             synced: true,
@@ -91,7 +91,7 @@ class AccurateHelper {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
                     await orderModel.update(
-                        { id: order.id },
+                        { _id: ObjectID(order._id) },
                         { $set: { last_error: response, synced: true } }
                     )
                     return
@@ -198,7 +198,7 @@ class AccurateHelper {
                         console.log(error.stack)
                     }
                     await orderModel.update(
-                        { id: order.id },
+                        { _id: ObjectID(order._id) },
                         {
                             $inc: { attempts: 1 },
                             $set: { last_error: response, synced: false },
@@ -218,7 +218,7 @@ class AccurateHelper {
                     })
                 }
                 await orderModel.update(
-                    { id: order.id },
+                    { _id: ObjectID(order._id) },
                     {
                         $inc: { attempts: 1 },
                         $set: { last_error: response, synced: false },
