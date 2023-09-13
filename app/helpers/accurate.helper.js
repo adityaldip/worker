@@ -97,7 +97,7 @@ class AccurateHelper {
                     
                     return
                 } else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
-                    await this.missingItemSkusOnAccurate(order)
+                    await this.missingItemSkusOnAccurate(order,response)
                 }
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
@@ -136,7 +136,7 @@ class AccurateHelper {
         }
     }
 
-    async missingItemSkusOnAccurate(order) {
+    async missingItemSkusOnAccurate(order,response) {
         // Get accurate's missing sku items from order data
         const missingItemSkus = []
         for (const item of order.item_lines) {
@@ -282,14 +282,14 @@ class AccurateHelper {
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PEMBAYARAN_TIDAK_CUKUP)) {
-                        await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
-                        await receiptModel.update(
-                            { _id: order._id },
-                            {
-                                $inc: { attempts: 1 },
-                                $set: { last_error: response, synced: false },
-                            }
-                        )
+                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
+                    await receiptModel.update(
+                        { _id: order._id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
                 }else{
                     await this.credentialHandle(message, order)
                     if (order.attempts < maxAttempts) {
