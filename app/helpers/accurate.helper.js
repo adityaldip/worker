@@ -89,8 +89,7 @@ class AccurateHelper {
                 await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PEMBAYARAN_TIDAK_CUKUP)) {
-                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA)) {
                     await orderModel.update(
                         { _id: ObjectID(order._id) },
                         { $set: { last_error: response, synced: true } }
@@ -136,6 +135,7 @@ class AccurateHelper {
             throw new Error(error.message)
         }
     }
+
     async missingItemSkusOnAccurate(order) {
         // Get accurate's missing sku items from order data
         const missingItemSkus = []
@@ -246,6 +246,7 @@ class AccurateHelper {
         )
         throw new Error("items order not found on accurate")
     }
+    
     async storePayout(order) {
         try {
             const endpoint = `api/sales-receipt/save.do`
