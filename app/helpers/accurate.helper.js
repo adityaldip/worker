@@ -246,7 +246,7 @@ class AccurateHelper {
         )
         throw new Error("items order not found on accurate")
     }
-    
+
     async storePayout(order) {
         try {
             const endpoint = `api/sales-receipt/save.do`
@@ -281,27 +281,37 @@ class AccurateHelper {
                 const message =
                     (Array.isArray(response.d) ? response.d[0] : response.d) ||
                     response
-                await this.credentialHandle(message, order)
-                if (order.attempts < maxAttempts) {
-                    await delayed.insert({
-                        profile_id: order.profile_id,
-                        queue: "accurate_sales_payout",
-                        payload: order._id,
-                        in_progress: 0,
-                        priority: 1,
-                        created_at: new Date()
-                    })
-                }
-                await receiptModel.update(
-                    { _id: order._id },
-                    {
-                        $inc: { attempts: 1 },
-                        $set: { last_error: response, synced: false },
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PEMBAYARAN_TIDAK_CUKUP)) {
+                        await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
+                        await receiptModel.update(
+                            { _id: order._id },
+                            {
+                                $inc: { attempts: 1 },
+                                $set: { last_error: response, synced: false },
+                            }
+                        )
+                }else{
+                    await this.credentialHandle(message, order)
+                    if (order.attempts < maxAttempts) {
+                        await delayed.insert({
+                            profile_id: order.profile_id,
+                            queue: "accurate_sales_payout",
+                            payload: order._id,
+                            in_progress: 0,
+                            priority: 1,
+                            created_at: new Date()
+                        })
                     }
-                )
-                await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
+                    await receiptModel.update(
+                        { _id: order._id },
+                        {
+                            $inc: { attempts: 1 },
+                            $set: { last_error: response, synced: false },
+                        }
+                    )
+                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
+                }
                 throw new Error(message)
-                
             }
         } catch (error) {
             throw new Error(error.message)
