@@ -89,122 +89,16 @@ class AccurateHelper {
                 await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'success')
             } else {
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
-                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI)) {
+                if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PEMBAYARAN_TIDAK_CUKUP)) {
+                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                     await orderModel.update(
                         { _id: ObjectID(order._id) },
                         { $set: { last_error: response, synced: true } }
                     )
+                    
                     return
                 } else if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.ITEM)) {
-
-                    // Get accurate's missing sku items from order data
-                    const missingItemSkus = []
-                    for (const item of order.item_lines) {
-                        missingItemSkus.push(item.sku)
-
-                        // get items from order's bundle if available
-                        if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
-                            for (const bundle of item.bundle_info) {
-                                missingItemSkus.push(bundle.sku)
-                            }
-                        }
-                    }
-                    // Get missing accurate items data from item collections
-                    const missingItems = await itemModel.find({
-                        profile_id: order.profile_id,
-                        no: { $in: missingItemSkus }
-                    })
-                    const newMissingitem = await missingItems.toArray()
-                    try {
-                        newMissingitem.forEach(e => {
-                            const found = e.detailOpenBalance.find(o => o.quantity <= 0);
-                            e.name = helper.removeSpecialChar(e.name)
-                            if (found) {
-                                delete e.detailOpenBalance
-                            } else {
-                                e.detailOpenBalance.forEach(d => {
-                                    d.warehouseName = order.warehouseName
-                                })
-                            }
-                        });
-                        if (newMissingitem == '') {
-                            const account = await sellerModel.findBy({ seller_id: order.profile_id })
-                            const WhName = await this.getWarehouse(order.warehouse_id, account)
-                            const mappeditem = []
-                            order.item_lines.forEach(itemlines => {
-                                const itemline = {
-                                    itemType: 'INVENTORY', // required; INVENTORY
-                                    name: helper.removeSpecialChar(itemlines.name), // required; item_lines.name
-                                    detailOpenBalance: [
-                                        {
-                                            quantity: parseInt(order.item_lines.length || 10),
-                                            unitCost: itemlines.price || 0,
-                                            warehouseName: WhName || 'Utama',
-                                        },
-                                    ],
-                                    no: itemlines.sku, // item_lines.sku
-                                    unit1Name: 'PCS',
-                                    unitPrice: itemlines.price || 0, // item_lines.price
-                                    profile_id: order.profile_id
-                                }
-                                mappeditem.push(itemline)
-                            });
-
-                            await delayed.insert({
-                                profile_id: order.profile_id,
-                                queue: "accurate_store_items",
-                                payload: mappeditem,
-                                in_progress: 0,
-                                priority: 3,
-                                created_at: new Date()
-                            })
-                            // await this.storeItemBulk(mappeditem)
-
-                            if (order.attempts < maxAttempts) {
-                                await delayed.insert({
-                                    profile_id: order.profile_id,
-                                    queue: "accurate_invoice_sales",
-                                    payload: order._id,
-                                    in_progress: 0,
-                                    priority: 1,
-                                    created_at: new Date()
-                                })
-                            }
-                        } else {
-
-                            await delayed.insert({
-                                profile_id: order.profile_id,
-                                queue: "accurate_store_items",
-                                payload: newMissingitem,
-                                in_progress: 0,
-                                priority: 3,
-                                created_at: new Date()
-                            })
-                            // await this.storeItemBulk(newMissingitem)
-
-                            if (order.attempts < maxAttempts) {
-                                await delayed.insert({
-                                    profile_id: order.profile_id,
-                                    queue: "accurate_invoice_sales",
-                                    payload: order._id,
-                                    in_progress: 0,
-                                    priority: 1,
-                                    created_at: new Date()
-                                })
-                            }
-                        }
-
-                    } catch (error) {
-                        console.log(error.stack)
-                    }
-                    await orderModel.update(
-                        { _id: ObjectID(order._id) },
-                        {
-                            $inc: { attempts: 1 },
-                            $set: { last_error: response, synced: false },
-                        }
-                    )
-                    throw new Error("items order not found on accurate")
+                    await this.missingItemSkusOnAccurate(order)
                 }
                 await this.credentialHandle(message, order)
                 if (order.attempts < maxAttempts) {
@@ -242,7 +136,116 @@ class AccurateHelper {
             throw new Error(error.message)
         }
     }
+    async missingItemSkusOnAccurate(order) {
+        // Get accurate's missing sku items from order data
+        const missingItemSkus = []
+        for (const item of order.item_lines) {
+            missingItemSkus.push(item.sku)
 
+            // get items from order's bundle if available
+            if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
+                for (const bundle of item.bundle_info) {
+                    missingItemSkus.push(bundle.sku)
+                }
+            }
+        }
+        // Get missing accurate items data from item collections
+        const missingItems = await itemModel.find({
+            profile_id: order.profile_id,
+            no: { $in: missingItemSkus }
+        })
+        const newMissingitem = await missingItems.toArray()
+        try {
+            newMissingitem.forEach(e => {
+                const found = e.detailOpenBalance.find(o => o.quantity <= 0);
+                e.name = helper.removeSpecialChar(e.name)
+                if (found) {
+                    delete e.detailOpenBalance
+                } else {
+                    e.detailOpenBalance.forEach(d => {
+                        d.warehouseName = order.warehouseName
+                    })
+                }
+            });
+            if (newMissingitem == '') {
+                const account = await sellerModel.findBy({ seller_id: order.profile_id })
+                const WhName = await this.getWarehouse(order.warehouse_id, account)
+                const mappeditem = []
+                order.item_lines.forEach(itemlines => {
+                    const itemline = {
+                        itemType: 'INVENTORY', // required; INVENTORY
+                        name: helper.removeSpecialChar(itemlines.name), // required; item_lines.name
+                        detailOpenBalance: [
+                            {
+                                quantity: parseInt(order.item_lines.length || 10),
+                                unitCost: itemlines.price || 0,
+                                warehouseName: WhName || 'Utama',
+                            },
+                        ],
+                        no: itemlines.sku, // item_lines.sku
+                        unit1Name: 'PCS',
+                        unitPrice: itemlines.price || 0, // item_lines.price
+                        profile_id: order.profile_id
+                    }
+                    mappeditem.push(itemline)
+                });
+
+                await delayed.insert({
+                    profile_id: order.profile_id,
+                    queue: "accurate_store_items",
+                    payload: mappeditem,
+                    in_progress: 0,
+                    priority: 3,
+                    created_at: new Date()
+                })
+                // await this.storeItemBulk(mappeditem)
+
+                if (order.attempts < maxAttempts) {
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue: "accurate_invoice_sales",
+                        payload: order._id,
+                        in_progress: 0,
+                        priority: 1,
+                        created_at: new Date()
+                    })
+                }
+            } else {
+
+                await delayed.insert({
+                    profile_id: order.profile_id,
+                    queue: "accurate_store_items",
+                    payload: newMissingitem,
+                    in_progress: 0,
+                    priority: 3,
+                    created_at: new Date()
+                })
+                // await this.storeItemBulk(newMissingitem)
+
+                if (order.attempts < maxAttempts) {
+                    await delayed.insert({
+                        profile_id: order.profile_id,
+                        queue: "accurate_invoice_sales",
+                        payload: order._id,
+                        in_progress: 0,
+                        priority: 1,
+                        created_at: new Date()
+                    })
+                }
+            }
+
+        } catch (error) {
+            console.log(error.stack)
+        }
+        await orderModel.update(
+            { _id: ObjectID(order._id) },
+            {
+                $inc: { attempts: 1 },
+                $set: { last_error: response, synced: false },
+            }
+        )
+        throw new Error("items order not found on accurate")
+    }
     async storePayout(order) {
         try {
             const endpoint = `api/sales-receipt/save.do`
