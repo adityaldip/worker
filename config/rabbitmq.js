@@ -4,11 +4,16 @@ let instance
 
 class MessageBroker {
     async init() {
-        this.connection = await amqp.connect(
-            process.env.RABBITMQ_HOST || 'amqp://localhost:5672'
-        )
-        this.channel = await this.connection.createChannel()
-        return this
+        try {
+            this.connection = await amqp.connect(
+                process.env.RABBITMQ_HOST || 'amqp://localhost:5672'
+            )
+            this.channel = await this.connection.createChannel()
+            return this
+        } catch (error) {
+            console.log(error)
+            process.exit();
+        }
     }
 
     async send(queue, message) {
