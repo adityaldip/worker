@@ -61,7 +61,7 @@ const payoutMapping = (order) => {
         }
         const mapinv = {
             invoiceNo: order.invNumber[e], // required
-            paymentAmount: i.total, // required
+            paymentAmount: order.total_amount_accurate, // required
             detailDiscount: detailDiscount
         }
         return mappinv[e] = mapinv
