@@ -18,6 +18,8 @@ const ACCURATE_RESPONSE_MESSAGE = {
     TIDAK_DITEMUKAN: 'tidak ditemukan atau sudah dihapus',
     ITEM: 'Barang & Jasa',
     PESANAN_ADA: 'Sudah ada data lain dengan No Pesanan',
+    INVOICE_ADA: 'Sudah ada data lain dengan No Faktur',
+    PEMBAYARAN_TIDAK_CUKUP: 'Nilai Pembayaran tidak mencukupi untuk melunasi pembayaran!',
     PROSES_DUA_KALI:
         'terdeteksi terproses dua kali. Mohon cek transaksi yang memproses pesanan tersebut',
     SUDAH_TUTUP: 'sudah ditutup, tidak dapat diproses lagi',
@@ -25,7 +27,8 @@ const ACCURATE_RESPONSE_MESSAGE = {
     RATE_LIMIT: 'request per detik',
     SALDO_AWAL: 'Kuantitas saldo awal harus lebih besar dari 0',
     TANGGAL_MULAI_PERUSAHAAN: 'Tanggal transaksi tidak dapat lebih kecil',
-    CABANG: 'lebih dari satu cabang'
+    CABANG: 'lebih dari satu cabang',
+
 }
 
 class GeneralHelper {

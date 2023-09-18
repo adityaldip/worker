@@ -27,6 +27,7 @@ const PayoutOrder = async (id, channel, msg) => {
     
         for (const orderId of receipt.order_id) {
             const order = await orderModel.findBy({ id: orderId })
+            mapped.total_amount_accurate = order.total_amount_accurate
             if (!order.invoice) {
                 order.taxable = seller.tax ? Boolean(seller.tax.id) : false
                 order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
