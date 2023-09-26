@@ -1031,7 +1031,6 @@ class AccurateHelper {
     }
 
     async credentialHandle(response, order = '') {
-        console.log("masuk sini")
         if (response.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.TOKEN)) {
             // await this.refreshToken()
             await sellerModel.update({ seller_id: this.account.profile_id || this.account.seller_id }, { $set: { "invalid_token": true } })
