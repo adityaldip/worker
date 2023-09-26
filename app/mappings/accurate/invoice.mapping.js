@@ -12,9 +12,9 @@ const invoiceMapping = (order) => {
     for (const item of order.item_lines) {
         if (item.bundle_info.length > 0) {
             item.bundle_info.forEach(item_bundle => {
-                var total_bundle = item.bundle_info.reduce((n, {subtotal}) => n + subtotal, 0)
-                var percent = Number(item.total_price)/Number(total_bundle)
-                let detailItem = {
+                const total_bundle = item.bundle_info.reduce((n, {subtotal}) => n + subtotal, 0)
+                const percent = Number(item.total_price)/Number(total_bundle)
+                const detailItem = {
                     itemNo: item_bundle.sku, // required; item_lines.id
                     unitPrice: Math.round(item_bundle.item_price * percent), // || item.total_price || item.price, // required; item_lines.total_price
                     detailName: (`${item_bundle.name}`).substring(0, 230), // item_lines.variant_name
@@ -29,7 +29,7 @@ const invoiceMapping = (order) => {
                 if (!order.new_rule) detailItem.salesOrderNumber = order.id
                 
                 // if (item.name !== 'Rebate' && item.id !== 'rebate' && item.sku !== 'rebate') {
-                    detailItems.push(detailItem)
+                detailItems.push(detailItem)
                 // }
             
             });
@@ -75,7 +75,7 @@ const invoiceMapping = (order) => {
         transDate: order.transDate, // required
         cashDiscount: (order.voucher_amount || 0) + order.discount_amount || 0,
         taxable: order.taxable,
-        toAddress: `${order.address.name} - ${order.address.address_1}`, // address.address_1
+        toAddress: order.address ? `${order.address.name || ""} - ${order.address.address_1 || ""}` : "", // address.address_1
     }
 
     if (!order.cashless && order.shippingAccountId) {
