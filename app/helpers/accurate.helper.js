@@ -70,7 +70,6 @@ class AccurateHelper {
                 order_id: order.id,
                 attempt: order.attempts
             })
-
             if (response.s) {
                 body.accurate_id = response.r.id
                 body.order_id = order.id
@@ -140,7 +139,13 @@ class AccurateHelper {
         // Get accurate's missing sku items from order data
         const missingItemSkus = []
         for (const item of order.item_lines) {
-            missingItemSkus.push(item.sku)
+            if (item.bundle_info.length > 0) {
+                item.bundle_info.forEach(item_bundle => {
+                    missingItemSkus.push(item_bundle.sku)   
+                });
+            } else {
+                missingItemSkus.push(item.sku)   
+            }
 
             // get items from order's bundle if available
             if (Array.isArray(item.bundle_info) && item.bundle_info.length) {
@@ -172,22 +177,43 @@ class AccurateHelper {
                 const WhName = await this.getWarehouse(order.warehouse_id, account)
                 const mappeditem = []
                 order.item_lines.forEach(itemlines => {
-                    const itemline = {
-                        itemType: 'INVENTORY', // required; INVENTORY
-                        name: helper.removeSpecialChar(itemlines.name), // required; item_lines.name
-                        detailOpenBalance: [
-                            {
-                                quantity: parseInt(order.item_lines.length || 10),
-                                unitCost: itemlines.price || 0,
-                                warehouseName: WhName || 'Utama',
-                            },
-                        ],
-                        no: itemlines.sku, // item_lines.sku
-                        unit1Name: 'PCS',
-                        unitPrice: itemlines.price || 0, // item_lines.price
-                        profile_id: order.profile_id
+                    if (itemlines.bundle_info.length > 0) {
+                        itemlines.bundle_info.forEach(item_bundle => {
+                            const itemline = {
+                                itemType: 'INVENTORY', // required; INVENTORY
+                                name: helper.removeSpecialChar(item_bundle.name), // required; item_lines.name
+                                detailOpenBalance: [
+                                    {
+                                        quantity: parseInt(item_bundle.qty || 10),
+                                        unitCost: item_bundle.item_price || 0,
+                                        warehouseName: WhName || 'Utama',
+                                    },
+                                ],
+                                no: item_bundle.sku, // item_lines.sku
+                                unit1Name: 'PCS',
+                                unitPrice: item_bundle.item_price || 0, // item_lines.price
+                                profile_id: order.profile_id
+                            }
+                            mappeditem.push(itemline)
+                        });
+                    } else {
+                        const itemline = {
+                            itemType: 'INVENTORY', // required; INVENTORY
+                            name: helper.removeSpecialChar(itemlines.name), // required; item_lines.name
+                            detailOpenBalance: [
+                                {
+                                    quantity: parseInt(order.item_lines.length || 10),
+                                    unitCost: itemlines.price || 0,
+                                    warehouseName: WhName || 'Utama',
+                                },
+                            ],
+                            no: itemlines.sku, // item_lines.sku
+                            unit1Name: 'PCS',
+                            unitPrice: itemlines.price || 0, // item_lines.price
+                            profile_id: order.profile_id
+                        }
+                        mappeditem.push(itemline)
                     }
-                    mappeditem.push(itemline)
                 });
 
                 await delayed.insert({
