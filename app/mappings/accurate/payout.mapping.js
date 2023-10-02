@@ -51,14 +51,17 @@ const payoutMapping = (order) => {
                 })
             }
         }
-        if(order.shipping_fee){
-            if(order.shipping_fee.no != ""){
-                detailDiscount.push({
-                    accountId: order.shipping_fee.id, // required
-                    amount: Number(i.shipping_price )* -1, // reqired
-                })
+        if(order.cashless == false){
+            if(order.shipping_fee){
+                if(order.shipping_fee.no != ""){
+                    detailDiscount.push({
+                        accountId: order.shipping_fee.id, // required
+                        amount: Number(i.shipping_price )* -1, // reqired
+                    })
+                }
             }
         }
+
         const mapinv = {
             invoiceNo: order.invNumber[e], // required
             paymentAmount: order.total_amount_accurate, // required
