@@ -26,10 +26,8 @@ const PayoutOrder = async (id, channel, msg) => {
         accurate.setAccount(seller)
     
         for (const orderId of receipt.order_id) {
-
             const order = await orderModel.findBy({ id: orderId })
             mapped.cashless = order.cashless
-            
             mapped.total_amount_accurate = order.total_amount_accurate
             if (!order.invoice) {
                 order.taxable = seller.tax ? Boolean(seller.tax.id) : false

@@ -61,7 +61,6 @@ const payoutMapping = (order) => {
                 }
             }
         }
-
         const mapinv = {
             invoiceNo: order.invNumber[e], // required
             paymentAmount: order.total_amount_accurate, // required
