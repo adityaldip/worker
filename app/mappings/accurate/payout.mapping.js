@@ -51,14 +51,12 @@ const payoutMapping = (order) => {
                 })
             }
         }
-        if(order.cashless == false){
-            if(order.shipping_fee){
-                if(order.shipping_fee.no != ""){
-                    detailDiscount.push({
-                        accountId: order.shipping_fee.id, // required
-                        amount: Number(i.shipping_price )* -1, // reqired
-                    })
-                }
+        if(order.shipping_fee && order.cashless == false ){
+            if(order.shipping_fee.no != ""){
+                detailDiscount.push({
+                    accountId: order.shipping_fee.id, // required
+                    amount: Number(i.shipping_price )* -1, // reqired
+                })
             }
         }
         const mapinv = {
