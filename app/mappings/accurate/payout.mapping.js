@@ -51,7 +51,7 @@ const payoutMapping = (order) => {
                 })
             }
         }
-        if(order.shipping_fee){
+        if(order.shipping_fee && order.cashless == false ){
             if(order.shipping_fee.no != ""){
                 detailDiscount.push({
                     accountId: order.shipping_fee.id, // required
