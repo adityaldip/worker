@@ -87,6 +87,7 @@ class AccurateHelper {
                 await invoiceModel.insert(body)
                 await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'success')
             } else {
+                await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA)) {
                     await orderModel.update(
@@ -126,7 +127,6 @@ class AccurateHelper {
                         attempt: order.attempts,
                         order_id: order.id
                     })
-                    await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                 }
                 throw new Error(message)
             }
@@ -317,6 +317,7 @@ class AccurateHelper {
                         }
                     )
                 }else{
+                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                     await this.credentialHandle(message, order)
                     if (order.attempts < maxAttempts) {
                         await delayed.insert({
@@ -335,7 +336,6 @@ class AccurateHelper {
                             $set: { last_error: response, synced: false },
                         }
                     )
-                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                 }
                 throw new Error(message)
             }
