@@ -317,6 +317,7 @@ class AccurateHelper {
                         }
                     )
                 }else{
+                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                     await this.credentialHandle(message, order)
                     if (order.attempts < maxAttempts) {
                         await delayed.insert({
@@ -335,7 +336,6 @@ class AccurateHelper {
                             $set: { last_error: response, synced: false },
                         }
                     )
-                    await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                 }
                 throw new Error(message)
             }
