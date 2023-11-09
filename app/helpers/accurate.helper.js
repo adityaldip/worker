@@ -60,6 +60,7 @@ class AccurateHelper {
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
+            console.log(response)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
@@ -80,6 +81,7 @@ class AccurateHelper {
                         $set: {
                             synced: true,
                             invoice: body,
+                            date_invoice: new Date(order.transDate),
                             total_amount_accurate: response.r.totalAmount,
                         },
                     }
@@ -90,9 +92,10 @@ class AccurateHelper {
                 await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA)) {
+                    console.log("kesini");
                     await orderModel.update(
                         { _id: ObjectID(order._id) },
-                        { $set: { last_error: response, synced: true } }
+                        { $set: { last_error: response, date_invoice: new Date(order.transDate), synced: true } }
                     )
                     
                     return
@@ -114,7 +117,7 @@ class AccurateHelper {
                     { _id: ObjectID(order._id) },
                     {
                         $inc: { attempts: 1 },
-                        $set: { last_error: response, synced: false },
+                        $set: { last_error: response, date_invoice: new Date(order.transDate), synced: false },
                     }
                 )
                 if (order.attempts >= maxAttempts) {
