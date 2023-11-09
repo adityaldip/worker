@@ -60,7 +60,6 @@ class AccurateHelper {
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
-            console.log(response)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
@@ -92,7 +91,6 @@ class AccurateHelper {
                 await this.sendSummaryExportEvent(order,'invoice',response.d[0].replace(/"/g, ''),'failed')
                 const message = (Array.isArray(response.d) ? response.d[0] : response.d) || response
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA)) {
-                    console.log("kesini");
                     await orderModel.update(
                         { _id: ObjectID(order._id) },
                         { $set: { last_error: response, date_invoice: new Date(order.transDate), synced: true } }
