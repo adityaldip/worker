@@ -93,7 +93,7 @@ class AccurateHelper {
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PROSES_DUA_KALI) || message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.INVOICE_ADA)) {
                     await orderModel.update(
                         { _id: ObjectID(order._id) },
-                        { $set: { last_error: response, date_invoice: new Date(order.transDate), synced: true } }
+                        { $set: { last_error: response, synced: true } }
                     )
                     
                     return
@@ -115,7 +115,7 @@ class AccurateHelper {
                     { _id: ObjectID(order._id) },
                     {
                         $inc: { attempts: 1 },
-                        $set: { last_error: response, date_invoice: new Date(order.transDate), synced: false },
+                        $set: { last_error: response, synced: false },
                     }
                 )
                 if (order.attempts >= maxAttempts) {
