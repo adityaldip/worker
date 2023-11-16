@@ -80,6 +80,7 @@ class AccurateHelper {
                         $set: {
                             synced: true,
                             invoice: body,
+                            date_invoice: new Date(order.transDate),
                             total_amount_accurate: response.r.totalAmount,
                         },
                     }
