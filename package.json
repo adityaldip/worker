@@ -25,6 +25,7 @@
         "amqplib": "^0.8.0",
         "axios": "^0.27.2",
         "dotenv": "^10.0.0",
+        "elastic-apm-node": "^4.1.0",
         "http-parser-js": "^0.5.2",
         "moment": "^2.29.4",
         "mongodb": "^4.2.0",

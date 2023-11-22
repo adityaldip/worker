@@ -18,6 +18,16 @@ const StoreItemBulk = require('./app/services/items/create/store.bulk.service')
 
 require('dotenv').config()
 
+var apm = require('elastic-apm-node').start({
+    serviceName: 'accurate-worker',
+  
+    secretToken: 'VRIRaPt5g4TD8jfwAj',
+  
+    serverUrl: 'https://2449190ec8db4b19bfd745112fd94a28.apm.southeastasia.azure.elastic-cloud.com:443',
+  
+    environment: 'azure-polling'
+  })
+
 async function receiveMessage(channel, queue) {
     channel.assertQueue(queue, {
         durable: true,
