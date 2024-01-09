@@ -19,10 +19,12 @@ const sellerModel = new SellerModel()
  */
 const InvoiceOrder = async (id, channel, msg) => {
     try {
+        console.log(id, channel, msg)
         const order = await orderModel.findBy({
             _id: ObjectId.createFromHexString(id),
         })
         const orderinvoice = await orderInvoiceModel.find(order.id)
+        console.log(orderinvoice)
         const seller = await sellerModel.findBy({ seller_id: order.profile_id })
         accurate.setAccount(seller)
         const accountName = order.store_name || order.channel
@@ -38,6 +40,7 @@ const InvoiceOrder = async (id, channel, msg) => {
         order.transDate = orderinvoice[0] ? moment(orderinvoice[0].created_at).format('DD/MM/YYYY') : helper.dateConvert(new Date())
         order.warehouseName = await accurate.getWarehouse(order.warehouse_id, seller)
         order.new_rule = true
+        console.log(order)
         for (const items of order.item_lines){
             if(items.sku == ""){
                 await helper.accurateLog({

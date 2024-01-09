@@ -60,6 +60,7 @@ class AccurateHelper {
             const body = accurateMapping.invoice(order)
             const payload = this.payloadBuilder(endpoint, body)
             const response = await request.requestPost(payload)
+            console.log(response)
             await helper.accurateLog({
                 created_at: new Date(),
                 type: 'ORDER',
@@ -1097,6 +1098,7 @@ class AccurateHelper {
     }
 
     async sendSummaryExportEvent(dataOrder, type, reason, status){
+        console.log("Kirim Summary")
         const ExportData = {
             'event_date': new Date(),
             'type': type,
