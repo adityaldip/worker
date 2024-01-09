@@ -34,7 +34,7 @@ const ACCURATE_RESPONSE_MESSAGE = {
 class GeneralHelper {
     async pubQueue(queue, message) {
         try {
-            const broker = await MessageBroker.getInstance()
+            const broker = await MessageBroker.getInstance(queue)
             await broker.send(queue, Buffer.from(JSON.stringify(message)))
             console.log(' [-] Queue sent to %s', queue)
         } catch (error) {
