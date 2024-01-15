@@ -311,7 +311,7 @@ class AccurateHelper {
                 if (message.includes(GeneralHelper.ACCURATE_RESPONSE_MESSAGE.PEMBAYARAN_TIDAK_CUKUP)) {
                     await this.sendSummaryExportEvent(ordr,'payment recieve',response.d[0].replace(/"/g, ''),'failed')
                     await receiptModel.update(
-                        { _id: order._id },
+                        { _id: ObjectID(order._id) },
                         {
                             $inc: { attempts: 1 },
                             $set: { last_error: response, synced: false },
@@ -331,7 +331,7 @@ class AccurateHelper {
                         })
                     }
                     await receiptModel.update(
-                        { _id: order._id },
+                        { _id: ObjectID(order._id) },
                         {
                             $inc: { attempts: 1 },
                             $set: { last_error: response, synced: false },
